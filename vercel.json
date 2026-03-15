@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/client-9x7k3m",
+      "destination": "/dashboard.html"
+    }
+  ]
+}

@@ -1,0 +1,2053 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Luno AI — Client Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,700&family=Fraunces:ital,opsz,wght@1,9..144,200;1,9..144,300;1,9..144,400;1,9..144,500;1,9..144,600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: { extend: { fontFamily: { sans: ['Plus Jakarta Sans','system-ui','sans-serif'] } } }
+    }
+  </script>
+  <style>
+    /* ─── TOKENS ─── */
+    :root {
+      --bg:           270 40% 4.5%;
+      --fg:           0 0% 97%;
+      --card:         270 32% 7.5%;
+      --primary:      270 55% 38%;
+      --primary-glow: 270 65% 54%;
+      --primary-hi:   270 72% 70%;
+      --secondary:    270 25% 14%;
+      --muted:        270 20% 11%;
+      --muted-fg:     240 5% 62%;
+      --accent:       270 45% 26%;
+      --border:       270 20% 17%;
+      --radius:       0.8rem;
+      --g-primary:    linear-gradient(135deg, hsl(270 55% 38%), hsl(270 65% 54%));
+      --g-card:       linear-gradient(145deg, hsl(270 32% 8%), hsl(270 28% 11%));
+      --shadow-glow:  0 0 40px hsl(270 65% 54% / .18);
+      --shadow-card:  0 8px 40px hsl(270 40% 3% / .55);
+    }
+
+    /* ─── RESET ─── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    * { scrollbar-width: thin; scrollbar-color: hsl(270 55% 38%) hsl(270 40% 5%); }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: hsl(270 40% 5%); }
+    ::-webkit-scrollbar-thumb { background: linear-gradient(135deg, hsl(270 55% 38%), hsl(270 65% 54%)); border-radius: 3px; }
+    html { scroll-behavior: smooth; }
+    body {
+      background-color: hsl(var(--bg));
+      color: hsl(var(--fg));
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      font-feature-settings: "cv02","cv03","cv04","cv11";
+      -webkit-font-smoothing: antialiased;
+      line-height: 1.7;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+
+    /* ─── BACKGROUND GLOWS ─── */
+    .scene-glow {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
+    }
+    .glow-blob {
+      position: absolute; border-radius: 50%;
+    }
+    .glow-top {
+      top: -10%; left: 50%; transform: translateX(-50%);
+      width: 900px; height: 700px;
+      background: radial-gradient(ellipse, hsl(270 65% 52% / .2) 0%, hsl(270 55% 38% / .08) 45%, transparent 70%);
+    }
+    .glow-bottom {
+      bottom: 0; right: -10%;
+      width: 500px; height: 500px;
+      background: radial-gradient(ellipse, hsl(270 60% 46% / .1) 0%, transparent 70%);
+    }
+    .glow-noise {
+      position: absolute; inset: 0; opacity: 0.022;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size: 256px 256px;
+    }
+
+    /* ─── CONTENT LAYER ─── */
+    #app { position: relative; z-index: 1; }
+
+    /* ─── TYPOGRAPHY ─── */
+    .serif-italic {
+      font-family: 'Fraunces', Georgia, serif;
+      font-style: italic;
+      font-weight: 300;
+      letter-spacing: 0.01em;
+    }
+    .gradient-text {
+      background: var(--g-primary);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* ─── CARD ─── */
+    .card {
+      background: var(--g-card);
+      border: 1px solid hsl(var(--border));
+      border-radius: 1.28rem;
+      box-shadow: var(--shadow-card);
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.3s cubic-bezier(.34,1.56,.64,1), box-shadow 0.3s ease;
+    }
+    .card::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,.035) 50%, transparent 60%);
+      transform: translateX(-100%);
+      transition: transform 0.6s ease;
+      pointer-events: none;
+    }
+    .card:hover::after { transform: translateX(100%); }
+    .card:hover {
+      border-color: hsl(var(--primary) / .7);
+      box-shadow: var(--shadow-glow), var(--shadow-card);
+    }
+
+    /* ─── BUTTONS ─── */
+    .btn-primary {
+      background: var(--g-primary);
+      color: #fff;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 700;
+      font-size: 0.9375rem;
+      padding: 0.6875rem 1.75rem;
+      border-radius: var(--radius);
+      border: none;
+      cursor: pointer;
+      box-shadow: var(--shadow-glow), 0 4px 20px hsl(270 55% 38% / .4);
+      transition: transform 0.25s cubic-bezier(.34,1.56,.64,1), box-shadow 0.25s ease;
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      text-decoration: none; white-space: nowrap;
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px) scale(1.03);
+      box-shadow: 0 0 70px hsl(270 65% 54% / .35), 0 8px 28px hsl(270 55% 38% / .5);
+    }
+    .btn-primary:active { transform: scale(0.97); }
+    .btn-primary:focus-visible { outline: 2px solid hsl(var(--primary-glow)); outline-offset: 3px; }
+
+    .btn-ghost {
+      color: hsl(var(--fg));
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 600;
+      font-size: 0.875rem;
+      padding: 0.5rem 1.25rem;
+      border-radius: var(--radius);
+      border: 1px solid hsl(var(--border));
+      cursor: pointer;
+      background: transparent;
+      transition: transform 0.25s cubic-bezier(.34,1.56,.64,1), background 0.2s, border-color 0.2s;
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      text-decoration: none; white-space: nowrap;
+    }
+    .btn-ghost:hover {
+      background: hsl(var(--secondary));
+      border-color: hsl(var(--primary) / .6);
+      transform: translateY(-1px);
+    }
+    .btn-ghost:active { transform: scale(0.97); }
+
+    .btn-signout {
+      width: 100%;
+      color: hsl(var(--muted-fg));
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 600;
+      font-size: 0.875rem;
+      padding: 0.6rem 1rem;
+      border-radius: var(--radius);
+      border: 1px solid hsl(var(--border));
+      cursor: pointer;
+      background: transparent;
+      transition: color 0.2s, background 0.2s, border-color 0.2s;
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .btn-signout:hover {
+      color: hsl(0 70% 65%);
+      background: hsl(0 60% 20% / .15);
+      border-color: hsl(0 60% 40% / .3);
+    }
+
+    /* ─── BADGES ─── */
+    .badge {
+      display: inline-flex; align-items: center; gap: 0.35rem;
+      font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+      padding: 0.25rem 0.7rem; border-radius: 9999px;
+    }
+    .badge-purple {
+      background: hsl(var(--accent) / .28);
+      border: 1px solid hsl(var(--primary) / .42);
+      color: hsl(var(--primary-glow));
+    }
+    .badge-green {
+      background: hsl(142 50% 20% / .3);
+      border: 1px solid hsl(142 60% 40% / .4);
+      color: hsl(142 70% 55%);
+    }
+    .badge-blue {
+      background: hsl(220 50% 22% / .3);
+      border: 1px solid hsl(220 60% 50% / .4);
+      color: hsl(220 80% 70%);
+    }
+    .badge-gray {
+      background: hsl(240 5% 20% / .3);
+      border: 1px solid hsl(240 5% 40% / .4);
+      color: hsl(var(--muted-fg));
+    }
+    .badge-amber {
+      background: hsl(38 70% 20% / .3);
+      border: 1px solid hsl(38 80% 45% / .4);
+      color: hsl(38 90% 62%);
+    }
+    .badge-red {
+      background: hsl(0 60% 20% / .3);
+      border: 1px solid hsl(0 70% 40% / .4);
+      color: hsl(0 80% 65%);
+    }
+    .badge-muted {
+      background: hsl(var(--muted));
+      border: 1px solid hsl(var(--border));
+      color: hsl(var(--muted-fg));
+    }
+    .badge-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+    }
+    .badge-dot-green { background: hsl(142 70% 55%); box-shadow: 0 0 6px hsl(142 70% 55% / .8); animation: pulse-dot 2s ease-in-out infinite; }
+    .badge-dot-purple { background: hsl(var(--primary-glow)); box-shadow: 0 0 6px hsl(270 65% 54% / .9); animation: pulse-dot 2.2s ease-in-out infinite; }
+    @keyframes pulse-dot {
+      0%,100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.7); }
+    }
+
+    /* ─── FORM ─── */
+    .form-group { display: flex; flex-direction: column; gap: 0.35rem; }
+    .form-label {
+      font-size: 0.78rem; font-weight: 600;
+      letter-spacing: 0.06em; text-transform: uppercase;
+      color: hsl(var(--muted-fg));
+    }
+    .form-input, .form-textarea, .form-select {
+      background: hsl(270 32% 6%);
+      border: 1px solid hsl(var(--border));
+      border-radius: var(--radius);
+      color: hsl(var(--fg));
+      padding: 0.625rem 0.875rem;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      width: 100%;
+    }
+    .form-textarea { resize: vertical; min-height: 80px; }
+    .form-select { appearance: none; cursor: pointer; }
+    .form-input:focus, .form-textarea:focus, .form-select:focus {
+      border-color: hsl(var(--primary-glow));
+      box-shadow: 0 0 0 3px hsl(270 65% 54% / .12);
+    }
+    .form-input::placeholder, .form-textarea::placeholder { color: hsl(var(--muted-fg) / .6); }
+
+    /* ─── AUTH SCREEN ─── */
+    #screen-auth {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      gap: 2rem;
+    }
+    .auth-logo-area { text-align: center; }
+    .auth-title {
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 1;
+      margin-bottom: 0.4rem;
+    }
+    .auth-subtitle {
+      color: hsl(var(--muted-fg));
+      font-size: 0.95rem;
+    }
+    .auth-card {
+      width: 100%;
+      max-width: 440px;
+      padding: 2.25rem;
+    }
+    .auth-heading {
+      font-size: 1.6rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      margin-bottom: 0.3rem;
+    }
+    .auth-sub {
+      color: hsl(var(--muted-fg));
+      font-size: 0.875rem;
+      margin-bottom: 1.75rem;
+    }
+    .auth-fields { display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1.5rem; }
+    .auth-toggle-text {
+      text-align: center;
+      font-size: 0.85rem;
+      color: hsl(var(--muted-fg));
+      margin-top: 1.25rem;
+    }
+    .auth-toggle-link {
+      color: hsl(var(--primary-hi));
+      text-decoration: none;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .auth-toggle-link:hover { text-decoration: underline; }
+
+    /* ─── SIDEBAR ─── */
+    #sidebar {
+      position: fixed;
+      left: 0; top: 0; bottom: 0;
+      width: 256px;
+      z-index: 10;
+      background: var(--g-card);
+      border-right: 1px solid hsl(var(--border));
+      display: flex;
+      flex-direction: column;
+      padding: 1.5rem 1rem;
+      gap: 0;
+    }
+    .sidebar-brand {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.2rem;
+      padding: 0 0.5rem 1.5rem;
+      border-bottom: 1px solid hsl(var(--border));
+      margin-bottom: 1.25rem;
+    }
+    .sidebar-client-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: hsl(var(--muted-fg));
+    }
+    .sidebar-nav { flex: 1; display: flex; flex-direction: column; gap: 0.25rem; }
+    .nav-item {
+      display: flex; align-items: center; gap: 0.75rem;
+      padding: 0.65rem 0.875rem;
+      border-radius: var(--radius);
+      text-decoration: none;
+      color: hsl(var(--muted-fg));
+      font-weight: 600;
+      font-size: 0.9rem;
+      transition: color 0.2s, background 0.2s, border-color 0.2s;
+      border: 1px solid transparent;
+      cursor: pointer;
+    }
+    .nav-item:hover {
+      color: hsl(var(--fg));
+      background: hsl(var(--secondary));
+    }
+    .nav-item.active {
+      color: hsl(var(--primary-hi));
+      background: hsl(var(--primary) / .1);
+      border-color: hsl(var(--primary) / .2);
+    }
+    .nav-item svg { flex-shrink: 0; opacity: 0.8; }
+    .nav-item.active svg { opacity: 1; }
+    .sidebar-bottom { margin-top: auto; padding-top: 1.5rem; border-top: 1px solid hsl(var(--border)); }
+
+    /* ─── DASHBOARD LAYOUT ─── */
+    #dashboard-layout {
+      display: flex;
+      min-height: 100vh;
+    }
+    #main-content {
+      margin-left: 256px;
+      flex: 1;
+      padding: 2.5rem 3rem;
+      min-height: 100vh;
+    }
+    .content-panel { animation: fade-in-up 0.4s cubic-bezier(.34,1.56,.64,1) both; }
+    @keyframes fade-in-up {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ─── PAGE HEADER ─── */
+    .page-header { margin-bottom: 2rem; }
+    .page-title {
+      font-size: 1.75rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.2;
+    }
+    .page-subtitle {
+      color: hsl(var(--muted-fg));
+      font-size: 0.9rem;
+      margin-top: 0.3rem;
+    }
+    .shine-line {
+      height: 1px;
+      background: linear-gradient(to right, transparent, hsl(var(--primary) / .35), transparent);
+      margin: 1.75rem 0;
+    }
+
+    /* ─── METRIC CARDS ─── */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.25rem;
+      margin-bottom: 2rem;
+    }
+    .metric-card {
+      padding: 1.4rem 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      position: relative;
+    }
+    .metric-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: hsl(var(--muted-fg));
+    }
+    .metric-value {
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1;
+      color: hsl(var(--fg));
+    }
+    .metric-icon {
+      position: absolute;
+      top: 1.25rem;
+      right: 1.25rem;
+      width: 36px; height: 36px;
+      border-radius: 0.6rem;
+      background: hsl(var(--accent) / .25);
+      border: 1px solid hsl(var(--primary) / .2);
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* ─── QUICK ACTIONS ─── */
+    .section-label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: hsl(var(--muted-fg));
+      margin-bottom: 1rem;
+    }
+    .quick-actions-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.25rem; }
+    .quick-action-card {
+      padding: 1.4rem 1.5rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .quick-action-icon {
+      width: 44px; height: 44px; flex-shrink: 0;
+      border-radius: 0.75rem;
+      background: var(--g-primary);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 16px hsl(270 55% 38% / .35);
+    }
+    .quick-action-title { font-weight: 700; font-size: 0.95rem; margin-bottom: 0.15rem; }
+    .quick-action-desc { font-size: 0.8rem; color: hsl(var(--muted-fg)); }
+
+    /* ─── AGENT CARDS ─── */
+    .agents-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.25rem; }
+    .agent-card { padding: 1.5rem; cursor: pointer; }
+    .agent-card-header {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      margin-bottom: 0.5rem;
+    }
+    .agent-name { font-weight: 700; font-size: 1rem; }
+    .agent-desc { font-size: 0.85rem; color: hsl(var(--muted-fg)); margin-bottom: 1.25rem; line-height: 1.5; }
+    .agent-stats {
+      display: flex; gap: 1.5rem;
+      padding-top: 1rem;
+      border-top: 1px solid hsl(var(--border));
+      margin-bottom: 0.75rem;
+    }
+    .agent-stat-label { font-size: 0.72rem; color: hsl(var(--muted-fg)); margin-bottom: 0.2rem; }
+    .agent-stat-val { font-size: 0.9rem; font-weight: 700; }
+    .agent-view-link {
+      font-size: 0.78rem;
+      color: hsl(var(--muted-fg));
+      text-decoration: none;
+      display: flex; align-items: center; gap: 0.3rem;
+      transition: color 0.2s;
+    }
+    .agent-view-link:hover { color: hsl(var(--primary-hi)); }
+    .agent-placeholder-card {
+      padding: 3rem 2rem; text-align: center;
+      grid-column: 1 / -1;
+    }
+    .agent-info-banner {
+      margin-top: 1.5rem;
+      padding: 1rem 1.5rem;
+      background: hsl(var(--accent) / .12);
+      border: 1px solid hsl(var(--primary) / .2);
+      border-radius: var(--radius);
+      font-size: 0.85rem;
+      color: hsl(var(--muted-fg));
+      text-align: center;
+    }
+
+    /* ─── LEADS ─── */
+    .leads-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; margin-bottom: 2rem; }
+    .leads-stat-card { padding: 1.5rem; }
+    .leads-stat-label { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: hsl(var(--muted-fg)); margin-bottom: 0.4rem; }
+    .leads-stat-val { font-size: 1.75rem; font-weight: 800; letter-spacing: -0.03em; }
+    .leads-stat-sub { font-size: 0.8rem; color: hsl(var(--muted-fg)); margin-top: 0.2rem; }
+    .table-card { overflow: hidden; }
+    .table-header-row { padding: 1.25rem 1.75rem; border-bottom: 1px solid hsl(var(--border)); }
+    .table-title { font-weight: 700; font-size: 1rem; }
+    table { width: 100%; border-collapse: collapse; }
+    thead tr { border-bottom: 1px solid hsl(var(--border)); }
+    thead th {
+      padding: 0.75rem 1.75rem;
+      text-align: left;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: hsl(var(--muted-fg));
+    }
+    tbody tr {
+      border-bottom: 1px solid hsl(var(--border) / .5);
+      transition: background 0.15s;
+    }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: hsl(var(--secondary) / .5); }
+    tbody td { padding: 1rem 1.75rem; font-size: 0.875rem; vertical-align: middle; }
+    .lead-name { font-weight: 600; }
+    .lead-email { color: hsl(var(--muted-fg)); font-size: 0.8rem; }
+    .lead-phone { color: hsl(var(--muted-fg)); font-size: 0.78rem; }
+    .agent-pill {
+      display: inline-flex; align-items: center; gap: 0.35rem;
+      font-size: 0.8rem; font-weight: 600;
+      color: hsl(var(--primary-hi));
+    }
+    .empty-cell { color: hsl(var(--muted-fg) / .5); font-size: 0.8rem; }
+
+    /* ─── SETTINGS ─── */
+    .settings-sections { display: flex; flex-direction: column; gap: 1.5rem; }
+    .settings-card { padding: 1.75rem 2rem; }
+    .settings-card-header {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      margin-bottom: 1.25rem;
+    }
+    .settings-card-title { font-weight: 700; font-size: 1.05rem; margin-bottom: 0.2rem; }
+    .settings-card-sub { font-size: 0.82rem; color: hsl(var(--muted-fg)); }
+    .tools-list { display: flex; flex-direction: column; gap: 0; }
+    .tool-row {
+      display: flex; align-items: center; gap: 1rem;
+      padding: 0.9rem 0;
+      border-bottom: 1px solid hsl(var(--border) / .5);
+    }
+    .tool-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .tool-icon {
+      width: 38px; height: 38px; flex-shrink: 0;
+      border-radius: 0.6rem;
+      background: hsl(var(--accent) / .2);
+      border: 1px solid hsl(var(--primary) / .15);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem;
+    }
+    .tool-info { flex: 1; }
+    .tool-name { font-weight: 600; font-size: 0.9rem; }
+    .tool-desc { font-size: 0.78rem; color: hsl(var(--muted-fg)); }
+    .visit-link {
+      font-size: 0.8rem; font-weight: 600;
+      color: hsl(var(--primary-hi));
+      text-decoration: none;
+      display: flex; align-items: center; gap: 0.2rem;
+      transition: color 0.2s, gap 0.2s;
+      white-space: nowrap;
+    }
+    .visit-link:hover { color: hsl(var(--fg)); gap: 0.4rem; }
+    .company-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem 2rem; }
+    .info-field-label { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: hsl(var(--muted-fg)); margin-bottom: 0.2rem; }
+    .info-field-val { font-size: 0.95rem; font-weight: 500; }
+    .billing-rows { display: flex; flex-direction: column; gap: 0; }
+    .billing-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid hsl(var(--border) / .5);
+    }
+    .billing-row:last-child { border-bottom: none; }
+    .billing-label { font-size: 0.9rem; color: hsl(var(--muted-fg)); }
+    .billing-val { font-size: 0.95rem; font-weight: 600; }
+    .billing-row.highlight .billing-label { color: hsl(var(--fg)); font-weight: 600; font-size: 1rem; }
+    .billing-row.highlight .billing-val {
+      font-size: 1.2rem; font-weight: 800;
+      background: var(--g-primary);
+      -webkit-background-clip: text; background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .billing-note { font-size: 0.75rem; color: hsl(var(--muted-fg)); margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid hsl(var(--border) / .4); }
+
+    /* ─── INTAKE MODAL ─── */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 50;
+      background: hsl(270 40% 2.5% / .96);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      display: flex; align-items: flex-start; justify-content: center;
+      padding: 2rem 1.5rem;
+      overflow-y: auto;
+    }
+    .intake-container {
+      width: 100%; max-width: 680px;
+      animation: fade-in-up 0.5s cubic-bezier(.34,1.56,.64,1) both;
+    }
+    .intake-top {
+      text-align: center;
+      padding-bottom: 2rem;
+    }
+    .intake-progress {
+      display: flex; justify-content: center; align-items: center; gap: 0.5rem;
+      margin: 1.25rem 0 0.6rem;
+    }
+    .progress-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: hsl(var(--border));
+      transition: all 0.3s cubic-bezier(.34,1.56,.64,1);
+    }
+    .progress-dot.completed { background: hsl(var(--primary-glow)); }
+    .progress-dot.active {
+      width: 22px; height: 8px;
+      border-radius: 9999px;
+      background: var(--g-primary);
+      box-shadow: 0 0 10px hsl(270 65% 54% / .6);
+    }
+    .intake-section-counter {
+      font-size: 0.78rem; font-weight: 600;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      color: hsl(var(--muted-fg));
+    }
+    .intake-card {
+      background: var(--g-card);
+      border: 1px solid hsl(var(--border));
+      border-radius: 1.5rem;
+      box-shadow: 0 20px 60px hsl(270 40% 3% / .7);
+      padding: 2.25rem 2.5rem;
+      margin-bottom: 1.25rem;
+    }
+    .intake-section-title {
+      font-size: 1.5rem; font-weight: 700; letter-spacing: -0.03em;
+      margin-bottom: 0.4rem;
+    }
+    .intake-section-desc { font-size: 0.875rem; color: hsl(var(--muted-fg)); margin-bottom: 1.75rem; }
+    .intake-fields { display: flex; flex-direction: column; gap: 1.1rem; }
+    .intake-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .intake-section { display: none; }
+    .intake-section.active { display: block; }
+    .intake-nav-row {
+      display: flex; justify-content: space-between; align-items: center;
+      gap: 1rem;
+    }
+    .intake-review-grid { display: flex; flex-direction: column; gap: 0.75rem; }
+    .intake-review-item {
+      display: flex; justify-content: space-between;
+      padding: 0.6rem 0; border-bottom: 1px solid hsl(var(--border) / .5);
+    }
+    .intake-review-item:last-child { border-bottom: none; }
+    .intake-review-label { font-size: 0.82rem; color: hsl(var(--muted-fg)); }
+    .intake-review-val { font-size: 0.85rem; font-weight: 600; text-align: right; max-width: 60%; }
+    .intake-confirm-check {
+      display: flex; align-items: flex-start; gap: 0.75rem;
+      padding: 1.25rem;
+      background: hsl(var(--accent) / .12);
+      border: 1px solid hsl(var(--primary) / .2);
+      border-radius: var(--radius);
+      margin-top: 1.5rem;
+      cursor: pointer;
+    }
+    .intake-confirm-check input[type="checkbox"] { width: 18px; height: 18px; margin-top: 1px; accent-color: hsl(var(--primary-glow)); flex-shrink: 0; }
+    .intake-confirm-text { font-size: 0.85rem; color: hsl(var(--muted-fg)); line-height: 1.5; }
+
+    /* ─── AGENT DETAIL MODAL ─── */
+    .agent-modal-backdrop {
+      position: fixed; inset: 0; z-index: 60;
+      background: hsl(270 40% 2.5% / .85);
+      backdrop-filter: blur(12px);
+      display: flex; align-items: center; justify-content: center;
+      padding: 2rem;
+    }
+    .agent-modal-card {
+      width: 100%; max-width: 520px;
+      background: var(--g-card);
+      border: 1px solid hsl(var(--border));
+      border-radius: 1.5rem;
+      box-shadow: 0 20px 60px hsl(270 40% 3% / .7);
+      padding: 2rem 2.25rem;
+      animation: fade-in-up 0.35s cubic-bezier(.34,1.56,.64,1) both;
+      position: relative;
+    }
+    .agent-modal-close {
+      position: absolute; top: 1rem; right: 1rem;
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: hsl(var(--secondary));
+      border: 1px solid hsl(var(--border));
+      color: hsl(var(--muted-fg));
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; line-height: 1;
+      transition: background 0.2s, color 0.2s;
+    }
+    .agent-modal-close:hover { background: hsl(var(--accent)); color: hsl(var(--fg)); }
+    .setup-progress-bar {
+      height: 6px; border-radius: 9999px;
+      background: hsl(var(--secondary));
+      overflow: hidden;
+      margin: 0.75rem 0 0.4rem;
+    }
+    .setup-progress-fill {
+      height: 100%; width: 35%;
+      background: var(--g-primary);
+      border-radius: 9999px;
+      animation: progress-pulse 2s ease-in-out infinite alternate;
+    }
+    @keyframes progress-pulse {
+      from { opacity: 0.7; }
+      to { opacity: 1; }
+    }
+
+    /* ─── UTILITIES ─── */
+    .hidden { display: none !important; }
+    .text-muted { color: hsl(var(--muted-fg)); }
+    .text-primary { color: hsl(var(--primary-hi)); }
+    .fw-700 { font-weight: 700; }
+    .mt-1 { margin-top: 0.25rem; }
+    .mt-2 { margin-top: 0.5rem; }
+    .mt-3 { margin-top: 0.75rem; }
+  </style>
+</head>
+<body>
+  <!-- ── BACKGROUND ── -->
+  <div class="scene-glow">
+    <div class="glow-blob glow-top"></div>
+    <div class="glow-blob glow-bottom"></div>
+    <div class="glow-noise"></div>
+  </div>
+
+  <div id="app">
+
+    <!-- ════════════════════════════════════════
+         AUTH SCREEN
+    ════════════════════════════════════════ -->
+    <div id="screen-auth">
+      <div class="auth-logo-area">
+        <!-- Luno AI logo (inline SVG, scaled) -->
+        <div style="display:flex;justify-content:center;margin-bottom:0.75rem;">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 215" width="64" height="69" style="filter:drop-shadow(0 0 18px hsl(270 65% 54% / 0.55));">
+            <defs>
+              <radialGradient id="mf" cx="38%" cy="44%" r="80%" gradientUnits="objectBoundingBox">
+                <stop offset="0%" stop-color="#3a1870"/><stop offset="60%" stop-color="#1a0840"/><stop offset="100%" stop-color="#0a0220"/>
+              </radialGradient>
+              <filter id="mb" x="-120%" y="-120%" width="340%" height="340%"><feGaussianBlur stdDeviation="22"/></filter>
+              <filter id="mm" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="9"/></filter>
+              <filter id="rg" x="-40%" y="-40%" width="180%" height="180%">
+                <feGaussianBlur stdDeviation="3.5" result="blur"/>
+                <feMerge><feMergeNode in="blur"/><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+              <filter id="tg" x="-20%" y="-80%" width="140%" height="260%">
+                <feGaussianBlur stdDeviation="5" result="blur"/>
+                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+            </defs>
+            <path d="M 124,52 A 38,38 0 1,0 124,118 A 30,30 0 1,1 124,52 Z" fill="#6622cc" opacity="0.5" filter="url(#mb)"/>
+            <path d="M 124,52 A 38,38 0 1,0 124,118 A 30,30 0 1,1 124,52 Z" fill="#8833ee" opacity="0.25" filter="url(#mm)"/>
+            <path d="M 124,52 A 38,38 0 1,0 124,118 A 30,30 0 1,1 124,52 Z" fill="url(#mf)"/>
+            <path d="M 124,52 A 38,38 0 1,0 124,118 A 30,30 0 1,1 124,52 Z" fill="none" stroke="#d4aaff" stroke-width="1.4" opacity="0.92" filter="url(#rg)"/>
+            <text x="100" y="195" font-family="'Helvetica Neue',Helvetica,Arial,sans-serif" font-size="28" text-anchor="middle" filter="url(#tg)">
+              <tspan font-weight="300" fill="#c890ff" letter-spacing="1">Luno </tspan><tspan font-weight="500" fill="#d8aaff" letter-spacing="3">AI</tspan>
+            </text>
+          </svg>
+        </div>
+        <h1 class="auth-title"><span class="gradient-text">Luno AI</span></h1>
+        <p class="auth-subtitle">Your AI Performance Dashboard</p>
+      </div>
+
+      <div class="card auth-card">
+        <!-- LOGIN FORM -->
+        <div id="form-login">
+          <h2 class="auth-heading">Welcome <em class="serif-italic">back</em></h2>
+          <p class="auth-sub">Sign in to your client dashboard</p>
+          <div class="auth-fields">
+            <div class="form-group">
+              <label class="form-label">Email Address</label>
+              <input type="email" class="form-input" placeholder="you@company.com" id="login-email">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Password</label>
+              <input type="password" class="form-input" placeholder="••••••••" id="login-password">
+            </div>
+          </div>
+          <button class="btn-primary" style="width:100%;justify-content:center;" onclick="handleSignIn()">
+            Sign In
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </button>
+          <p class="auth-toggle-text">Don't have an account? <span class="auth-toggle-link" onclick="toggleAuth('signup')">Sign up</span></p>
+        </div>
+
+        <!-- SIGNUP FORM -->
+        <div id="form-signup" class="hidden">
+          <h2 class="auth-heading">Create <em class="serif-italic">Account</em></h2>
+          <p class="auth-sub">Get started with Luno AI today</p>
+          <div class="auth-fields">
+            <div class="intake-two-col">
+              <div class="form-group">
+                <label class="form-label">Full Name</label>
+                <input type="text" class="form-input" placeholder="John Smith" id="signup-name">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Phone</label>
+                <input type="tel" class="form-input" placeholder="+1 (555) 000-0000" id="signup-phone">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Company Name</label>
+              <input type="text" class="form-input" placeholder="Acme Solar Co." id="signup-company">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email Address</label>
+              <input type="email" class="form-input" placeholder="you@company.com" id="signup-email">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Password</label>
+              <input type="password" class="form-input" placeholder="••••••••" id="signup-password">
+            </div>
+          </div>
+          <p id="signup-error" style="color:hsl(0 70% 60%);font-size:0.82rem;margin-bottom:0.75rem;display:none;"></p>
+          <button class="btn-primary" style="width:100%;justify-content:center;" onclick="handleSignUp()">
+            Create Account
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </button>
+          <p class="auth-toggle-text">Already have an account? <span class="auth-toggle-link" onclick="toggleAuth('login')">Sign in</span></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════
+         DASHBOARD LAYOUT
+    ════════════════════════════════════════ -->
+    <div id="dashboard-layout" class="hidden">
+
+      <!-- ── SIDEBAR ── -->
+      <aside id="sidebar">
+        <div class="sidebar-brand">
+          <div style="display:flex;align-items:center;gap:0.6rem;margin-bottom:0.4rem;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 215" width="32" height="35" style="filter:drop-shadow(0 0 8px hsl(270 65% 54% / 0.6));flex-shrink:0;">
+              <defs>
+                <radialGradient id="smf" cx="38%" cy="44%" r="80%" gradientUnits="objectBoundingBox">
+                  <stop offset="0%" stop-color="#3a1870"/><stop offset="60%" stop-color="#1a0840"/><stop offset="100%" stop-color="#0a0220"/>
+                </radialGradient>
+                <filter id="smb" x="-120%" y="-120%" width="340%" height="340%"><feGaussianBlur stdDeviation="22"/></filter>
+                <filter id="smm" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="9"/></filter>
+                <filter id="srg" x="-40%" y="-40%" width="180%" height="180%">
+                  <feGaussianBlur stdDeviation="3.5" result="blur"/>
+                  <feMerge><feMergeNode in="blur"/><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                </filter>
+                <filter id="stg" x="-20%" y="-80%" width="140%" height="260%">
+                  <feGaussianBlur stdDeviation="5" result="blur"/>
+                  <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                </filter>
+              </defs>
+              <path d="M 124,52 A 38,38 0 1,0 124,118 A 30,30 0 1,1 124,52 Z" fill="#6622cc" opacity="0.5" filter="url(#smb)"/>
+              <path d="M 124,52 A 38,38 0 1,0 124,118 A 30,30 0 1,1 124,52 Z" fill="#8833ee" opacity="0.25" filter="url(#smm)"/>
+              <path d="M 124,52 A 38,38 0 1,0 124,118 A 30,30 0 1,1 124,52 Z" fill="url(#smf)"/>
+              <path d="M 124,52 A 38,38 0 1,0 124,118 A 30,30 0 1,1 124,52 Z" fill="none" stroke="#d4aaff" stroke-width="1.4" opacity="0.92" filter="url(#srg)"/>
+              <text x="100" y="195" font-family="'Helvetica Neue',Helvetica,Arial,sans-serif" font-size="28" text-anchor="middle" filter="url(#stg)">
+                <tspan font-weight="300" fill="#c890ff" letter-spacing="1">Luno </tspan><tspan font-weight="500" fill="#d8aaff" letter-spacing="3">AI</tspan>
+              </text>
+            </svg>
+            <div>
+              <div style="font-size:1rem;font-weight:800;letter-spacing:-0.03em;line-height:1.1;">
+                <span style="font-weight:300;color:#c890ff;letter-spacing:0.06em;">Luno </span><span style="font-weight:500;color:#d8aaff;letter-spacing:0.18em;">AI</span>
+              </div>
+            </div>
+          </div>
+          <span class="sidebar-client-label">Client Dashboard</span>
+        </div>
+
+        <nav class="sidebar-nav">
+          <a class="nav-item" data-page="dashboard" onclick="navigate('dashboard')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+            </svg>
+            Dashboard
+          </a>
+          <a class="nav-item" data-page="agents" onclick="navigate('agents')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+            </svg>
+            Agents
+          </a>
+          <a class="nav-item" data-page="leads" onclick="navigate('leads')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="8" r="4"/><path d="M6 20v-2a6 6 0 0112 0v2"/>
+              <circle cx="12" cy="8" r="1.5" fill="currentColor"/>
+            </svg>
+            Leads
+          </a>
+          <a class="nav-item" data-page="settings" onclick="navigate('settings')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 15a3 3 0 100-6 3 3 0 000 6z"/>
+              <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/>
+            </svg>
+            Settings
+          </a>
+        </nav>
+
+        <div class="sidebar-bottom">
+          <button class="btn-signout" onclick="signOut()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+            Sign Out
+          </button>
+        </div>
+      </aside>
+
+      <!-- ── MAIN CONTENT ── -->
+      <main id="main-content">
+
+        <!-- ── DASHBOARD PANEL ── -->
+        <div id="panel-dashboard" class="content-panel">
+          <div class="page-header">
+            <h1 class="page-title">Welcome <em class="serif-italic">back</em>, <span id="user-first-name">there</span></h1>
+            <p class="page-subtitle">Track your performance and key metrics</p>
+          </div>
+          <!-- Intake status banner — shown after submission -->
+          <div id="intake-status-banner" style="display:none;align-items:center;gap:12px;background:hsl(270 55% 38% / 0.12);border:1px solid hsl(270 65% 54% / 0.28);border-radius:14px;padding:14px 20px;margin-bottom:24px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="hsl(270 72% 70%)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <div>
+              <p style="font-size:0.875rem;font-weight:700;color:hsl(270 72% 70%);">Intake Submitted — Under Review</p>
+              <p style="font-size:0.78rem;color:hsl(var(--muted-fg));margin-top:2px;">Our team is reviewing your intake form. Your AI agents will be configured within 2–3 business days. We'll notify you when they're live.</p>
+            </div>
+          </div>
+
+          <div class="shine-line"></div>
+
+          <!-- Metric Cards -->
+          <div class="metrics-grid">
+            <!-- Total Leads -->
+            <div class="card metric-card">
+              <div class="metric-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="hsl(270 65% 54%)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/>
+                  <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+                </svg>
+              </div>
+              <p class="metric-label">Total Leads</p>
+              <p class="metric-value">0</p>
+            </div>
+            <!-- Booked Meetings -->
+            <div class="card metric-card">
+              <div class="metric-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="hsl(142 70% 55%)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+                </svg>
+              </div>
+              <p class="metric-label">Booked Meetings</p>
+              <div style="display:flex;align-items:center;gap:0.6rem;">
+                <p class="metric-value">0</p>
+                <span class="badge-dot badge-dot-green" style="margin-top:0.2rem;"></span>
+              </div>
+            </div>
+            <!-- Conversion Rate -->
+            <div class="card metric-card">
+              <div class="metric-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="hsl(270 65% 54%)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>
+                </svg>
+              </div>
+              <p class="metric-label">Conversion Rate</p>
+              <p class="metric-value">0.0%</p>
+            </div>
+            <!-- Potential Revenue -->
+            <div class="card metric-card">
+              <div class="metric-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="hsl(270 65% 54%)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/>
+                  <path d="M14.5 9.5a2.5 2.5 0 00-5 0c0 2.5 5 2.5 5 5a2.5 2.5 0 01-5 0"/>
+                </svg>
+              </div>
+              <p class="metric-label">Potential Revenue</p>
+              <p class="metric-value">$0</p>
+            </div>
+            <!-- Total Revenue -->
+            <div class="card metric-card">
+              <div class="metric-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="hsl(270 72% 70%)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
+                </svg>
+              </div>
+              <p class="metric-label">Total Revenue</p>
+              <p class="metric-value">$0</p>
+            </div>
+            <!-- ROI -->
+            <div class="card metric-card">
+              <div class="metric-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="hsl(38 90% 62%)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                </svg>
+              </div>
+              <p class="metric-label">ROI</p>
+              <p class="metric-value" style="color:hsl(38 90% 62%);">—</p>
+            </div>
+          </div>
+
+          <div class="shine-line"></div>
+
+          <!-- Quick Actions -->
+          <p class="section-label">Quick Actions</p>
+          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:1.25rem;max-width:600px;">
+            <div class="card quick-action-card" onclick="navigate('agents')">
+              <div class="quick-action-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                </svg>
+              </div>
+              <div>
+                <p class="quick-action-title">View Agents</p>
+                <p class="quick-action-desc">Manage AI agent deployments</p>
+              </div>
+            </div>
+            <div class="card quick-action-card" onclick="navigate('leads')">
+              <div class="quick-action-icon" style="background:linear-gradient(135deg, hsl(142 50% 25%), hsl(142 60% 38%));box-shadow:0 4px 16px hsl(142 50% 30% / .35);">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/>
+                </svg>
+              </div>
+              <div>
+                <p class="quick-action-title">View Leads</p>
+                <p class="quick-action-desc">Track all contacts and status</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── AGENTS PANEL ── -->
+        <div id="panel-agents" class="content-panel hidden">
+          <div class="page-header">
+            <h1 class="page-title">AI <em class="serif-italic">Agents</em></h1>
+            <p class="page-subtitle">Your active AI agents and their performance</p>
+          </div>
+          <div class="shine-line"></div>
+
+          <div class="agents-grid">
+            <!-- Placeholder Agent Card -->
+            <div class="card agent-placeholder-card">
+              <div style="width:64px;height:64px;margin:0 auto 1.25rem;border-radius:50%;background:hsl(var(--accent)/.2);border:2px solid hsl(var(--primary)/.25);display:flex;align-items:center;justify-content:center;">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="hsl(270 65% 54%)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                </svg>
+              </div>
+              <div style="margin-bottom:1rem;">
+                <span class="badge badge-muted">
+                  <span class="badge-dot" style="background:hsl(var(--muted-fg));animation:pulse-dot 2s ease-in-out infinite;"></span>
+                  Setup in Progress
+                </span>
+              </div>
+              <h3 style="font-size:1.15rem;font-weight:700;letter-spacing:-0.02em;margin-bottom:0.6rem;">Your AI Agents Are Being <em class="serif-italic">Configured</em></h3>
+              <p style="color:hsl(var(--muted-fg));font-size:0.875rem;max-width:420px;margin:0 auto;">Our team is setting up your dedicated AI agents based on your intake information. You'll receive a notification once they're live and ready to start converting leads.</p>
+              <div class="agent-info-banner" style="max-width:480px;margin:1.5rem auto 0;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-right:0.35rem;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                Your dedicated agents will appear here once your onboarding is complete. Typical setup time is 2–3 business days.
+              </div>
+            </div>
+
+            <!-- Coming Soon Agent Cards (preview) -->
+            <div class="card agent-card" onclick="openAgentModal('Speed to Lead')" style="opacity:0.6;">
+              <div class="agent-card-header">
+                <div>
+                  <p class="agent-name">Speed to Lead</p>
+                  <p class="agent-desc" style="margin-bottom:0;">Instant lead response automation</p>
+                </div>
+                <span class="badge badge-muted">Coming Soon</span>
+              </div>
+              <div class="agent-stats">
+                <div><p class="agent-stat-label">Leads Contacted</p><p class="agent-stat-val text-muted">—</p></div>
+                <div><p class="agent-stat-label">Time Saved</p><p class="agent-stat-val text-muted">—</p></div>
+                <div><p class="agent-stat-label">Labor Saved</p><p class="agent-stat-val text-muted">—</p></div>
+              </div>
+              <a class="agent-view-link">
+                Click to view details
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </a>
+            </div>
+
+            <div class="card agent-card" onclick="openAgentModal('Appointment Setter')" style="opacity:0.6;">
+              <div class="agent-card-header">
+                <div>
+                  <p class="agent-name">Appointment Setter</p>
+                  <p class="agent-desc" style="margin-bottom:0;">Automated meeting scheduling</p>
+                </div>
+                <span class="badge badge-muted">Coming Soon</span>
+              </div>
+              <div class="agent-stats">
+                <div><p class="agent-stat-label">Leads Contacted</p><p class="agent-stat-val text-muted">—</p></div>
+                <div><p class="agent-stat-label">Time Saved</p><p class="agent-stat-val text-muted">—</p></div>
+                <div><p class="agent-stat-label">Labor Saved</p><p class="agent-stat-val text-muted">—</p></div>
+              </div>
+              <a class="agent-view-link">
+                Click to view details
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </a>
+            </div>
+
+            <div class="card agent-card" onclick="openAgentModal('Reactivation')" style="opacity:0.6;">
+              <div class="agent-card-header">
+                <div>
+                  <p class="agent-name">Reactivation</p>
+                  <p class="agent-desc" style="margin-bottom:0;">Re-engage dormant leads</p>
+                </div>
+                <span class="badge badge-muted">Coming Soon</span>
+              </div>
+              <div class="agent-stats">
+                <div><p class="agent-stat-label">Leads Contacted</p><p class="agent-stat-val text-muted">—</p></div>
+                <div><p class="agent-stat-label">Time Saved</p><p class="agent-stat-val text-muted">—</p></div>
+                <div><p class="agent-stat-label">Labor Saved</p><p class="agent-stat-val text-muted">—</p></div>
+              </div>
+              <a class="agent-view-link">
+                Click to view details
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </a>
+            </div>
+
+            <div class="card agent-card" onclick="openAgentModal('AI SMS Agent')" style="opacity:0.6;">
+              <div class="agent-card-header">
+                <div>
+                  <p class="agent-name">AI SMS Agent</p>
+                  <p class="agent-desc" style="margin-bottom:0;">Automated SMS messaging and follow-ups</p>
+                </div>
+                <span class="badge badge-muted">Coming Soon</span>
+              </div>
+              <div class="agent-stats">
+                <div><p class="agent-stat-label">Leads Contacted</p><p class="agent-stat-val text-muted">—</p></div>
+                <div><p class="agent-stat-label">Time Saved</p><p class="agent-stat-val text-muted">—</p></div>
+                <div><p class="agent-stat-label">Labor Saved</p><p class="agent-stat-val text-muted">—</p></div>
+              </div>
+              <a class="agent-view-link">
+                Click to view details
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── LEADS PANEL ── -->
+        <div id="panel-leads" class="content-panel hidden">
+          <div class="page-header">
+            <h1 class="page-title">Leads <em class="serif-italic">Management</em></h1>
+            <p class="page-subtitle">Track and manage your leads</p>
+          </div>
+          <div class="shine-line"></div>
+
+          <!-- Stats -->
+          <div class="leads-stats">
+            <div class="card leads-stat-card">
+              <p class="leads-stat-label">Total Leads</p>
+              <p class="leads-stat-val">1</p>
+            </div>
+            <div class="card leads-stat-card">
+              <p class="leads-stat-label">Converted</p>
+              <p class="leads-stat-val" style="color:hsl(142 70% 55%);">1</p>
+            </div>
+            <div class="card leads-stat-card">
+              <p class="leads-stat-label">Top Source</p>
+              <p class="leads-stat-val" style="font-size:1.35rem;">Facebook Ad</p>
+              <p class="leads-stat-sub">1 lead</p>
+            </div>
+          </div>
+
+          <!-- Table -->
+          <div class="card table-card">
+            <div class="table-header-row">
+              <p class="table-title">All Leads</p>
+            </div>
+            <div style="overflow-x:auto;">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Lead Name</th>
+                    <th>Contact</th>
+                    <th>Status</th>
+                    <th>Agent</th>
+                    <th>Call Summary</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><p class="lead-name">Kyle</p></td>
+                    <td>
+                      <p class="lead-email">kyle@gmail.com</p>
+                      <p class="lead-phone">+1 571 455 5174</p>
+                    </td>
+                    <td>
+                      <span class="badge badge-green">
+                        <span class="badge-dot badge-dot-green"></span>
+                        Converted
+                      </span>
+                    </td>
+                    <td>
+                      <span class="agent-pill">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                        Speed to Lead
+                      </span>
+                    </td>
+                    <td><span class="empty-cell">—</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── SETTINGS PANEL ── -->
+        <div id="panel-settings" class="content-panel hidden">
+          <div class="page-header">
+            <h1 class="page-title">Settings</h1>
+            <p class="page-subtitle">Manage your tools and billing information</p>
+          </div>
+          <div class="shine-line"></div>
+
+          <div class="settings-sections">
+            <!-- Integrated Tools -->
+            <div class="card settings-card">
+              <div class="settings-card-header">
+                <div>
+                  <p class="settings-card-title">Integrated Tools</p>
+                  <p class="settings-card-sub">Quick access to your connected platforms</p>
+                </div>
+              </div>
+              <div class="tools-list">
+                <div class="tool-row">
+                  <div class="tool-icon">🔶</div>
+                  <div class="tool-info">
+                    <p class="tool-name">GoHighLevel</p>
+                    <p class="tool-desc">All-in-one sales and marketing platform</p>
+                  </div>
+                  <a href="#" class="visit-link">Visit Now <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+                </div>
+                <div class="tool-row">
+                  <div class="tool-icon">🔴</div>
+                  <div class="tool-info">
+                    <p class="tool-name">Twilio</p>
+                    <p class="tool-desc">Cloud communications platform</p>
+                  </div>
+                  <a href="#" class="visit-link">Visit Now <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+                </div>
+                <div class="tool-row">
+                  <div class="tool-icon">📅</div>
+                  <div class="tool-info">
+                    <p class="tool-name">Cal.com</p>
+                    <p class="tool-desc">Open-source scheduling infrastructure</p>
+                  </div>
+                  <a href="#" class="visit-link">Visit Now <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+                </div>
+                <div class="tool-row">
+                  <div class="tool-icon">🤖</div>
+                  <div class="tool-info">
+                    <p class="tool-name">OpenAI</p>
+                    <p class="tool-desc">AI-powered language models</p>
+                  </div>
+                  <a href="#" class="visit-link">Visit Now <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+                </div>
+                <div class="tool-row">
+                  <div class="tool-icon">⚙️</div>
+                  <div class="tool-info">
+                    <p class="tool-name">Make.com</p>
+                    <p class="tool-desc">Visual automation platform</p>
+                  </div>
+                  <a href="#" class="visit-link">Visit Now <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+                </div>
+              </div>
+            </div>
+
+            <!-- Company Information -->
+            <div class="card settings-card">
+              <div class="settings-card-header">
+                <div>
+                  <p class="settings-card-title">Company Information</p>
+                  <p class="settings-card-sub">Your account details on file</p>
+                </div>
+                <button class="btn-ghost">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  Edit
+                </button>
+              </div>
+              <div class="company-info-grid">
+                <div>
+                  <p class="info-field-label">Contact Name</p>
+                  <p class="info-field-val" id="info-name">—</p>
+                </div>
+                <div>
+                  <p class="info-field-label">Email</p>
+                  <p class="info-field-val" id="info-email">—</p>
+                </div>
+                <div>
+                  <p class="info-field-label">Phone</p>
+                  <p class="info-field-val" id="info-phone">—</p>
+                </div>
+                <div>
+                  <p class="info-field-label">Company Name</p>
+                  <p class="info-field-val" id="info-company">—</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Billing Information -->
+            <div class="card settings-card">
+              <div class="settings-card-header">
+                <div>
+                  <p class="settings-card-title">Billing Information</p>
+                  <p class="settings-card-sub">Your current plan and commission details</p>
+                </div>
+              </div>
+              <div class="billing-rows">
+                <div class="billing-row">
+                  <span class="billing-label">One-Time Setup Fee</span>
+                  <span class="billing-val">—</span>
+                </div>
+                <div class="billing-row">
+                  <span class="billing-label">Monthly Retainer</span>
+                  <span class="billing-val">—</span>
+                </div>
+                <div class="billing-row">
+                  <span class="billing-label">Commission Percentage</span>
+                  <span class="billing-val">—</span>
+                </div>
+                <div class="billing-row highlight">
+                  <span class="billing-label">Commission Amount Due</span>
+                  <span class="billing-val">—</span>
+                </div>
+              </div>
+              <p class="billing-note">Billing details will be confirmed by your account manager after onboarding.</p>
+            </div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+
+    <!-- ════════════════════════════════════════
+         INTAKE WIZARD MODAL
+    ════════════════════════════════════════ -->
+    <div id="intake-modal" class="modal-overlay hidden">
+      <div class="intake-container">
+
+        <!-- Header -->
+        <div class="intake-top">
+          <div style="display:flex;justify-content:center;margin-bottom:0.5rem;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 215" width="48" height="52" style="filter:drop-shadow(0 0 12px hsl(270 65% 54% / 0.5));">
+              <defs>
+                <radialGradient id="imf" cx="38%" cy="44%" r="80%" gradientUnits="objectBoundingBox">
+                  <stop offset="0%" stop-color="#3a1870"/><stop offset="60%" stop-color="#1a0840"/><stop offset="100%" stop-color="#0a0220"/>
+                </radialGradient>
+                <filter id="imb" x="-120%" y="-120%" width="340%" height="340%"><feGaussianBlur stdDeviation="22"/></filter>
+                <filter id="imm" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="9"/></filter>
+                <filter id="irg" x="-40%" y="-40%" width="180%" height="180%">
+                  <feGaussianBlur stdDeviation="3.5" result="blur"/>
+                  <feMerge><feMergeNode in="blur"/><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                </filter>
+                <filter id="itg" x="-20%" y="-80%" width="140%" height="260%">
+                  <feGaussianBlur stdDeviation="5" result="blur"/>
+                  <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                </filter>
+              </defs>
+              <path d="M 124,52 A 38,38 0 1,0 124,118 A 30,30 0 1,1 124,52 Z" fill="#6622cc" opacity="0.5" filter="url(#imb)"/>
+              <path d="M 124,52 A 38,38 0 1,0 124,118 A 30,30 0 1,1 124,52 Z" fill="#8833ee" opacity="0.25" filter="url(#imm)"/>
+              <path d="M 124,52 A 38,38 0 1,0 124,118 A 30,30 0 1,1 124,52 Z" fill="url(#imf)"/>
+              <path d="M 124,52 A 38,38 0 1,0 124,118 A 30,30 0 1,1 124,52 Z" fill="none" stroke="#d4aaff" stroke-width="1.4" opacity="0.92" filter="url(#irg)"/>
+              <text x="100" y="195" font-family="'Helvetica Neue',Helvetica,Arial,sans-serif" font-size="28" text-anchor="middle" filter="url(#itg)">
+                <tspan font-weight="300" fill="#c890ff" letter-spacing="1">Luno </tspan><tspan font-weight="500" fill="#d8aaff" letter-spacing="3">AI</tspan>
+              </text>
+            </svg>
+          </div>
+          <h2 style="font-size:1.2rem;font-weight:800;letter-spacing:-0.02em;">Client Onboarding</h2>
+          <p style="font-size:0.82rem;color:hsl(var(--muted-fg));margin-top:0.25rem;">Complete your setup to activate your AI agents</p>
+          <div class="intake-progress" id="intake-dots">
+            <!-- dots generated by JS -->
+          </div>
+          <p class="intake-section-counter" id="intake-counter">Section 1 of 8</p>
+        </div>
+
+        <!-- ── SECTION 1: Business Information for the Agent ── -->
+        <div class="intake-section active" id="intake-s1">
+          <div class="intake-card">
+            <h3 class="intake-section-title"><em class="serif-italic">Business</em> Information</h3>
+            <p class="intake-section-desc">Ensure the agent speaks accurately and safely on behalf of your business.</p>
+            <div class="intake-fields">
+              <div class="form-group">
+                <label class="form-label">Company Name *</label>
+                <input type="text" class="form-input" placeholder="e.g., Trusty and Door">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Brief Description of What the Business Does *</label>
+                <textarea class="form-textarea" placeholder="What does your business do and what value do you provide to clients?"></textarea>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Services Offered *</label>
+                <textarea class="form-textarea" placeholder="List all services your business offers..."></textarea>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Services Explicitly NOT Offered</label>
+                <textarea class="form-textarea" placeholder="List services you do not provide — the agent will never promise these..."></textarea>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Service Area or Geographic Limits</label>
+                <input type="text" class="form-input" placeholder="e.g., DMV area only, nationwide, Southeast US">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Documents / Q&amp;A Sheets / Internal References for the Agent</label>
+                <textarea class="form-textarea" style="min-height:60px;" placeholder="Describe or list any files, PDFs, FAQs, or references the agent should draw from..."></textarea>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Language, Claims, or Topics the Agent Must Avoid</label>
+                <textarea class="form-textarea" style="min-height:60px;" placeholder="e.g., Do not mention pricing, do not make guarantees, avoid competitor comparisons..."></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── SECTION 2: Lead Source & Lead Flow ── -->
+        <div class="intake-section" id="intake-s2">
+          <div class="intake-card">
+            <h3 class="intake-section-title">Lead Source &amp; <em class="serif-italic">Lead Flow</em></h3>
+            <p class="intake-section-desc">Define how and when the system triggers so we can configure the agent's entry points correctly.</p>
+            <div class="intake-fields">
+              <div class="form-group">
+                <label class="form-label">Where Do Leads Come From? *</label>
+                <textarea class="form-textarea" placeholder="e.g., Website form, funnel, Facebook Ads, inbound calls, webinar signups..."></textarea>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Form Fields Currently Collected from Leads</label>
+                <textarea class="form-textarea" placeholder="e.g., Name, phone, email, service needed, location, budget, notes..."></textarea>
+              </div>
+              <div class="form-group">
+                <label class="form-label">How Quickly Should the Agent Respond After a Trigger? *</label>
+                <select class="form-select form-input">
+                  <option value="">Select response time</option>
+                  <option>Instant</option>
+                  <option>Within 5 minutes</option>
+                  <option>Within 10 minutes</option>
+                  <option>Within 30 minutes</option>
+                </select>
+              </div>
+              <div class="intake-two-col">
+                <div class="form-group">
+                  <label class="form-label">If No Answer — Should Agent Retry?</label>
+                  <select class="form-select form-input">
+                    <option value="">Select</option>
+                    <option>Yes</option>
+                    <option>No</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">If Yes — How Many Retry Attempts?</label>
+                  <input type="number" class="form-input" placeholder="e.g., 3">
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Do Leads Arrive After Hours or on Weekends?</label>
+                <select class="form-select form-input">
+                  <option value="">Select</option>
+                  <option>Yes</option>
+                  <option>No</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── SECTION 3: Lead Qualification Rules ── -->
+        <div class="intake-section" id="intake-s3">
+          <div class="intake-card">
+            <h3 class="intake-section-title">Lead <em class="serif-italic">Qualification</em> Rules</h3>
+            <p class="intake-section-desc">Ensure only the right leads are booked or routed — required for accurate agent behavior.</p>
+            <div class="intake-fields">
+              <div class="form-group">
+                <label class="form-label">What Qualifies a Lead? *</label>
+                <textarea class="form-textarea" placeholder="e.g., Homeowner in service area, budget over $5K, interested in solar installation..."></textarea>
+              </div>
+              <div class="form-group">
+                <label class="form-label">What Disqualifies a Lead? *</label>
+                <textarea class="form-textarea" placeholder="e.g., Renter, outside service area, budget under threshold, already under contract..."></textarea>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Hard Filters the Agent Must Enforce</label>
+                <textarea class="form-textarea" placeholder="e.g., Location restrictions, minimum budget, service exclusions..."></textarea>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Should Qualification Happen…? *</label>
+                <select class="form-select form-input">
+                  <option value="">Select</option>
+                  <option>Before booking</option>
+                  <option>After booking (context collection only)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">If a Lead Is Unqualified, What Should Happen? *</label>
+                <select class="form-select form-input">
+                  <option value="">Select</option>
+                  <option>Decline politely</option>
+                  <option>Route to manual review</option>
+                  <option>Collect info only</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── SECTION 4: ROI & Performance Metrics ── -->
+        <div class="intake-section" id="intake-s4">
+          <div class="intake-card">
+            <h3 class="intake-section-title">ROI &amp; <em class="serif-italic">Performance</em> Metrics</h3>
+            <p class="intake-section-desc">Establish baseline performance so we can measure real before/after impact. These are not guarantees.</p>
+            <div class="intake-fields">
+              <div class="intake-two-col">
+                <div class="form-group">
+                  <label class="form-label">Avg. Leads Per Week</label>
+                  <input type="number" class="form-input" placeholder="e.g., 25">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Avg. Leads Per Month</label>
+                  <input type="number" class="form-input" placeholder="e.g., 100">
+                </div>
+              </div>
+              <div class="intake-two-col">
+                <div class="form-group">
+                  <label class="form-label">Current Avg. Response Time to a New Lead</label>
+                  <input type="text" class="form-input" placeholder="e.g., 2 hours, next day...">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Time Spent Manually Handling One Lead</label>
+                  <input type="text" class="form-input" placeholder="e.g., 15 minutes">
+                </div>
+              </div>
+              <div class="intake-two-col">
+                <div class="form-group">
+                  <label class="form-label">Current Booking Rate (%)</label>
+                  <input type="number" class="form-input" placeholder="% of leads that become booked appointments">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Current Close Rate (%) — if known</label>
+                  <input type="number" class="form-input" placeholder="% of booked appointments that become clients">
+                </div>
+              </div>
+              <div class="intake-two-col">
+                <div class="form-group">
+                  <label class="form-label">Est. % of Paid Leads Never Contacted</label>
+                  <input type="number" class="form-input" placeholder="e.g., 20">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Avg. Value of a Booked Appointment or Closed Client ($)</label>
+                  <input type="number" class="form-input" placeholder="e.g., 3200">
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Primary Reason Deals Are Currently Lost — if known</label>
+                <textarea class="form-textarea" style="min-height:60px;" placeholder="e.g., Slow response, no follow-up, no-shows, unqualified leads..."></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── SECTION 5: Follow-Up Workflow ── -->
+        <div class="intake-section" id="intake-s5">
+          <div class="intake-card">
+            <h3 class="intake-section-title">Follow-Up <em class="serif-italic">Workflow</em></h3>
+            <p class="intake-section-desc">Define persistence and coverage behavior for your AI agents.</p>
+            <div class="intake-fields">
+              <div class="form-group">
+                <label class="form-label">Current Follow-Up Sequence *</label>
+                <textarea class="form-textarea" placeholder="e.g., Call → text → email, or text first then call after 1 hour..."></textarea>
+              </div>
+              <div class="intake-two-col">
+                <div class="form-group">
+                  <label class="form-label">Number of Follow-Up Attempts Per Lead</label>
+                  <input type="number" class="form-input" placeholder="e.g., 5">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Time Delay Between Attempts</label>
+                  <input type="text" class="form-input" placeholder="e.g., 1 hour, 24 hours, 3 days...">
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Allowed Follow-Up Channels *</label>
+                <select class="form-select form-input">
+                  <option value="">Select</option>
+                  <option>Text only</option>
+                  <option>Email only</option>
+                  <option>Both text and email</option>
+                  <option>Call, text, and email</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">When Should Follow-Up Stop?</label>
+                <textarea class="form-textarea" style="min-height:60px;" placeholder="e.g., After 5 attempts, after 7 days, once lead responds, once booked..."></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── SECTION 6: Call Style & Call Flow ── -->
+        <div class="intake-section" id="intake-s6">
+          <div class="intake-card">
+            <h3 class="intake-section-title">Call Style &amp; <em class="serif-italic">Call Flow</em></h3>
+            <p class="intake-section-desc">Control the tone, structure, and conversation limits of your AI voice agent.</p>
+            <div class="intake-fields">
+              <div class="form-group">
+                <label class="form-label">How Should the Agent Introduce Itself? *</label>
+                <input type="text" class="form-input" placeholder="e.g., 'Hi, this is Aria calling on behalf of [Company]...'">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Desired Tone *</label>
+                <select class="form-select form-input">
+                  <option value="">Select tone</option>
+                  <option>Professional</option>
+                  <option>Friendly</option>
+                  <option>Formal</option>
+                  <option>Neutral</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Call Flow Order</label>
+                <input type="text" class="form-input" placeholder="e.g., Greet → verify → qualify → book → confirm">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Should the Agent Gather Brief Context Before Booking?</label>
+                <select class="form-select form-input">
+                  <option value="">Select</option>
+                  <option>Yes — ask a few qualifying questions first</option>
+                  <option>No — go straight to scheduling</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Should the Agent Mention Offers or Programs?</label>
+                <select class="form-select form-input">
+                  <option value="">Select</option>
+                  <option>Yes — mention offers/programs at a high level</option>
+                  <option>No — stay focused on scheduling only</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── SECTION 7: Additional Notes & Constraints ── -->
+        <div class="intake-section" id="intake-s7">
+          <div class="intake-card">
+            <h3 class="intake-section-title">Additional Notes &amp; <em class="serif-italic">Constraints</em></h3>
+            <p class="intake-section-desc">Capture any sensitivities, restrictions, or special handling notes — and confirm required tool access.</p>
+            <div class="intake-fields">
+              <div class="form-group">
+                <label class="form-label">Compliance Concerns or Restrictions</label>
+                <textarea class="form-textarea" placeholder="e.g., TCPA compliance, do-not-call lists, industry-specific regulations..."></textarea>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Topics the Agent Must Avoid</label>
+                <textarea class="form-textarea" placeholder="e.g., Pricing discussions, competitor mentions, legal guarantees..."></textarea>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Special Handling Notes</label>
+                <textarea class="form-textarea" placeholder="Anything discovered during discovery that affects how the agent should behave..."></textarea>
+              </div>
+              <div class="form-group" style="background:hsl(var(--primary)/0.06);border:1px solid hsl(var(--primary-glow)/0.2);border-radius:14px;padding:1rem 1.1rem;">
+                <label class="form-label" style="color:hsl(var(--primary-glow));margin-bottom:0.6rem;">Required Tools &amp; Access — Pre-Build Gate</label>
+                <p style="font-size:0.8rem;color:hsl(var(--muted-fg));margin-bottom:0.75rem;line-height:1.5;">Admin access must be provided to all of the following before the build begins. No access = build does not start.</p>
+                <div style="display:flex;flex-direction:column;gap:0.5rem;">
+                  <label style="display:flex;align-items:center;gap:0.6rem;font-size:0.85rem;font-weight:600;cursor:pointer;"><input type="checkbox" style="accent-color:hsl(var(--primary-glow));"> OpenAI Platform</label>
+                  <label style="display:flex;align-items:center;gap:0.6rem;font-size:0.85rem;font-weight:600;cursor:pointer;"><input type="checkbox" style="accent-color:hsl(var(--primary-glow));"> Make.com</label>
+                  <label style="display:flex;align-items:center;gap:0.6rem;font-size:0.85rem;font-weight:600;cursor:pointer;"><input type="checkbox" style="accent-color:hsl(var(--primary-glow));"> GoHighLevel</label>
+                  <label style="display:flex;align-items:center;gap:0.6rem;font-size:0.85rem;font-weight:600;cursor:pointer;"><input type="checkbox" style="accent-color:hsl(var(--primary-glow));"> VAPI</label>
+                  <label style="display:flex;align-items:center;gap:0.6rem;font-size:0.85rem;font-weight:600;cursor:pointer;"><input type="checkbox" style="accent-color:hsl(var(--primary-glow));"> Twilio</label>
+                  <label style="display:flex;align-items:center;gap:0.6rem;font-size:0.85rem;font-weight:600;cursor:pointer;"><input type="checkbox" style="accent-color:hsl(var(--primary-glow));"> Cal.com</label>
+                  <label style="display:flex;align-items:center;gap:0.6rem;font-size:0.85rem;font-weight:600;cursor:pointer;"><input type="checkbox" style="accent-color:hsl(var(--primary-glow));"> Dashboard (client signup required during intake)</label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── SECTION 8: Final Review ── -->
+        <div class="intake-section" id="intake-s8">
+          <div class="intake-card">
+            <h3 class="intake-section-title">Review &amp; <em class="serif-italic">Submit</em></h3>
+            <p class="intake-section-desc">You're almost done! Review your information below, then submit to activate your onboarding.</p>
+            <div class="intake-review-grid" id="intake-review-grid">
+              <!-- populated dynamically by JS -->
+            </div>
+            <div class="form-group" style="margin-top:1.25rem;">
+              <label class="form-label">Additional Notes</label>
+              <textarea class="form-textarea" id="intake-additional-notes" placeholder="Anything else we should know to set up your AI agents effectively?"></textarea>
+            </div>
+            <label class="intake-confirm-check">
+              <input type="checkbox" id="intake-confirm-checkbox">
+              <span class="intake-confirm-text">I confirm that the information provided is accurate and I'm ready to activate my Luno AI agents. I understand my agents will be configured within 2–3 business days.</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="intake-nav-row">
+          <button class="btn-ghost hidden" id="intake-back-btn" onclick="intakeBack()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            Back
+          </button>
+          <div style="flex:1;"></div>
+          <button class="btn-primary" id="intake-next-btn" onclick="intakeNext()">
+            Save &amp; Continue
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════
+         AGENT DETAIL MODAL
+    ════════════════════════════════════════ -->
+    <div id="agent-modal" class="agent-modal-backdrop hidden" onclick="closeAgentModal(event)">
+      <div class="agent-modal-card">
+        <button class="agent-modal-close" onclick="closeAgentModalDirect()">×</button>
+        <div style="display:flex;align-items:flex-start;gap:1rem;margin-bottom:1.25rem;">
+          <div style="width:48px;height:48px;border-radius:0.75rem;background:hsl(var(--accent)/.25);border:1px solid hsl(var(--primary)/.25);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="hsl(270 65% 54%)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+            </svg>
+          </div>
+          <div>
+            <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.25rem;">
+              <h3 style="font-weight:700;font-size:1.1rem;" id="agent-modal-name">Speed to Lead</h3>
+              <span class="badge badge-muted">Pending Setup</span>
+            </div>
+            <p style="font-size:0.82rem;color:hsl(var(--muted-fg));" id="agent-modal-desc">Instant lead response automation</p>
+          </div>
+        </div>
+
+        <div style="background:hsl(var(--muted));border-radius:var(--radius);padding:1rem 1.25rem;margin-bottom:1.25rem;">
+          <p style="font-size:0.78rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:hsl(var(--muted-fg));margin-bottom:0.3rem;">Setup Progress</p>
+          <div class="setup-progress-bar"><div class="setup-progress-fill"></div></div>
+          <p style="font-size:0.75rem;color:hsl(var(--muted-fg));">Estimated completion: 2–3 business days</p>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.75rem;margin-bottom:1.25rem;">
+          <div style="background:hsl(var(--muted));border-radius:var(--radius);padding:0.875rem;text-align:center;">
+            <p style="font-size:0.68rem;color:hsl(var(--muted-fg));text-transform:uppercase;letter-spacing:0.08em;font-weight:700;margin-bottom:0.25rem;">Leads</p>
+            <p style="font-size:1.25rem;font-weight:800;">—</p>
+          </div>
+          <div style="background:hsl(var(--muted));border-radius:var(--radius);padding:0.875rem;text-align:center;">
+            <p style="font-size:0.68rem;color:hsl(var(--muted-fg));text-transform:uppercase;letter-spacing:0.08em;font-weight:700;margin-bottom:0.25rem;">Time Saved</p>
+            <p style="font-size:1.25rem;font-weight:800;">—</p>
+          </div>
+          <div style="background:hsl(var(--muted));border-radius:var(--radius);padding:0.875rem;text-align:center;">
+            <p style="font-size:0.68rem;color:hsl(var(--muted-fg));text-transform:uppercase;letter-spacing:0.08em;font-weight:700;margin-bottom:0.25rem;">Cost Saved</p>
+            <p style="font-size:1.25rem;font-weight:800;">—</p>
+          </div>
+        </div>
+
+        <div style="padding:0.875rem 1rem;border:1px solid hsl(var(--primary)/.2);border-radius:var(--radius);background:hsl(var(--accent)/.1);font-size:0.82rem;color:hsl(var(--muted-fg));margin-bottom:1.25rem;line-height:1.6;" id="agent-modal-about"></div>
+
+        <button class="btn-ghost" style="width:100%;justify-content:center;" onclick="closeAgentModalDirect()">Close</button>
+      </div>
+    </div>
+
+  </div><!-- /#app -->
+
+  <script>
+    // ── STATE ──
+    let currentPage = 'dashboard';
+    let currentIntakeSection = 1;
+    const totalIntakeSections = 8;
+
+    const agentDescriptions = {
+      'Speed to Lead': 'Automatically contacts new leads within 5 minutes of form submission via SMS and email. Studies show that contacting a lead within the first 5 minutes increases conversion by up to 9×.',
+      'Appointment Setter': 'Engages warm leads in natural conversation and books appointments directly into your Cal.com calendar — 24/7 without any manual effort.',
+      'Reactivation': 'Identifies leads in your CRM that went cold and re-engages them with personalized, timely messages to revive interest and bring them back into your pipeline.',
+      'AI SMS Agent': 'Handles two-way SMS conversations at scale — answering questions, qualifying leads, and nurturing prospects through automated but human-sounding text exchanges.'
+    };
+
+    // ── ROUTER ──
+    function navigate(page) {
+      // Update panels
+      document.querySelectorAll('.content-panel').forEach(p => p.classList.add('hidden'));
+      const panel = document.getElementById('panel-' + page);
+      if (panel) { panel.classList.remove('hidden'); panel.style.animation = 'none'; panel.offsetHeight; panel.style.animation = ''; }
+
+      // Update sidebar active
+      document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.toggle('active', item.dataset.page === page);
+      });
+
+      currentPage = page;
+    }
+
+    // ── AUTH ──
+    function toggleAuth(mode) {
+      document.getElementById('form-login').classList.toggle('hidden', mode === 'signup');
+      document.getElementById('form-signup').classList.toggle('hidden', mode === 'login');
+      document.getElementById('signup-error').style.display = 'none';
+    }
+
+    // ── SIGNUP ──
+    function handleSignUp() {
+      const name    = document.getElementById('signup-name').value.trim();
+      const phone   = document.getElementById('signup-phone').value.trim();
+      const company = document.getElementById('signup-company').value.trim();
+      const email   = document.getElementById('signup-email').value.trim();
+      const pass    = document.getElementById('signup-password').value;
+      const errEl   = document.getElementById('signup-error');
+
+      if (!name || !email || !pass) {
+        errEl.textContent = 'Please fill in your name, email, and password.';
+        errEl.style.display = 'block';
+        return;
+      }
+
+      const user = { name, phone, company, email, pass };
+      localStorage.setItem('lunoai_user', JSON.stringify(user));
+      localStorage.removeItem('lunoai_intake');
+      localStorage.removeItem('lunoai_intake_submitted');
+
+      enterDashboard(true);
+    }
+
+    // ── LOGIN ──
+    function handleSignIn() {
+      const email = document.getElementById('login-email').value.trim();
+      const pass  = document.getElementById('login-password').value;
+      const stored = JSON.parse(localStorage.getItem('lunoai_user') || 'null');
+
+      if (!stored) {
+        alert('No account found. Please sign up first.');
+        toggleAuth('signup');
+        return;
+      }
+      if (stored.email !== email || stored.pass !== pass) {
+        alert('Incorrect email or password.');
+        return;
+      }
+
+      enterDashboard(false);
+    }
+
+    function enterDashboard(isNewSignup) {
+      loadUserData();
+      document.getElementById('screen-auth').classList.add('hidden');
+      document.getElementById('dashboard-layout').classList.remove('hidden');
+      navigate('dashboard');
+
+      const submitted = localStorage.getItem('lunoai_intake_submitted');
+      if (submitted) {
+        document.getElementById('intake-status-banner').style.display = 'flex';
+      } else if (isNewSignup) {
+        showIntakeModal();
+      }
+    }
+
+    function loadUserData() {
+      const user = JSON.parse(localStorage.getItem('lunoai_user') || 'null');
+      if (!user) return;
+
+      const firstName = user.name.split(' ')[0];
+      document.getElementById('user-first-name').textContent = firstName;
+      document.getElementById('info-name').textContent    = user.name    || '—';
+      document.getElementById('info-email').textContent   = user.email   || '—';
+      document.getElementById('info-phone').textContent   = user.phone   || '—';
+      document.getElementById('info-company').textContent = user.company || '—';
+
+      const submitted = localStorage.getItem('lunoai_intake_submitted');
+      if (submitted) {
+        document.getElementById('intake-status-banner').style.display = 'flex';
+      }
+    }
+
+    function signOut() {
+      document.getElementById('dashboard-layout').classList.add('hidden');
+      document.getElementById('intake-modal').classList.add('hidden');
+      document.getElementById('intake-status-banner').style.display = 'none';
+      document.getElementById('screen-auth').classList.remove('hidden');
+      currentIntakeSection = 1;
+      updateIntakeUI();
+    }
+
+    // ── INTAKE ──
+    function showIntakeModal() {
+      currentIntakeSection = 1;
+      updateIntakeUI();
+      document.getElementById('intake-modal').classList.remove('hidden');
+    }
+
+    function updateIntakeUI() {
+      // Show/hide sections
+      for (let i = 1; i <= totalIntakeSections; i++) {
+        const s = document.getElementById('intake-s' + i);
+        if (s) s.classList.toggle('active', i === currentIntakeSection);
+      }
+      // Counter
+      document.getElementById('intake-counter').textContent = `Section ${currentIntakeSection} of ${totalIntakeSections}`;
+      // Progress dots
+      const dotsContainer = document.getElementById('intake-dots');
+      dotsContainer.innerHTML = '';
+      for (let i = 1; i <= totalIntakeSections; i++) {
+        const dot = document.createElement('div');
+        dot.className = 'progress-dot';
+        if (i < currentIntakeSection) dot.classList.add('completed');
+        else if (i === currentIntakeSection) dot.classList.add('active');
+        dotsContainer.appendChild(dot);
+      }
+      // Back button
+      document.getElementById('intake-back-btn').classList.toggle('hidden', currentIntakeSection === 1);
+      // Next button text
+      const nextBtn = document.getElementById('intake-next-btn');
+      if (currentIntakeSection === totalIntakeSections) {
+        nextBtn.innerHTML = 'Complete Onboarding <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>';
+      } else {
+        nextBtn.innerHTML = 'Save &amp; Continue <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
+      }
+    }
+
+    function intakeNext() {
+      if (currentIntakeSection < totalIntakeSections) {
+        currentIntakeSection++;
+        // Populate review grid when reaching final section
+        if (currentIntakeSection === totalIntakeSections) {
+          populateIntakeReview();
+        }
+        updateIntakeUI();
+        document.querySelector('.intake-container').scrollTop = 0;
+        document.getElementById('intake-modal').scrollTop = 0;
+      } else {
+        // Save intake data and mark submitted
+        saveIntakeData();
+        localStorage.setItem('lunoai_intake_submitted', 'true');
+        document.getElementById('intake-modal').classList.add('hidden');
+        document.getElementById('intake-status-banner').style.display = 'flex';
+      }
+    }
+
+    function populateIntakeReview() {
+      const user = JSON.parse(localStorage.getItem('lunoai_user') || '{}');
+      const rows = [
+        ['Account Name',     user.name    || '—'],
+        ['Company',          user.company || '—'],
+        ['Email',            user.email   || '—'],
+        ['Business Name',    document.querySelector('#intake-s1 input[type="text"]')?.value || '—'],
+        ['Services Offered', document.querySelector('#intake-s1 textarea:nth-of-type(2)')?.value?.slice(0,60) || '—'],
+        ['Lead Sources',     document.querySelector('#intake-s2 textarea')?.value?.slice(0,60) || '—'],
+        ['Qualifies Lead',   document.querySelector('#intake-s3 textarea')?.value?.slice(0,60) || '—'],
+        ['Avg Leads/Month',  document.querySelectorAll('#intake-s4 input[type="number"]')[1]?.value || '—'],
+        ['Follow-Up Channels', document.querySelector('#intake-s5 select:last-of-type')?.value || '—'],
+        ['Agent Tone',       document.querySelector('#intake-s6 select:nth-of-type(2)')?.value || '—'],
+      ];
+      const grid = document.getElementById('intake-review-grid');
+      grid.innerHTML = rows.map(([label, val]) => `
+        <div class="intake-review-item">
+          <span class="intake-review-label">${label}</span>
+          <span class="intake-review-val">${val}</span>
+        </div>`).join('');
+    }
+
+    function saveIntakeData() {
+      const data = {};
+      // Collect all form inputs/textareas/selects inside intake sections 1–7
+      for (let i = 1; i <= 7; i++) {
+        const section = document.getElementById('intake-s' + i);
+        if (!section) continue;
+        section.querySelectorAll('input, textarea, select').forEach((el, idx) => {
+          data[`s${i}_field${idx}`] = el.value;
+        });
+      }
+      data.additionalNotes = document.getElementById('intake-additional-notes')?.value || '';
+      localStorage.setItem('lunoai_intake', JSON.stringify(data));
+    }
+
+    function intakeBack() {
+      if (currentIntakeSection > 1) {
+        currentIntakeSection--;
+        updateIntakeUI();
+        document.getElementById('intake-modal').scrollTop = 0;
+      }
+    }
+
+    // ── AGENT MODAL ──
+    function openAgentModal(agentName) {
+      document.getElementById('agent-modal-name').textContent = agentName;
+      document.getElementById('agent-modal-desc').textContent =
+        { 'Speed to Lead': 'Instant lead response automation', 'Appointment Setter': 'Automated meeting scheduling', 'Reactivation': 'Re-engage dormant leads', 'AI SMS Agent': 'Automated SMS messaging and follow-ups' }[agentName] || '';
+      document.getElementById('agent-modal-about').textContent = agentDescriptions[agentName] || '';
+      document.getElementById('agent-modal').classList.remove('hidden');
+    }
+
+    function closeAgentModal(e) {
+      if (e.target === document.getElementById('agent-modal')) {
+        document.getElementById('agent-modal').classList.add('hidden');
+      }
+    }
+
+    function closeAgentModalDirect() {
+      document.getElementById('agent-modal').classList.add('hidden');
+    }
+
+    // ── MAGNETIC BUTTONS ──
+    document.querySelectorAll('.btn-primary').forEach(btn => {
+      btn.addEventListener('mousemove', e => {
+        const rect = btn.getBoundingClientRect();
+        const dx = e.clientX - (rect.left + rect.width / 2);
+        const dy = e.clientY - (rect.top + rect.height / 2);
+        btn.style.transform = `translateY(-2px) scale(1.03) translate(${dx * 0.22}px, ${dy * 0.22}px)`;
+      });
+      btn.addEventListener('mouseleave', () => {
+        btn.style.transform = '';
+      });
+    });
+
+    // ── INIT ──
+    (function() {
+      const hash = window.location.hash.replace('#', '');
+      const dashPages = ['dashboard','agents','leads','settings'];
+      const user = JSON.parse(localStorage.getItem('lunoai_user') || 'null');
+
+      if (hash === 'intake') {
+        document.getElementById('screen-auth').classList.add('hidden');
+        document.getElementById('dashboard-layout').classList.remove('hidden');
+        navigate('dashboard');
+        if (user) loadUserData();
+        showIntakeModal();
+      } else if (dashPages.includes(hash)) {
+        // Direct deep link — restore session if user exists
+        document.getElementById('screen-auth').classList.add('hidden');
+        document.getElementById('dashboard-layout').classList.remove('hidden');
+        navigate(hash);
+        if (user) loadUserData();
+      } else if (user) {
+        // Auto-restore session for returning user
+        enterDashboard(false);
+      } else {
+        document.getElementById('screen-auth').classList.remove('hidden');
+      }
+      updateIntakeUI();
+    })();
+  </script>
+</body>
+</html>

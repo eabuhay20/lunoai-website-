@@ -4,7 +4,6 @@ temporary screenshots/
 *.docx
 *.pdf
 checkout.html
-dashboard.html
 mdmi.html
 mdmi-ebooks.html
 serve-*.mjs
