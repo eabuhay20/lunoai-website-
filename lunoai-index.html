@@ -1,0 +1,1305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Luno AI — Coaches</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,700&family=Fraunces:ital,opsz,wght@1,9..144,200;1,9..144,300;1,9..144,400;1,9..144,500;1,9..144,600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Plus Jakarta Sans', 'system-ui', '-apple-system', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* ─── TOKENS ─── */
+    :root {
+      --bg:            270 40% 4.5%;
+      --fg:            0 0% 97%;
+      --card:          270 32% 7.5%;
+      --primary:       270 55% 38%;
+      --primary-glow:  270 65% 54%;
+      --primary-hi:    270 72% 70%;
+      --secondary:     270 25% 14%;
+      --muted:         270 20% 11%;
+      --muted-fg:      240 5%  62%;
+      --accent:        270 45% 26%;
+      --border:        270 20% 17%;
+      --radius:        0.8rem;
+
+      --g-primary:     linear-gradient(135deg, hsl(270 55% 38%), hsl(270 65% 54%));
+      --g-card:        linear-gradient(145deg, hsl(270 32% 8%), hsl(270 28% 11%));
+      --shadow-glow:   0 0 40px hsl(270 65% 54% / .18);
+      --shadow-card:   0 8px 40px hsl(270 40% 3% / .55);
+    }
+
+    /* ─── RESET ─── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: rgb(97,44,150) rgb(14,9,20);
+    }
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: rgb(14,9,20); }
+    ::-webkit-scrollbar-thumb {
+      background: linear-gradient(135deg, rgb(97,44,150), rgb(133,53,212));
+      border-radius: 4px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background-color: hsl(var(--bg));
+      color: hsl(var(--fg));
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      font-feature-settings: "cv02","cv03","cv04","cv11";
+      -webkit-font-smoothing: antialiased;
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    /* ─── BACKGROUND ─── */
+    /* Reflect.app style: just large soft glow blobs, no grid */
+    .scene-glow {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+    /* Large central hero bloom */
+    .glow-hero {
+      position: absolute;
+      top: -5%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 900px;
+      height: 700px;
+      background: radial-gradient(ellipse at center,
+        hsl(270 65% 52% / 0.22) 0%,
+        hsl(270 55% 38% / 0.10) 40%,
+        transparent 70%
+      );
+      border-radius: 50%;
+    }
+    /* Subtle bottom/CTA bloom */
+    .glow-cta {
+      position: absolute;
+      bottom: 15%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 700px;
+      height: 500px;
+      background: radial-gradient(ellipse at center,
+        hsl(270 60% 46% / 0.14) 0%,
+        hsl(270 50% 32% / 0.06) 45%,
+        transparent 70%
+      );
+      border-radius: 50%;
+    }
+    /* Faint noise texture like Reflect.app */
+    .glow-noise {
+      position: absolute;
+      inset: 0;
+      opacity: 0.025;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size: 256px 256px;
+    }
+
+    /* ─── CONTENT ─── */
+    .content { position: relative; z-index: 1; }
+
+    /* ─── NAV ─── */
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(28px) saturate(160%);
+      -webkit-backdrop-filter: blur(28px) saturate(160%);
+      background: hsl(270 40% 4.5% / 0.72);
+      border-bottom: 1px solid hsl(var(--border) / 0.6);
+    }
+
+    /* ─── LOGO ─── */
+    .logo-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      text-decoration: none;
+      color: hsl(var(--fg));
+      font-weight: 800;
+      font-size: 1.2rem;
+      letter-spacing: -0.04em;
+    }
+    /* Crescent moon logo mark using SVG */
+    .logo-crescent {
+      filter: drop-shadow(0 0 8px hsl(270 65% 54% / 0.7));
+    }
+
+    /* ─── BUTTONS ─── */
+    .btn-primary {
+      background: linear-gradient(160deg, hsl(270 62% 48%) 0%, hsl(270 55% 36%) 60%, hsl(270 50% 30%) 100%);
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.9375rem;
+      padding: 0.6875rem 1.75rem;
+      border-radius: var(--radius);
+      border: 1px solid hsl(270 65% 60% / 0.35);
+      cursor: pointer;
+      box-shadow:
+        inset 0 1px 0 hsl(270 80% 85% / 0.18),
+        0 0 0 1px hsl(270 55% 30% / 0.5),
+        0 4px 24px hsl(270 55% 38% / 0.45),
+        0 1px 4px hsl(270 40% 20% / 0.6);
+      transition:
+        transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+        box-shadow 0.25s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-decoration: none;
+      white-space: nowrap;
+      letter-spacing: -0.01em;
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px) scale(1.03);
+      box-shadow:
+        inset 0 1px 0 hsl(270 80% 85% / 0.22),
+        0 0 0 1px hsl(270 65% 50% / 0.4),
+        0 0 50px hsl(270 65% 54% / 0.28),
+        0 8px 28px hsl(270 55% 38% / 0.5),
+        0 2px 6px hsl(270 40% 20% / 0.6);
+    }
+    .btn-primary:active { transform: scale(0.97); }
+    .btn-primary:focus-visible { outline: 2px solid hsl(var(--primary-glow)); outline-offset: 3px; }
+
+    .btn-ghost {
+      color: hsl(var(--fg));
+      font-weight: 600;
+      font-size: 0.9375rem;
+      padding: 0.6875rem 1.75rem;
+      border-radius: var(--radius);
+      border: 1px solid hsl(var(--border));
+      cursor: pointer;
+      background: transparent;
+      transition:
+        transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+        background 0.2s ease,
+        border-color 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .btn-ghost:hover {
+      transform: translateY(-2px) scale(1.03);
+      background: hsl(var(--secondary));
+      border-color: hsl(var(--primary) / 0.6);
+    }
+    .btn-ghost:active { transform: scale(0.97); }
+    .btn-ghost:focus-visible { outline: 2px solid hsl(var(--primary-glow)); outline-offset: 3px; }
+
+    /* ─── BADGE ─── */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: hsl(var(--accent) / 0.28);
+      border: 1px solid hsl(var(--primary) / 0.42);
+      color: hsl(var(--primary-glow));
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.3125rem 0.875rem;
+      border-radius: 9999px;
+    }
+    .badge-dot {
+      width: 6px; height: 6px;
+      background: hsl(var(--primary-glow));
+      border-radius: 50%;
+      box-shadow: 0 0 6px hsl(270 65% 54% / 0.9);
+      animation: pulse-dot 2.2s ease-in-out infinite;
+    }
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.7); }
+    }
+
+    /* ─── TYPOGRAPHY ─── */
+    .hero-h1 {
+      font-size: clamp(2.5rem, 5.5vw, 4.5rem);
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      line-height: 1.15;
+    }
+    .serif-italic {
+      font-family: 'Fraunces', Georgia, serif;
+      font-style: italic;
+      font-weight: 300;
+      letter-spacing: 0.01em;
+    }
+    .section-h2 {
+      font-size: clamp(1.75rem, 3.5vw, 2.625rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.2;
+    }
+    .gradient-text {
+      background: var(--g-primary);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* ─── DIVIDER ─── */
+    .shine-line {
+      height: 1px;
+      background: linear-gradient(to right, transparent, hsl(var(--primary) / 0.45), transparent);
+    }
+
+    /* ─── HERO LOGO STAGE ─── */
+    .moon-stage {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 340px;
+      height: 400px;
+      margin: 0 auto;
+    }
+    /* Atmospheric halo */
+    .moon-halo {
+      position: absolute;
+      width: 540px;
+      height: 540px;
+      background: radial-gradient(ellipse at center,
+        hsl(270 65% 52% / 0.40) 0%,
+        hsl(270 58% 44% / 0.18) 32%,
+        hsl(270 50% 36% / 0.07) 56%,
+        transparent 72%
+      );
+      border-radius: 50%;
+      animation: halo-breathe 7s ease-in-out infinite;
+    }
+    @keyframes halo-breathe {
+      0%, 100% { transform: scale(1);    opacity: 1; }
+      50%       { transform: scale(1.08); opacity: 0.8; }
+    }
+    /* Outer orbit ring */
+    .moon-orbit {
+      position: absolute;
+      width: 420px;
+      height: 420px;
+      border-radius: 50%;
+      border: 1px solid hsl(var(--primary) / 0.18);
+      box-shadow: 0 0 18px hsl(270 65% 52% / 0.06) inset;
+      animation: orbit-spin 32s linear infinite;
+    }
+    /* Inner orbit ring */
+    .moon-orbit-inner {
+      position: absolute;
+      width: 310px;
+      height: 310px;
+      border-radius: 50%;
+      border: 1px dashed hsl(var(--primary) / 0.10);
+      animation: orbit-spin 20s linear infinite reverse;
+    }
+    @keyframes orbit-spin {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+    /* Orbiting dot on outer ring */
+    .moon-orbit::before {
+      content: '';
+      position: absolute;
+      width: 7px; height: 7px;
+      background: hsl(var(--primary-glow));
+      border-radius: 50%;
+      box-shadow: 0 0 14px hsl(270 65% 54% / 0.9);
+      top: -3.5px; left: 50%;
+      transform: translateX(-50%);
+    }
+    /* Orbiting dot on inner ring */
+    .moon-orbit-inner::after {
+      content: '';
+      position: absolute;
+      width: 4px; height: 4px;
+      background: hsl(var(--primary-hi));
+      border-radius: 50%;
+      box-shadow: 0 0 8px hsl(270 72% 70% / 0.9);
+      bottom: -2px; left: 30%;
+    }
+    /* The logo image */
+    .moon-svg {
+      position: relative;
+      width: 260px;
+      height: 280px;
+      filter:
+        drop-shadow(0 0 32px hsl(270 65% 52% / 0.65))
+        drop-shadow(0 0 80px hsl(270 60% 44% / 0.30))
+        drop-shadow(0 0 4px hsl(270 72% 70% / 0.4));
+      animation: moon-float 8s ease-in-out infinite;
+      z-index: 1;
+    }
+    @keyframes moon-float {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      33%       { transform: translateY(-10px) rotate(0.5deg); }
+      66%       { transform: translateY(-5px) rotate(-0.5deg); }
+    }
+    /* Pulse ring behind logo */
+    .moon-pulse {
+      position: absolute;
+      width: 260px; height: 260px;
+      border-radius: 50%;
+      border: 1px solid hsl(var(--primary-glow) / 0.22);
+      animation: pulse-ring 4s ease-out infinite;
+    }
+    .moon-pulse-2 {
+      position: absolute;
+      width: 260px; height: 260px;
+      border-radius: 50%;
+      border: 1px solid hsl(var(--primary-glow) / 0.15);
+      animation: pulse-ring 4s ease-out 2s infinite;
+    }
+    @keyframes pulse-ring {
+      0%   { transform: scale(0.85); opacity: 0; }
+      30%  { opacity: 1; }
+      100% { transform: scale(1.55); opacity: 0; }
+    }
+    /* Star particles */
+    .star {
+      position: absolute;
+      border-radius: 50%;
+      background: hsl(0 0% 96%);
+      animation: star-twinkle var(--dur, 3s) ease-in-out var(--delay, 0s) infinite;
+    }
+    @keyframes star-twinkle {
+      0%, 100% { opacity: var(--max-op, 0.7); transform: scale(1); }
+      50%       { opacity: 0.1; transform: scale(0.5); }
+    }
+
+    /* ─── CARDS ─── */
+    .card {
+      background: var(--g-card);
+      border: 1px solid hsl(var(--border));
+      border-radius: calc(var(--radius) * 1.6);
+      box-shadow: var(--shadow-card);
+    }
+    .card-accent {
+      background: linear-gradient(145deg, hsl(var(--accent) / 0.22), hsl(var(--primary) / 0.10));
+      border: 1px solid hsl(var(--primary) / 0.32);
+      border-radius: calc(var(--radius) * 1.6);
+      box-shadow: 0 0 50px hsl(270 65% 52% / 0.07), var(--shadow-card);
+    }
+
+    /* ─── STEP NUMBERS ─── */
+    .step-num {
+      width: 2.75rem;
+      height: 2.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--g-primary);
+      border-radius: 50%;
+      font-weight: 800;
+      font-size: 0.9375rem;
+      color: #fff;
+      flex-shrink: 0;
+      box-shadow: 0 0 24px hsl(270 65% 52% / 0.45), 0 4px 12px hsl(270 55% 38% / 0.45);
+      position: relative;
+      z-index: 1;
+    }
+    .step-tail {
+      width: 2px;
+      flex: 1;
+      min-height: 3rem;
+      background: linear-gradient(to bottom, hsl(var(--primary) / 0.55), hsl(var(--primary) / 0.08));
+      margin: 0.4rem auto;
+    }
+
+    /* ─── THE SHIFT ─── */
+    .panel-before {
+      background: hsl(var(--muted));
+      border: 1px solid hsl(var(--border));
+      border-radius: calc(var(--radius) * 1.6);
+    }
+    .panel-after {
+      background: linear-gradient(145deg, hsl(var(--accent) / 0.2), hsl(var(--primary) / 0.1));
+      border: 1px solid hsl(var(--primary) / 0.38);
+      border-radius: calc(var(--radius) * 1.6);
+      box-shadow: 0 0 60px hsl(270 65% 52% / 0.08);
+    }
+
+    /* ─── CTA BLOCK (Reflect-style) ─── */
+    .cta-block {
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(145deg, hsl(var(--accent) / 0.18), hsl(var(--primary) / 0.08));
+      border: 1px solid hsl(var(--primary) / 0.2);
+      border-radius: calc(var(--radius) * 2.2);
+    }
+    .cta-bloom {
+      position: absolute;
+      bottom: -50%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 70%;
+      height: 120%;
+      background: radial-gradient(ellipse at center,
+        hsl(270 65% 52% / 0.18) 0%,
+        transparent 65%
+      );
+      pointer-events: none;
+    }
+
+    /* ─── EXPECT LIST ─── */
+    .expect-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.875rem;
+      padding: 1rem 1.125rem;
+      border-radius: var(--radius);
+      transition: background 0.2s ease;
+    }
+    .expect-row:hover { background: hsl(var(--secondary)); }
+    .expect-bullet {
+      width: 7px; height: 7px;
+      background: hsl(var(--primary-glow));
+      border-radius: 50%;
+      flex-shrink: 0;
+      margin-top: 0.5rem;
+      box-shadow: 0 0 8px hsl(270 65% 54% / 0.65);
+    }
+
+    /* ─── DAYS PILL ─── */
+    .days-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      background: hsl(var(--muted));
+      border: 1px solid hsl(var(--border));
+      border-radius: 9999px;
+      padding: 0.375rem 1.125rem;
+      font-size: 0.9375rem;
+      font-weight: 500;
+      color: hsl(var(--muted-fg));
+    }
+    .days-num {
+      font-weight: 800;
+      font-size: 1.125rem;
+      color: hsl(var(--primary-glow));
+    }
+
+    /* ─── GETTING STARTED CARDS ─── */
+    .gs-card {
+      background: var(--g-card);
+      border: 1px solid hsl(var(--border));
+      border-radius: calc(var(--radius) * 1.6);
+      box-shadow: var(--shadow-card);
+      padding: 1.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      transition: border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+    .gs-card:hover {
+      border-color: hsl(var(--primary) / 0.45);
+      box-shadow: 0 0 40px hsl(270 65% 52% / 0.08), var(--shadow-card);
+    }
+    .gs-num {
+      font-size: 2.5rem;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 1;
+      background: var(--g-primary);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* ─── FAQ ACCORDION ─── */
+    .faq-item {
+      border-bottom: 1px solid hsl(var(--border));
+    }
+    .faq-item:first-child { border-top: 1px solid hsl(var(--border)); }
+    .faq-trigger {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 1.375rem 0;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: hsl(var(--fg));
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      text-align: left;
+      transition: color 0.2s ease;
+    }
+    .faq-trigger:hover { color: hsl(var(--primary-glow)); }
+    .faq-trigger:focus-visible { outline: 2px solid hsl(var(--primary-glow)); outline-offset: 3px; border-radius: 4px; }
+    .faq-icon {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 1px solid hsl(var(--border));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: border-color 0.2s ease, transform 0.3s cubic-bezier(0.34,1.56,0.64,1), background 0.2s ease;
+    }
+    .faq-trigger[aria-expanded="true"] .faq-icon {
+      border-color: hsl(var(--primary-glow));
+      background: hsl(var(--primary) / 0.2);
+      transform: rotate(45deg);
+    }
+    .faq-body {
+      overflow: hidden;
+      max-height: 0;
+      transition: max-height 0.38s cubic-bezier(0.4,0,0.2,1);
+    }
+    .faq-body.open { max-height: 300px; }
+    .faq-answer {
+      padding-bottom: 1.25rem;
+      color: hsl(var(--muted-fg));
+      font-size: 0.9375rem;
+      line-height: 1.75;
+    }
+
+    /* ─── FADE-IN SCROLL ─── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition:
+        opacity 0.7s ease,
+        transform 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .reveal.in { opacity: 1; transform: translateY(0); }
+
+    /* ─── FLOATING PARTICLES ─── */
+    .particles {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+    .particle {
+      position: absolute;
+      border-radius: 50%;
+      background: hsl(var(--primary-glow));
+      animation: particle-rise var(--rise-dur, 12s) linear var(--rise-delay, 0s) infinite;
+      opacity: 0;
+    }
+    @keyframes particle-rise {
+      0%   { transform: translateY(0) translateX(0) scale(0.3); opacity: 0; }
+      8%   { opacity: var(--max-op, 0.5); }
+      80%  { opacity: var(--max-op, 0.5); }
+      100% { transform: translateY(-110vh) translateX(var(--drift, 40px)) scale(0.8); opacity: 0; }
+    }
+
+    /* ─── STEP NUMBER PULSE ─── */
+    .step-num {
+      animation: step-pulse 3s ease-in-out infinite;
+    }
+    @keyframes step-pulse {
+      0%, 100% { box-shadow: 0 0 24px hsl(270 65% 52% / 0.45), 0 4px 12px hsl(270 55% 38% / 0.45); }
+      50%       { box-shadow: 0 0 42px hsl(270 65% 52% / 0.75), 0 4px 20px hsl(270 55% 38% / 0.6); }
+    }
+
+    /* ─── SHIMMER ON CARDS ─── */
+    .card, .gs-card, .panel-before, .panel-after {
+      position: relative;
+      overflow: hidden;
+    }
+    .card::after, .gs-card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        105deg,
+        transparent 30%,
+        hsl(270 70% 70% / 0.07) 50%,
+        transparent 70%
+      );
+      transform: translateX(-100%);
+      transition: transform 0.6s ease;
+      pointer-events: none;
+    }
+    .card:hover::after, .gs-card:hover::after {
+      transform: translateX(100%);
+    }
+
+    /* ─── ANIMATED GRADIENT BORDER (steps cards) ─── */
+    .step-card-wrap {
+      position: relative;
+    }
+    .step-card-wrap::before {
+      content: '';
+      position: absolute;
+      inset: -1px;
+      border-radius: calc(var(--radius) * 1.6 + 1px);
+      background: conic-gradient(
+        from var(--border-angle, 0deg),
+        transparent 70%,
+        hsl(270 65% 54% / 0.55) 85%,
+        transparent 95%
+      );
+      opacity: 0;
+      transition: opacity 0.4s ease;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .step-card-wrap:hover::before {
+      opacity: 1;
+    }
+    .step-card-wrap .card {
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ─── GLOW SCAN LINE (hero section) ─── */
+    .scan-line {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(to right, transparent, hsl(270 65% 54% / 0.6), transparent);
+      animation: scan-move 4s ease-in-out infinite;
+      pointer-events: none;
+      z-index: 2;
+      border-radius: 2px;
+    }
+    @keyframes scan-move {
+      0%, 100% { top: 10%; opacity: 0; }
+      10%       { opacity: 1; }
+      90%       { opacity: 1; }
+      100%      { top: 90%; opacity: 0; }
+    }
+
+    /* ─── MAGNETIC BUTTON ─── */
+    .btn-primary, .btn-ghost {
+      will-change: transform;
+    }
+
+    /* ─── STEP TAIL FLOW ─── */
+    .step-tail {
+      position: relative;
+      overflow: hidden;
+    }
+    .step-tail::after {
+      content: '';
+      position: absolute;
+      top: -20%;
+      left: 0; right: 0;
+      height: 40%;
+      background: hsl(var(--primary-glow) / 0.6);
+      border-radius: 2px;
+      animation: tail-flow 2s ease-in-out infinite;
+    }
+    @keyframes tail-flow {
+      0%   { top: -40%; opacity: 0; }
+      20%  { opacity: 1; }
+      80%  { opacity: 0.7; }
+      100% { top: 130%; opacity: 0; }
+    }
+
+    /* ─── COUNTER ANIMATION ─── */
+    .days-num.counting {
+      animation: count-up 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    @keyframes count-up {
+      from { transform: translateY(10px) scale(0.8); opacity: 0; }
+      to   { transform: translateY(0) scale(1); opacity: 1; }
+    }
+
+    /* ─── BEFORE/AFTER STAGGER ─── */
+    .shift-item {
+      opacity: 0;
+      transform: translateX(var(--slide-x, -20px));
+      transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .shift-item.in {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    /* ─── CTA BLOCK AURORA ─── */
+    .cta-aurora {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 60%, hsl(270 65% 52% / 0.12) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 80% at 80% 30%, hsl(290 60% 48% / 0.10) 0%, transparent 60%);
+      animation: aurora-shift 8s ease-in-out infinite alternate;
+      pointer-events: none;
+    }
+    @keyframes aurora-shift {
+      from { opacity: 0.7; filter: hue-rotate(0deg); }
+      to   { opacity: 1;   filter: hue-rotate(15deg); }
+    }
+
+    /* ─── LOGO HOVER GLOW ─── */
+    .logo-crescent {
+      transition: filter 0.3s ease, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .logo-link:hover .logo-crescent {
+      filter: drop-shadow(0 0 14px hsl(270 65% 54% / 0.9)) drop-shadow(0 0 30px hsl(270 60% 44% / 0.5));
+      transform: scale(1.06) rotate(-3deg);
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══ FLOATING PARTICLES ═══ -->
+<div class="particles" aria-hidden="true" id="particles"></div>
+
+<!-- ═══ ATMOSPHERIC BACKGROUND ═══ -->
+<div class="scene-glow" aria-hidden="true">
+  <div class="glow-hero"></div>
+  <div class="glow-cta"></div>
+  <div class="glow-noise"></div>
+</div>
+
+<div class="content">
+
+  <!-- ══════════════════════════════════════
+       NAV
+  ══════════════════════════════════════ -->
+  <nav class="nav">
+    <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+
+      <!-- Luno AI logo -->
+      <a href="#" class="logo-link">
+        <svg class="logo-crescent" width="30" height="30" viewBox="47 47 80 80" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <defs>
+            <radialGradient id="navMoonFill" cx="38%" cy="44%" r="80%" gradientUnits="userSpaceOnUse" x1="47" y1="47" x2="127" y2="127">
+              <stop offset="0%"   stop-color="#3a1870"/>
+              <stop offset="60%"  stop-color="#1a0840"/>
+              <stop offset="100%" stop-color="#0a0220"/>
+            </radialGradient>
+            <filter id="navRimGlow" x="-40%" y="-40%" width="180%" height="180%">
+              <feGaussianBlur stdDeviation="2.5" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+            <filter id="navBloom" x="-80%" y="-80%" width="360%" height="360%">
+              <feGaussianBlur stdDeviation="14"/>
+            </filter>
+          </defs>
+          <path d="M 124,52 A 38,38 0 1,0 124,118 A 30,30 0 1,1 124,52 Z" fill="#6622cc" opacity="0.55" filter="url(#navBloom)"/>
+          <path d="M 124,52 A 38,38 0 1,0 124,118 A 30,30 0 1,1 124,52 Z" fill="url(#navMoonFill)"/>
+          <path d="M 124,52 A 38,38 0 1,0 124,118 A 30,30 0 1,1 124,52 Z" fill="none" stroke="#d4aaff" stroke-width="1.4" opacity="0.92" filter="url(#navRimGlow)"/>
+        </svg>
+        <span style="word-spacing:-0.12em;"><span style="font-weight:300;color:#c890ff;letter-spacing:0.06em;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:1.1rem;">Luno </span><span style="font-weight:500;color:#d8aaff;letter-spacing:0.18em;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:1.1rem;">AI</span></span>
+      </a>
+
+      <a href="#cta" class="btn-primary text-sm" data-cal-link="eyu-abuhay-ys8yw6/luno-ai" data-cal-namespace="lunoai" data-cal-config='{"layout":"month_view"}'>Schedule Your Discovery Call</a>
+    </div>
+  </nav>
+
+
+  <!-- ══════════════════════════════════════
+       HERO  (Linear.app sphere → crescent moon)
+  ══════════════════════════════════════ -->
+  <section class="max-w-6xl mx-auto px-6 pt-20 pb-24 text-center" style="position:relative;">
+    <div class="scan-line" aria-hidden="true"></div>
+
+    <!-- ── MOON CENTERPIECE ── -->
+    <div class="moon-stage reveal" style="transition-delay: 0s;">
+
+      <!-- atmospheric halo -->
+      <div class="moon-halo" aria-hidden="true"></div>
+
+      <!-- pulse rings -->
+      <div class="moon-pulse" aria-hidden="true"></div>
+      <div class="moon-pulse-2" aria-hidden="true"></div>
+
+      <!-- outer orbit ring -->
+      <div class="moon-orbit" aria-hidden="true"></div>
+      <!-- inner orbit ring -->
+      <div class="moon-orbit-inner" aria-hidden="true"></div>
+
+      <!-- star particles -->
+      <div class="star" style="width:3px;height:3px;top:10%;left:16%;--dur:2.8s;--delay:0s;--max-op:0.8;"></div>
+      <div class="star" style="width:2px;height:2px;top:18%;right:18%;--dur:3.5s;--delay:0.6s;--max-op:0.6;"></div>
+      <div class="star" style="width:2px;height:2px;bottom:14%;left:22%;--dur:4s;--delay:1.2s;--max-op:0.7;"></div>
+      <div class="star" style="width:3px;height:3px;bottom:20%;right:14%;--dur:2.4s;--delay:0.3s;--max-op:0.9;"></div>
+      <div class="star" style="width:2px;height:2px;top:42%;left:5%;--dur:3.1s;--delay:1.8s;--max-op:0.5;"></div>
+      <div class="star" style="width:2px;height:2px;top:8%;right:8%;--dur:3.8s;--delay:0.9s;--max-op:0.65;"></div>
+      <div class="star" style="width:2px;height:2px;top:55%;right:6%;--dur:2.6s;--delay:1.4s;--max-op:0.55;"></div>
+      <div class="star" style="width:3px;height:3px;top:30%;left:4%;--dur:4.2s;--delay:0.5s;--max-op:0.7;"></div>
+
+      <!-- ── THE LOGO (hero centerpiece) ── -->
+      <img src="reference-images/lunoai-logo-v2.svg" class="moon-svg" alt="Luno AI">
+
+    </div>
+    <!-- /moon-stage -->
+
+    <!-- ── TEXT BELOW THE MOON (like Linear.app) ── -->
+    <div class="mt-10 reveal" style="transition-delay:0.1s;">
+      <span class="badge">
+        <span class="badge-dot"></span>
+        Coaches
+      </span>
+    </div>
+
+    <h1 class="hero-h1 mt-6 mb-6 max-w-5xl mx-auto reveal" style="transition-delay:0.18s;">
+      Become the Coach<br>
+      with a <span class="gradient-text serif-italic" style="font-size:1.08em;">Full Calendar</span><br>
+      from <span class="gradient-text serif-italic" style="font-size:1.08em;">0</span> Missed Calls
+    </h1>
+
+    <div class="flex justify-center mb-10 reveal" style="transition-delay:0.25s;">
+      <span class="days-pill">
+        Results in&nbsp;<span class="days-num">14</span>&nbsp;days
+      </span>
+    </div>
+
+    <div class="flex flex-col sm:flex-row gap-4 justify-center items-center reveal" style="transition-delay:0.32s;">
+      <a href="#cta" class="btn-primary" data-cal-link="eyu-abuhay-ys8yw6/luno-ai" data-cal-namespace="lunoai" data-cal-config='{"layout":"month_view"}'>
+        Schedule Your Discovery Call
+      </a>
+      <a href="#steps" class="btn-ghost">
+        Check it Out
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M3 8h10m-4.5-4.5 4.5 4.5-4.5 4.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </a>
+    </div>
+  </section>
+
+
+  <div class="shine-line max-w-5xl mx-auto"></div>
+
+
+  <!-- ══════════════════════════════════════
+       STEPS
+  ══════════════════════════════════════ -->
+  <section id="steps" class="max-w-6xl mx-auto px-6 py-28">
+
+    <div class="text-center mb-20 reveal">
+      <h2 class="section-h2 mb-4">Getting started is <span class="gradient-text serif-italic">simple.</span></h2>
+      <p class="text-base max-w-md mx-auto" style="color:hsl(var(--muted-fg));">
+        Three steps. Zero technical knowledge required. Your calendar starts filling in 14 days.
+      </p>
+    </div>
+
+    <div class="max-w-2xl mx-auto">
+
+      <!-- Step 1 -->
+      <div class="flex gap-6 reveal">
+        <div class="flex flex-col items-center pt-6">
+          <div class="step-num">1</div>
+          <div class="step-tail"></div>
+        </div>
+        <div class="step-card-wrap flex-1 mb-5"><div class="card p-7">
+          <h3 class="font-bold text-lg mb-2" style="letter-spacing:-0.025em;">Intro Call</h3>
+          <p style="color:hsl(var(--muted-fg));font-size:0.9375rem;line-height:1.7;">
+            We get on a call to understand your current operations, offer, and goals. We map out exactly what your calendar should look like — and set the outcome we'll hit in 14 days.
+          </p>
+        </div></div></div>
+
+      <!-- Step 2 -->
+      <div class="flex gap-6 reveal" style="transition-delay:0.09s;">
+        <div class="flex flex-col items-center pt-6">
+          <div class="step-num">2</div>
+          <div class="step-tail"></div>
+        </div>
+        <div class="step-card-wrap flex-1 mb-5"><div class="card p-7">
+          <h3 class="font-bold text-lg mb-2" style="letter-spacing:-0.025em;">Process Overview</h3>
+          <p style="color:hsl(var(--muted-fg));font-size:0.9375rem;line-height:1.7;">
+            We walk you through our proven follow-up and booking system — the exact workflows that convert leads into booked calls automatically, without manual effort on your end.
+          </p>
+        </div></div></div>
+
+      <!-- Step 3 -->
+      <div class="flex gap-6 reveal" style="transition-delay:0.18s;">
+        <div class="flex flex-col items-center pt-6">
+          <div class="step-num">3</div>
+        </div>
+        <div class="step-card-wrap flex-1"><div class="card p-7">
+          <h3 class="font-bold text-lg mb-2" style="letter-spacing:-0.025em;">Setup and Launch</h3>
+          <p style="color:hsl(var(--muted-fg));font-size:0.9375rem;line-height:1.7;">
+            We handle the full build-out. Your AI-powered booking system goes live and starts filling your calendar — you focus on closing, we handle everything else.
+          </p>
+        </div></div></div>
+
+    </div>
+  </section>
+
+
+  <div class="shine-line max-w-5xl mx-auto"></div>
+
+
+  <!-- ══════════════════════════════════════
+       THE SHIFT
+  ══════════════════════════════════════ -->
+  <section class="max-w-6xl mx-auto px-6 py-28">
+
+    <div class="text-center mb-16 reveal">
+      <h2 class="section-h2 mb-4">The <span class="serif-italic" style="color:hsl(var(--primary-hi));">Shift</span></h2>
+      <p style="color:hsl(var(--muted-fg));max-width:420px;margin:0 auto;font-size:0.9375rem;">
+        Here's what changes the moment you work with Luno AI.
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-5 reveal">
+
+      <!-- Before -->
+      <div class="panel-before p-8 md:p-10">
+        <div class="flex items-center gap-3 mb-7">
+          <span class="text-xs font-black uppercase tracking-widest" style="color:hsl(0 0% 38%);">Before</span>
+          <div style="flex:1;height:1px;background:hsl(var(--border));"></div>
+        </div>
+        <ul class="space-y-5">
+          <li class="flex items-start gap-3 shift-item" style="--slide-x:-24px;transition-delay:0.05s;">
+            <span style="color:hsl(0 55% 52%);font-weight:700;margin-top:2px;">✕</span>
+            <span style="color:hsl(0 0% 58%);font-size:0.9375rem;">Chasing leads manually with no follow-up system</span>
+          </li>
+          <li class="flex items-start gap-3 shift-item" style="--slide-x:-24px;transition-delay:0.12s;">
+            <span style="color:hsl(0 55% 52%);font-weight:700;margin-top:2px;">✕</span>
+            <span style="color:hsl(0 0% 58%);font-size:0.9375rem;">Missed calls turning directly into missed revenue</span>
+          </li>
+          <li class="flex items-start gap-3 shift-item" style="--slide-x:-24px;transition-delay:0.19s;">
+            <span style="color:hsl(0 55% 52%);font-weight:700;margin-top:2px;">✕</span>
+            <span style="color:hsl(0 0% 58%);font-size:0.9375rem;">Unpredictable calendar — feast or famine cycles</span>
+          </li>
+          <li class="flex items-start gap-3 shift-item" style="--slide-x:-24px;transition-delay:0.26s;">
+            <span style="color:hsl(0 55% 52%);font-weight:700;margin-top:2px;">✕</span>
+            <span style="color:hsl(0 0% 58%);font-size:0.9375rem;">No-shows eating your time with zero reminders</span>
+          </li>
+          <li class="flex items-start gap-3 shift-item" style="--slide-x:-24px;transition-delay:0.33s;">
+            <span style="color:hsl(0 55% 52%);font-weight:700;margin-top:2px;">✕</span>
+            <span style="color:hsl(0 0% 58%);font-size:0.9375rem;">Hours lost on admin instead of closing deals</span>
+          </li>
+        </ul>
+      </div>
+
+      <!-- After -->
+      <div class="panel-after p-8 md:p-10">
+        <div class="flex items-center gap-3 mb-7">
+          <span class="text-xs font-black uppercase tracking-widest" style="color:hsl(var(--primary-glow));">After</span>
+          <div style="flex:1;height:1px;background:hsl(var(--primary)/0.32);"></div>
+        </div>
+        <ul class="space-y-5">
+          <li class="flex items-start gap-3 shift-item" style="--slide-x:24px;transition-delay:0.08s;">
+            <span class="gradient-text" style="font-weight:700;margin-top:2px;">✓</span>
+            <span style="font-size:0.9375rem;">AI-powered follow-up that books calls while you sleep</span>
+          </li>
+          <li class="flex items-start gap-3 shift-item" style="--slide-x:24px;transition-delay:0.15s;">
+            <span class="gradient-text" style="font-weight:700;margin-top:2px;">✓</span>
+            <span style="font-size:0.9375rem;">Zero missed calls — every lead gets an instant response</span>
+          </li>
+          <li class="flex items-start gap-3 shift-item" style="--slide-x:24px;transition-delay:0.22s;">
+            <span class="gradient-text" style="font-weight:700;margin-top:2px;">✓</span>
+            <span style="font-size:0.9375rem;">Fully packed calendar with qualified solar appointments</span>
+          </li>
+          <li class="flex items-start gap-3 shift-item" style="--slide-x:24px;transition-delay:0.29s;">
+            <span class="gradient-text" style="font-weight:700;margin-top:2px;">✓</span>
+            <span style="font-size:0.9375rem;">Automated reminders slashing no-shows by up to 80%</span>
+          </li>
+          <li class="flex items-start gap-3 shift-item" style="--slide-x:24px;transition-delay:0.36s;">
+            <span class="gradient-text" style="font-weight:700;margin-top:2px;">✓</span>
+            <span style="font-size:0.9375rem;">Your time freed for high-value conversations only</span>
+          </li>
+        </ul>
+      </div>
+
+    </div>
+  </section>
+
+
+  <div class="shine-line max-w-5xl mx-auto"></div>
+
+
+  <!-- ══════════════════════════════════════
+       CTA BLOCK (Reflect.app style)
+  ══════════════════════════════════════ -->
+  <section id="cta" class="max-w-6xl mx-auto px-6 py-28">
+    <div class="cta-block p-8 md:p-14 reveal">
+      <div class="cta-bloom" aria-hidden="true"></div>
+      <div class="cta-aurora" aria-hidden="true"></div>
+      <div class="relative z-10">
+
+        <!-- Header -->
+        <div class="text-center mb-10">
+          <div class="mb-5">
+            <span class="badge">
+              <span class="badge-dot"></span>
+              Limited Spots Available
+            </span>
+          </div>
+          <h2 class="section-h2 mb-4 max-w-xl mx-auto">
+            Book Your <span class="serif-italic gradient-text">Free</span><br>Consultation Call
+          </h2>
+          <p class="max-w-lg mx-auto text-base" style="color:hsl(var(--muted-fg));">
+            30 minutes. No sales pitch. We'll review your business and show you exactly where AI can fill your calendar — starting this week.
+          </p>
+        </div>
+
+        <!-- Cal.com inline embed -->
+        <div id="cal-inline" style="
+          width:100%;
+          min-height:600px;
+          border-radius:1rem;
+          overflow:hidden;
+          background:hsl(270 32% 7.5% / 0.6);
+          border:1px solid hsl(270 20% 17% / 0.8);
+        "></div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <div class="shine-line max-w-5xl mx-auto"></div>
+
+
+  <!-- ══════════════════════════════════════
+       EVERYTHING YOU NEED TO KNOW (FAQ)
+  ══════════════════════════════════════ -->
+  <section class="max-w-6xl mx-auto px-6 py-28">
+
+    <div class="text-center mb-16 reveal">
+      <h2 class="section-h2 mb-4">Everything you need <span class="serif-italic" style="color:hsl(var(--primary-hi));">to know.</span></h2>
+      <p style="color:hsl(var(--muted-fg));max-width:400px;margin:0 auto;font-size:0.9375rem;">
+        Answers to the questions coaches ask us most.
+      </p>
+    </div>
+
+    <div class="max-w-2xl mx-auto reveal">
+
+      <div class="faq-item">
+        <button class="faq-trigger" aria-expanded="false" onclick="toggleFaq(this)">
+          <span>How quickly will I start seeing results?</span>
+          <span class="faq-icon" aria-hidden="true">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M5 1v8M1 5h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </span>
+        </button>
+        <div class="faq-body">
+          <p class="faq-answer">Most coaches see booked calls within the first week of going live. The full system typically reaches peak performance around day 14, which is why we target a full calendar in 14 days.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-trigger" aria-expanded="false" onclick="toggleFaq(this)">
+          <span>Do I need any technical knowledge?</span>
+          <span class="faq-icon" aria-hidden="true">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M5 1v8M1 5h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </span>
+        </button>
+        <div class="faq-body">
+          <p class="faq-answer">Zero. We handle the entire build, setup, and launch. All you do is show up to the intro call, review the system, and start closing the appointments that land on your calendar.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-trigger" aria-expanded="false" onclick="toggleFaq(this)">
+          <span>What makes Luno AI different from other booking tools?</span>
+          <span class="faq-icon" aria-hidden="true">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M5 1v8M1 5h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </span>
+        </button>
+        <div class="faq-body">
+          <p class="faq-answer">Most booking tools just give you a link. Luno AI is a done-for-you follow-up and nurture system — it actively chases leads, sends reminders, and re-engages no-shows so no opportunity goes cold.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-trigger" aria-expanded="false" onclick="toggleFaq(this)">
+          <span>What happens if a lead doesn't book on the first follow-up?</span>
+          <span class="faq-icon" aria-hidden="true">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M5 1v8M1 5h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </span>
+        </button>
+        <div class="faq-body">
+          <p class="faq-answer">Your system runs multi-step sequences — if a lead doesn't respond immediately, it follows up again at the right intervals with the right messaging until they either book or opt out.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-trigger" aria-expanded="false" onclick="toggleFaq(this)">
+          <span>Is there a long-term contract?</span>
+          <span class="faq-icon" aria-hidden="true">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M5 1v8M1 5h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </span>
+        </button>
+        <div class="faq-body">
+          <p class="faq-answer">No long-term contracts. We work with coaches who are serious about filling their calendar, and we're confident you'll want to stay once you see your calendar filling up in the first two weeks.</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════
+       FOOTER
+  ══════════════════════════════════════ -->
+  <footer style="border-top:1px solid hsl(var(--border));padding:2rem 1.5rem;color:hsl(var(--muted-fg));font-size:0.875rem;">
+    <div class="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+
+      <a href="#" class="logo-link">
+        <svg class="logo-crescent" width="24" height="24" viewBox="47 47 80 80" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <defs>
+            <radialGradient id="ftMoonFill" cx="38%" cy="44%" r="80%">
+              <stop offset="0%"   stop-color="#3a1870"/>
+              <stop offset="60%"  stop-color="#1a0840"/>
+              <stop offset="100%" stop-color="#0a0220"/>
+            </radialGradient>
+            <filter id="ftRimGlow" x="-40%" y="-40%" width="180%" height="180%">
+              <feGaussianBlur stdDeviation="2" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+            <filter id="ftBloom" x="-80%" y="-80%" width="360%" height="360%">
+              <feGaussianBlur stdDeviation="12"/>
+            </filter>
+          </defs>
+          <path d="M 124,52 A 38,38 0 1,0 124,118 A 30,30 0 1,1 124,52 Z" fill="#6622cc" opacity="0.5" filter="url(#ftBloom)"/>
+          <path d="M 124,52 A 38,38 0 1,0 124,118 A 30,30 0 1,1 124,52 Z" fill="url(#ftMoonFill)"/>
+          <path d="M 124,52 A 38,38 0 1,0 124,118 A 30,30 0 1,1 124,52 Z" fill="none" stroke="#d4aaff" stroke-width="1.4" opacity="0.92" filter="url(#ftRimGlow)"/>
+        </svg>
+        <span style="word-spacing:-0.12em;"><span style="font-weight:300;color:#c890ff;letter-spacing:0.06em;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:0.95rem;">Luno </span><span style="font-weight:500;color:#d8aaff;letter-spacing:0.18em;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:0.95rem;">AI</span></span>
+      </a>
+
+      <span>© 2025 Luno AI. All rights reserved.</span>
+    </div>
+  </footer>
+
+</div><!-- /content -->
+
+<script>
+  // ─── REVEAL ON SCROLL ───
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+    });
+  }, { threshold: 0.07, rootMargin: '0px 0px -24px 0px' });
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+  // ─── SHIFT ITEMS (before/after stagger) ───
+  const shiftIo = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('in'); shiftIo.unobserve(e.target); }
+    });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.shift-item').forEach(el => shiftIo.observe(el));
+
+  // ─── FAQ ACCORDION ───
+  function toggleFaq(btn) {
+    const expanded = btn.getAttribute('aria-expanded') === 'true';
+    document.querySelectorAll('.faq-trigger').forEach(b => {
+      b.setAttribute('aria-expanded', 'false');
+      b.nextElementSibling.classList.remove('open');
+    });
+    if (!expanded) {
+      btn.setAttribute('aria-expanded', 'true');
+      btn.nextElementSibling.classList.add('open');
+    }
+  }
+
+  // ─── FLOATING PARTICLES ───
+  (function spawnParticles() {
+    const container = document.getElementById('particles');
+    if (!container) return;
+    const count = 22;
+    for (let i = 0; i < count; i++) {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      const size = Math.random() * 3 + 1.5;
+      const left = Math.random() * 100;
+      const dur  = Math.random() * 14 + 10;
+      const delay = Math.random() * 18;
+      const drift = (Math.random() - 0.5) * 120;
+      const op = (Math.random() * 0.3 + 0.15).toFixed(2);
+      p.style.cssText = `
+        width:${size}px;height:${size}px;
+        left:${left}%;bottom:-4%;
+        --rise-dur:${dur}s;--rise-delay:${delay}s;
+        --drift:${drift}px;--max-op:${op};
+        box-shadow:0 0 ${size * 3}px hsl(270 65% 54% / 0.7);
+      `;
+      container.appendChild(p);
+    }
+  })();
+
+  // ─── MAGNETIC BUTTONS ───
+  document.querySelectorAll('.btn-primary, .btn-ghost').forEach(btn => {
+    btn.addEventListener('mousemove', (e) => {
+      const rect = btn.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top  + rect.height / 2;
+      const dx = (e.clientX - cx) * 0.22;
+      const dy = (e.clientY - cy) * 0.22;
+      btn.style.transform = `translate(${dx}px, ${dy}px)`;
+    });
+    btn.addEventListener('mouseleave', () => {
+      btn.style.transform = '';
+    });
+  });
+
+  // ─── CONIC BORDER ANGLE ANIMATION ───
+  let angle = 0;
+  function rotateBorders() {
+    angle = (angle + 0.8) % 360;
+    document.querySelectorAll('.step-card-wrap').forEach(el => {
+      el.style.setProperty('--border-angle', angle + 'deg');
+    });
+    requestAnimationFrame(rotateBorders);
+  }
+  rotateBorders();
+
+  // ─── CAL.COM INIT ───
+  (function (C, A, L) {
+    let p = function (a, ar) { a.q.push(ar); };
+    let d = C.document;
+    C.Cal = C.Cal || function () {
+      let cal = C.Cal; let ar = arguments;
+      if (!cal.loaded) {
+        cal.ns = {}; cal.q = cal.q || [];
+        d.head.appendChild(d.createElement("script")).src = A;
+        cal.loaded = true;
+      }
+      if (ar[0] === L) {
+        const api = function () { p(api, arguments); };
+        const namespace = ar[1];
+        api.q = api.q || [];
+        typeof namespace === "string" ? (cal.ns[namespace] = api) && p(api, ar) : p(cal, ar);
+        return;
+      }
+      p(cal, ar);
+    };
+  })(window, "https://app.cal.com/embed/embed.js", "init");
+
+  Cal("init", "lunoai", { origin: "https://cal.com" });
+
+  // Inline calendar in CTA section
+  Cal.ns.lunoai("inline", {
+    elementOrSelector: "#cal-inline",
+    calLink: "eyu-abuhay-ys8yw6/luno-ai",
+    layout: "month_view",
+  });
+
+  Cal.ns.lunoai("ui", {
+    styles: { branding: { brandColor: "#7c3aed" } },
+    hideEventTypeDetails: false,
+    layout: "month_view",
+  });
+</script>
+
+</body>
+</html>

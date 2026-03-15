@@ -1,0 +1,14 @@
+node_modules/
+.DS_Store
+temporary screenshots/
+*.docx
+*.pdf
+checkout.html
+dashboard.html
+mdmi.html
+mdmi-ebooks.html
+serve-*.mjs
+screenshot.mjs
+package.json
+package-lock.json
+.env

@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 215" width="200" height="215">
+  <defs>
+
+    <radialGradient id="moonFill" cx="38%" cy="44%" r="80%" gradientUnits="objectBoundingBox">
+      <stop offset="0%"   stop-color="#3a1870"/>
+      <stop offset="60%"  stop-color="#1a0840"/>
+      <stop offset="100%" stop-color="#0a0220"/>
+    </radialGradient>
+
+    <filter id="moonBloom" x="-120%" y="-120%" width="340%" height="340%">
+      <feGaussianBlur stdDeviation="22"/>
+    </filter>
+
+    <filter id="moonMid" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="9"/>
+    </filter>
+
+    <filter id="rimGlow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="3.5" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <filter id="textGlow" x="-20%" y="-80%" width="140%" height="260%">
+      <feGaussianBlur stdDeviation="5" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+  </defs>
+
+  <!-- ── CRESCENT AMBIENT GLOW ── -->
+  <path d="M 124,52 A 38,38 0 1,0 124,118 A 30,30 0 1,1 124,52 Z"
+    fill="#6622cc" opacity="0.5" filter="url(#moonBloom)"/>
+  <path d="M 124,52 A 38,38 0 1,0 124,118 A 30,30 0 1,1 124,52 Z"
+    fill="#8833ee" opacity="0.25" filter="url(#moonMid)"/>
+
+  <!-- ── CRESCENT BODY ── -->
+  <path d="M 124,52 A 38,38 0 1,0 124,118 A 30,30 0 1,1 124,52 Z"
+    fill="url(#moonFill)"/>
+
+  <!-- ── CRESCENT RIM ── -->
+  <path
+    d="M 124,52 A 38,38 0 1,0 124,118 A 30,30 0 1,1 124,52 Z"
+    fill="none"
+    stroke="#d4aaff"
+    stroke-width="1.4"
+    opacity="0.92"
+    filter="url(#rimGlow)"
+  />
+
+  <!-- ── WORDMARK ── -->
+  <text
+    x="100" y="195"
+    font-family="'Helvetica Neue', Helvetica, Arial, sans-serif"
+    font-size="28"
+    text-anchor="middle"
+    filter="url(#textGlow)"
+  ><tspan font-weight="300" fill="#c890ff" letter-spacing="1">Luno </tspan><tspan font-weight="500" fill="#d8aaff" letter-spacing="3">AI</tspan></text>
+
+</svg>
