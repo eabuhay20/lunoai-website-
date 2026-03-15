@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,700&family=Fraunces:ital,opsz,wght@1,9..144,200;1,9..144,300;1,9..144,400;1,9..144,500;1,9..144,600&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script>
     tailwind.config = {
       theme: { extend: { fontFamily: { sans: ['Plus Jakarta Sans','system-ui','sans-serif'] } } }
@@ -908,6 +909,12 @@
             </svg>
             Leads
           </a>
+          <a class="nav-item" data-page="appointments" onclick="navigate('appointments')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            Appointments
+          </a>
           <a class="nav-item" data-page="settings" onclick="navigate('settings')">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M12 15a3 3 0 100-6 3 3 0 000 6z"/>
@@ -958,7 +965,7 @@
                 </svg>
               </div>
               <p class="metric-label">Total Leads</p>
-              <p class="metric-value">0</p>
+              <p class="metric-value" id="metric-total-leads">0</p>
             </div>
             <!-- Booked Meetings -->
             <div class="card metric-card">
@@ -969,7 +976,7 @@
               </div>
               <p class="metric-label">Booked Meetings</p>
               <div style="display:flex;align-items:center;gap:0.6rem;">
-                <p class="metric-value">0</p>
+                <p class="metric-value" id="metric-booked">0</p>
                 <span class="badge-dot badge-dot-green" style="margin-top:0.2rem;"></span>
               </div>
             </div>
@@ -981,7 +988,7 @@
                 </svg>
               </div>
               <p class="metric-label">Conversion Rate</p>
-              <p class="metric-value">0.0%</p>
+              <p class="metric-value" id="metric-conversion">0.0%</p>
             </div>
             <!-- Potential Revenue -->
             <div class="card metric-card">
@@ -992,7 +999,7 @@
                 </svg>
               </div>
               <p class="metric-label">Potential Revenue</p>
-              <p class="metric-value">$0</p>
+              <p class="metric-value" id="metric-potential-rev">$0</p>
             </div>
             <!-- Total Revenue -->
             <div class="card metric-card">
@@ -1002,7 +1009,7 @@
                 </svg>
               </div>
               <p class="metric-label">Total Revenue</p>
-              <p class="metric-value">$0</p>
+              <p class="metric-value" id="metric-total-rev">$0</p>
             </div>
             <!-- ROI -->
             <div class="card metric-card">
@@ -1012,7 +1019,7 @@
                 </svg>
               </div>
               <p class="metric-label">ROI</p>
-              <p class="metric-value" style="color:hsl(38 90% 62%);">—</p>
+              <p class="metric-value" id="metric-roi" style="color:hsl(38 90% 62%);">—</p>
             </div>
           </div>
 
@@ -1054,7 +1061,7 @@
           </div>
           <div class="shine-line"></div>
 
-          <div class="agents-grid">
+          <div class="agents-grid" id="agents-grid">
             <!-- Placeholder Agent Card -->
             <div class="card agent-placeholder-card">
               <div style="width:64px;height:64px;margin:0 auto 1.25rem;border-radius:50%;background:hsl(var(--accent)/.2);border:2px solid hsl(var(--primary)/.25);display:flex;align-items:center;justify-content:center;">
@@ -1167,16 +1174,16 @@
           <div class="leads-stats">
             <div class="card leads-stat-card">
               <p class="leads-stat-label">Total Leads</p>
-              <p class="leads-stat-val">1</p>
+              <p class="leads-stat-val" id="leads-stat-total">—</p>
             </div>
             <div class="card leads-stat-card">
               <p class="leads-stat-label">Converted</p>
-              <p class="leads-stat-val" style="color:hsl(142 70% 55%);">1</p>
+              <p class="leads-stat-val" id="leads-stat-converted" style="color:hsl(142 70% 55%);">—</p>
             </div>
             <div class="card leads-stat-card">
               <p class="leads-stat-label">Top Source</p>
-              <p class="leads-stat-val" style="font-size:1.35rem;">Facebook Ad</p>
-              <p class="leads-stat-sub">1 lead</p>
+              <p class="leads-stat-val" id="leads-stat-top-source" style="font-size:1.35rem;">—</p>
+              <p class="leads-stat-sub" id="leads-stat-top-source-sub"></p>
             </div>
           </div>
 
@@ -1194,29 +1201,40 @@
                     <th>Status</th>
                     <th>Agent</th>
                     <th>Call Summary</th>
+                    <th>Recording</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody id="leads-tbody">
+                  <tr><td colspan="6" style="text-align:center;color:hsl(var(--muted-fg));padding:2rem;">Loading…</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── APPOINTMENTS PANEL ── -->
+        <div id="panel-appointments" class="content-panel hidden">
+          <div class="page-header">
+            <h1 class="page-title">Appointments <em class="serif-italic">Schedule</em></h1>
+            <p class="page-subtitle">All booked and completed appointments from your AI agents</p>
+          </div>
+          <div class="shine-line"></div>
+          <div class="card table-card">
+            <div class="table-header-row">
+              <p class="table-title">All Appointments</p>
+            </div>
+            <div style="overflow-x:auto;">
+              <table>
+                <thead>
                   <tr>
-                    <td><p class="lead-name">Kyle</p></td>
-                    <td>
-                      <p class="lead-email">kyle@gmail.com</p>
-                      <p class="lead-phone">+1 571 455 5174</p>
-                    </td>
-                    <td>
-                      <span class="badge badge-green">
-                        <span class="badge-dot badge-dot-green"></span>
-                        Converted
-                      </span>
-                    </td>
-                    <td>
-                      <span class="agent-pill">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-                        Speed to Lead
-                      </span>
-                    </td>
-                    <td><span class="empty-cell">—</span></td>
+                    <th>Scheduled Time</th>
+                    <th>Status</th>
+                    <th>Agent</th>
+                    <th>Notes</th>
                   </tr>
+                </thead>
+                <tbody id="appointments-tbody">
+                  <tr><td colspan="4" style="text-align:center;color:hsl(var(--muted-fg));padding:2rem;">Loading…</td></tr>
                 </tbody>
               </table>
             </div>
@@ -1327,19 +1345,19 @@
               <div class="billing-rows">
                 <div class="billing-row">
                   <span class="billing-label">One-Time Setup Fee</span>
-                  <span class="billing-val">—</span>
+                  <span class="billing-val" id="billing-setup-fee">—</span>
                 </div>
                 <div class="billing-row">
                   <span class="billing-label">Monthly Retainer</span>
-                  <span class="billing-val">—</span>
+                  <span class="billing-val" id="billing-retainer">—</span>
                 </div>
                 <div class="billing-row">
                   <span class="billing-label">Commission Percentage</span>
-                  <span class="billing-val">—</span>
+                  <span class="billing-val" id="billing-commission-pct">—</span>
                 </div>
                 <div class="billing-row highlight">
                   <span class="billing-label">Commission Amount Due</span>
-                  <span class="billing-val">—</span>
+                  <span class="billing-val" id="billing-commission-due">—</span>
                 </div>
               </div>
               <p class="billing-note">Billing details will be confirmed by your account manager after onboarding.</p>
@@ -1775,10 +1793,17 @@
   </div><!-- /#app -->
 
   <script>
+    // ── SUPABASE ──
+    const SUPABASE_URL = 'https://ucuxvcvamglngydpeaoy.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjdXh2Y3ZhbWdsbmd5ZHBlYW95Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAzNzgyNDYsImV4cCI6MjA3NTk1NDI0Nn0.1IX3iIJZIptPTEEcUkhBhRB0dB455q8ZkXS-yavuiMM';
+    const { createClient } = supabase;
+    const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
     // ── STATE ──
     let currentPage = 'dashboard';
     let currentIntakeSection = 1;
     const totalIntakeSections = 8;
+    let currentClientId = null;
 
     const agentDescriptions = {
       'Speed to Lead': 'Automatically contacts new leads within 5 minutes of form submission via SMS and email. Studies show that contacting a lead within the first 5 minutes increases conversion by up to 9×.',
@@ -1789,20 +1814,16 @@
 
     // ── ROUTER ──
     function navigate(page) {
-      // Update panels
       document.querySelectorAll('.content-panel').forEach(p => p.classList.add('hidden'));
       const panel = document.getElementById('panel-' + page);
       if (panel) { panel.classList.remove('hidden'); panel.style.animation = 'none'; panel.offsetHeight; panel.style.animation = ''; }
-
-      // Update sidebar active
       document.querySelectorAll('.nav-item').forEach(item => {
         item.classList.toggle('active', item.dataset.page === page);
       });
-
       currentPage = page;
     }
 
-    // ── AUTH ──
+    // ── AUTH TOGGLE ──
     function toggleAuth(mode) {
       document.getElementById('form-login').classList.toggle('hidden', mode === 'signup');
       document.getElementById('form-signup').classList.toggle('hidden', mode === 'login');
@@ -1810,7 +1831,7 @@
     }
 
     // ── SIGNUP ──
-    function handleSignUp() {
+    async function handleSignUp() {
       const name    = document.getElementById('signup-name').value.trim();
       const phone   = document.getElementById('signup-phone').value.trim();
       const company = document.getElementById('signup-company').value.trim();
@@ -1823,36 +1844,87 @@
         errEl.style.display = 'block';
         return;
       }
+      errEl.style.display = 'none';
 
-      const user = { name, phone, company, email, pass };
-      localStorage.setItem('lunoai_user', JSON.stringify(user));
+      const btn = document.querySelector('#form-signup .btn-primary');
+      btn.disabled = true; btn.textContent = 'Creating account…';
+
+      const { data, error } = await sb.auth.signUp({ email, password: pass });
+      btn.disabled = false;
+      btn.innerHTML = 'Create Account <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
+
+      if (error) {
+        errEl.textContent = error.message;
+        errEl.style.display = 'block';
+        return;
+      }
+
+      if (!data.session) {
+        errEl.style.cssText = 'color:hsl(142 70% 55%);font-size:0.82rem;margin-bottom:0.75rem;display:block;';
+        errEl.textContent = 'Check your email to confirm your account, then sign in.';
+        return;
+      }
+
+      // Try to create client record
+      try {
+        const { data: client, error: cErr } = await sb.from('clients').insert({
+          name, company_name: company || name, email, phone: phone || null, approved: false
+        }).select('id').single();
+        if (!cErr && client) {
+          currentClientId = client.id;
+          await sb.from('client_users').insert({ client_id: client.id, user_id: data.user.id, role: 'client' });
+        }
+      } catch(e) { /* RLS may block — admin will link client manually */ }
+
+      // Fallback: find existing client by email
+      if (!currentClientId) {
+        const { data: existing } = await sb.from('clients').select('id').eq('email', email).maybeSingle();
+        if (existing) {
+          currentClientId = existing.id;
+          await sb.from('client_users').upsert({ client_id: existing.id, user_id: data.user.id, role: 'client' }, { onConflict: 'user_id,client_id' });
+        }
+      }
+
       localStorage.removeItem('lunoai_intake');
       localStorage.removeItem('lunoai_intake_submitted');
-
-      enterDashboard(true);
+      await enterDashboard(true);
     }
 
-    // ── LOGIN ──
-    function handleSignIn() {
+    // ── SIGN IN ──
+    async function handleSignIn() {
       const email = document.getElementById('login-email').value.trim();
       const pass  = document.getElementById('login-password').value;
-      const stored = JSON.parse(localStorage.getItem('lunoai_user') || 'null');
 
-      if (!stored) {
-        alert('No account found. Please sign up first.');
-        toggleAuth('signup');
+      const btn = document.querySelector('#form-login .btn-primary');
+      btn.disabled = true; btn.textContent = 'Signing in…';
+
+      const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+      btn.disabled = false;
+      btn.innerHTML = 'Sign In <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
+
+      if (error) {
+        alert(error.message || 'Incorrect email or password.');
         return;
       }
-      if (stored.email !== email || stored.pass !== pass) {
-        alert('Incorrect email or password.');
-        return;
-      }
 
-      enterDashboard(false);
+      await resolveClientId(data.user);
+      await enterDashboard(false);
     }
 
-    function enterDashboard(isNewSignup) {
-      loadUserData();
+    async function resolveClientId(user) {
+      // Try client_users link first
+      const { data: cu } = await sb.from('client_users').select('client_id').eq('user_id', user.id).maybeSingle();
+      if (cu) { currentClientId = cu.client_id; return; }
+      // Fallback: match by email in clients table
+      const { data: c } = await sb.from('clients').select('id').eq('email', user.email).maybeSingle();
+      if (c) {
+        currentClientId = c.id;
+        await sb.from('client_users').upsert({ client_id: c.id, user_id: user.id, role: 'client' }, { onConflict: 'user_id,client_id' });
+      }
+    }
+
+    async function enterDashboard(isNewSignup) {
+      await loadUserData();
       document.getElementById('screen-auth').classList.add('hidden');
       document.getElementById('dashboard-layout').classList.remove('hidden');
       navigate('dashboard');
@@ -1860,29 +1932,219 @@
       const submitted = localStorage.getItem('lunoai_intake_submitted');
       if (submitted) {
         document.getElementById('intake-status-banner').style.display = 'flex';
-      } else if (isNewSignup) {
+      }
+
+      if (isNewSignup) {
         showIntakeModal();
+      } else {
+        await loadDashboardData();
       }
     }
 
-    function loadUserData() {
-      const user = JSON.parse(localStorage.getItem('lunoai_user') || 'null');
+    async function loadUserData() {
+      const { data: { user } } = await sb.auth.getUser();
       if (!user) return;
 
-      const firstName = user.name.split(' ')[0];
-      document.getElementById('user-first-name').textContent = firstName;
-      document.getElementById('info-name').textContent    = user.name    || '—';
-      document.getElementById('info-email').textContent   = user.email   || '—';
-      document.getElementById('info-phone').textContent   = user.phone   || '—';
-      document.getElementById('info-company').textContent = user.company || '—';
-
-      const submitted = localStorage.getItem('lunoai_intake_submitted');
-      if (submitted) {
-        document.getElementById('intake-status-banner').style.display = 'flex';
+      let clientData = null;
+      if (currentClientId) {
+        const { data } = await sb.from('clients').select('*').eq('id', currentClientId).maybeSingle();
+        clientData = data;
       }
+
+      const displayName = clientData?.name || user.email || '';
+      const firstName = displayName.split(' ')[0] || 'there';
+      document.getElementById('user-first-name').textContent = firstName;
+      document.getElementById('info-name').textContent    = clientData?.name          || '—';
+      document.getElementById('info-email').textContent   = clientData?.email         || user.email || '—';
+      document.getElementById('info-phone').textContent   = clientData?.phone         || '—';
+      document.getElementById('info-company').textContent = clientData?.company_name  || '—';
     }
 
-    function signOut() {
+    // ── LOAD ALL DASHBOARD DATA ──
+    async function loadDashboardData() {
+      if (!currentClientId) return;
+
+      const [leadsRes, apptRes, agentsRes, billingRes] = await Promise.all([
+        sb.from('leads').select('*').eq('client_id', currentClientId),
+        sb.from('appointments').select('*').eq('client_id', currentClientId),
+        sb.from('client_agents_enabled').select('*').eq('client_id', currentClientId),
+        sb.from('client_billing').select('*').eq('client_id', currentClientId).maybeSingle()
+      ]);
+
+      const leads       = leadsRes.data    || [];
+      const appts       = apptRes.data     || [];
+      const agents      = agentsRes.data   || [];
+      const billing     = billingRes.data;
+
+      updateMetrics(leads, appts, billing);
+      renderLeads(leads);
+      renderAgents(agents);
+      renderBilling(billing, leads);
+      renderAppointments(appts);
+    }
+
+    // ── METRICS ──
+    function updateMetrics(leads, appts, billing) {
+      const totalLeads  = leads.length;
+      const booked      = appts.filter(a => a.status === 'scheduled').length;
+      const closed      = leads.filter(l => (l.if_closed || 0) > 0);
+      const convRate    = totalLeads > 0 ? ((closed.length / totalLeads) * 100).toFixed(1) : '0.0';
+      const potRev      = leads.reduce((s, l) => s + (parseFloat(l['Potential Rev']) || 0), 0);
+      const totalRev    = leads.reduce((s, l) => s + (l.if_closed || 0), 0);
+
+      let roi = '—';
+      let roiColor = 'hsl(38 90% 62%)';
+      if (billing?.billing_amount > 0 && totalRev > 0) {
+        const pct = ((totalRev - billing.billing_amount) / billing.billing_amount) * 100;
+        roi = (pct >= 0 ? '+' : '') + pct.toFixed(0) + '%';
+        roiColor = pct >= 0 ? 'hsl(142 70% 55%)' : 'hsl(0 70% 65%)';
+      }
+
+      document.getElementById('metric-total-leads').textContent  = totalLeads;
+      document.getElementById('metric-booked').textContent       = booked;
+      document.getElementById('metric-conversion').textContent   = convRate + '%';
+      document.getElementById('metric-potential-rev').textContent = '$' + potRev.toLocaleString();
+      document.getElementById('metric-total-rev').textContent    = '$' + totalRev.toLocaleString();
+      const roiEl = document.getElementById('metric-roi');
+      roiEl.textContent = roi; roiEl.style.color = roiColor;
+    }
+
+    // ── LEADS ──
+    function renderLeads(leads) {
+      const total     = leads.length;
+      const converted = leads.filter(l => (l.if_closed || 0) > 0).length;
+
+      document.getElementById('leads-stat-total').textContent     = total;
+      document.getElementById('leads-stat-converted').textContent = converted;
+
+      const sourceCounts = {};
+      leads.forEach(l => { if (l.source) sourceCounts[l.source] = (sourceCounts[l.source] || 0) + 1; });
+      const top = Object.entries(sourceCounts).sort((a, b) => b[1] - a[1])[0];
+      document.getElementById('leads-stat-top-source').textContent     = top ? top[0] : '—';
+      document.getElementById('leads-stat-top-source-sub').textContent = top ? top[1] + ' lead' + (top[1] !== 1 ? 's' : '') : '';
+
+      const tbody = document.getElementById('leads-tbody');
+      if (!leads.length) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:hsl(var(--muted-fg));padding:2rem;">No leads yet</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = leads.map(l => {
+        const badge = statusBadge(l.status, l.if_closed);
+        const agent = l.contacted_by_agent
+          ? `<span class="agent-pill"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>${escHtml(l.contacted_by_agent)}</span>`
+          : '<span class="empty-cell">—</span>';
+        const summary = l['call summary']
+          ? `<span style="font-size:0.78rem;color:hsl(var(--muted-fg));">${escHtml(l['call summary']).slice(0,70)}${l['call summary'].length > 70 ? '…' : ''}</span>`
+          : '<span class="empty-cell">—</span>';
+        const recording = l['call recording']
+          ? `<a href="${escHtml(l['call recording'])}" target="_blank" style="font-size:0.78rem;color:hsl(var(--primary-hi));text-decoration:none;display:flex;align-items:center;gap:0.25rem;">▶ Play</a>`
+          : '<span class="empty-cell">—</span>';
+        return `<tr>
+          <td><p class="lead-name">${escHtml(l.lead_name || '—')}</p></td>
+          <td><p class="lead-email">${escHtml(l.lead_email || '—')}</p><p class="lead-phone">${escHtml(l.lead_phone || '')}</p></td>
+          <td>${badge}</td>
+          <td>${agent}</td>
+          <td>${summary}</td>
+          <td>${recording}</td>
+        </tr>`;
+      }).join('');
+    }
+
+    function statusBadge(status, ifClosed) {
+      if ((ifClosed || 0) > 0 || status === 'closed')
+        return '<span class="badge badge-green"><span class="badge-dot badge-dot-green"></span>Converted</span>';
+      const map = {
+        scheduled:   '<span class="badge badge-blue">Scheduled</span>',
+        contacted:   '<span class="badge badge-purple"><span class="badge-dot badge-dot-purple"></span>Contacted</span>',
+        new:         '<span class="badge badge-amber">New</span>',
+        unqualified: '<span class="badge badge-red">Unqualified</span>',
+      };
+      return map[status?.toLowerCase()] || `<span class="badge badge-muted">${escHtml(status || '—')}</span>`;
+    }
+
+    function escHtml(s) {
+      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    // ── AGENTS ──
+    function renderAgents(agents) {
+      const enabled = agents.filter(a => a.enabled);
+      if (!enabled.length) return; // keep placeholder
+
+      const labels = {
+        speed_to_lead:       { name: 'Speed to Lead',       desc: 'Instant lead response automation' },
+        appointment_setter:  { name: 'Appointment Setter',  desc: 'Automated meeting scheduling' },
+        reactivation:        { name: 'Reactivation',        desc: 'Re-engage dormant leads' },
+        ai_sms:              { name: 'AI SMS Agent',        desc: 'Automated SMS messaging and follow-ups' },
+      };
+
+      document.getElementById('agents-grid').innerHTML = enabled.map(a => {
+        const info = labels[a.agent_type] || { name: a.agent_type.replace(/_/g,' '), desc: '' };
+        return `<div class="card agent-card" onclick="openAgentModal('${escHtml(info.name)}')">
+          <div class="agent-card-header">
+            <div>
+              <p class="agent-name">${escHtml(info.name)}</p>
+              <p class="agent-desc" style="margin-bottom:0;">${escHtml(info.desc)}</p>
+            </div>
+            <span class="badge badge-green"><span class="badge-dot badge-dot-green"></span>Active</span>
+          </div>
+          <div class="agent-stats">
+            <div><p class="agent-stat-label">Leads Contacted</p><p class="agent-stat-val">${a.leads_contacted || 0}</p></div>
+            <div><p class="agent-stat-label">Status</p><p class="agent-stat-val text-primary">Active</p></div>
+          </div>
+          <a class="agent-view-link">View details <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+        </div>`;
+      }).join('');
+    }
+
+    // ── BILLING ──
+    function renderBilling(billing, leads) {
+      if (!billing) return;
+      const totalRev = leads.reduce((s, l) => s + (l.if_closed || 0), 0);
+      const commDue  = billing.commission_enabled && billing.commission_percentage
+        ? (billing.commission_percentage / 100) * totalRev : null;
+
+      const el = id => document.getElementById(id);
+      if (el('billing-setup-fee'))     el('billing-setup-fee').textContent     = billing.setup_fee      ? '$' + Number(billing.setup_fee).toLocaleString()                          : '—';
+      if (el('billing-retainer'))      el('billing-retainer').textContent      = billing.billing_amount ? '$' + Number(billing.billing_amount).toLocaleString() + '/mo'              : '—';
+      if (el('billing-commission-pct'))el('billing-commission-pct').textContent= billing.commission_percentage ? billing.commission_percentage + '%' : billing.commission_enabled ? 'Enabled' : '—';
+      if (el('billing-commission-due'))el('billing-commission-due').textContent= commDue != null ? '$' + Math.round(commDue).toLocaleString()                                        : '—';
+    }
+
+    // ── APPOINTMENTS ──
+    function renderAppointments(appts) {
+      const tbody = document.getElementById('appointments-tbody');
+      if (!tbody) return;
+
+      if (!appts.length) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:hsl(var(--muted-fg));padding:2rem;">No appointments yet</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = appts.map(a => {
+        const time = a['Scheduled Time']
+          ? new Date(a['Scheduled Time']).toLocaleString('en-US', { month:'short', day:'numeric', year:'numeric', hour:'numeric', minute:'2-digit' })
+          : '—';
+        const badge = a.status === 'scheduled'
+          ? '<span class="badge badge-green"><span class="badge-dot badge-dot-green"></span>Scheduled</span>'
+          : `<span class="badge badge-muted">${escHtml(a.status || '—')}</span>`;
+        const agent = a.agent_type
+          ? a.agent_type.replace(/_/g,' ').replace(/\b\w/g, c => c.toUpperCase())
+          : '—';
+        return `<tr>
+          <td style="font-size:0.875rem;">${time}</td>
+          <td>${badge}</td>
+          <td><span class="agent-pill"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>${escHtml(agent)}</span></td>
+          <td><span style="font-size:0.8rem;color:hsl(var(--muted-fg));">${escHtml(a.notes || '—')}</span></td>
+        </tr>`;
+      }).join('');
+    }
+
+    // ── SIGN OUT ──
+    async function signOut() {
+      await sb.auth.signOut();
+      currentClientId = null;
       document.getElementById('dashboard-layout').classList.add('hidden');
       document.getElementById('intake-modal').classList.add('hidden');
       document.getElementById('intake-status-banner').style.display = 'none';
@@ -1899,14 +2161,11 @@
     }
 
     function updateIntakeUI() {
-      // Show/hide sections
       for (let i = 1; i <= totalIntakeSections; i++) {
         const s = document.getElementById('intake-s' + i);
         if (s) s.classList.toggle('active', i === currentIntakeSection);
       }
-      // Counter
       document.getElementById('intake-counter').textContent = `Section ${currentIntakeSection} of ${totalIntakeSections}`;
-      // Progress dots
       const dotsContainer = document.getElementById('intake-dots');
       dotsContainer.innerHTML = '';
       for (let i = 1; i <= totalIntakeSections; i++) {
@@ -1916,9 +2175,7 @@
         else if (i === currentIntakeSection) dot.classList.add('active');
         dotsContainer.appendChild(dot);
       }
-      // Back button
       document.getElementById('intake-back-btn').classList.toggle('hidden', currentIntakeSection === 1);
-      // Next button text
       const nextBtn = document.getElementById('intake-next-btn');
       if (currentIntakeSection === totalIntakeSections) {
         nextBtn.innerHTML = 'Complete Onboarding <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>';
@@ -1930,15 +2187,11 @@
     function intakeNext() {
       if (currentIntakeSection < totalIntakeSections) {
         currentIntakeSection++;
-        // Populate review grid when reaching final section
-        if (currentIntakeSection === totalIntakeSections) {
-          populateIntakeReview();
-        }
+        if (currentIntakeSection === totalIntakeSections) populateIntakeReview();
         updateIntakeUI();
         document.querySelector('.intake-container').scrollTop = 0;
         document.getElementById('intake-modal').scrollTop = 0;
       } else {
-        // Save intake data and mark submitted
         saveIntakeData();
         localStorage.setItem('lunoai_intake_submitted', 'true');
         document.getElementById('intake-modal').classList.add('hidden');
@@ -1947,30 +2200,28 @@
     }
 
     function populateIntakeReview() {
-      const user = JSON.parse(localStorage.getItem('lunoai_user') || '{}');
-      const rows = [
-        ['Account Name',     user.name    || '—'],
-        ['Company',          user.company || '—'],
-        ['Email',            user.email   || '—'],
-        ['Business Name',    document.querySelector('#intake-s1 input[type="text"]')?.value || '—'],
-        ['Services Offered', document.querySelector('#intake-s1 textarea:nth-of-type(2)')?.value?.slice(0,60) || '—'],
-        ['Lead Sources',     document.querySelector('#intake-s2 textarea')?.value?.slice(0,60) || '—'],
-        ['Qualifies Lead',   document.querySelector('#intake-s3 textarea')?.value?.slice(0,60) || '—'],
-        ['Avg Leads/Month',  document.querySelectorAll('#intake-s4 input[type="number"]')[1]?.value || '—'],
-        ['Follow-Up Channels', document.querySelector('#intake-s5 select:last-of-type')?.value || '—'],
-        ['Agent Tone',       document.querySelector('#intake-s6 select:nth-of-type(2)')?.value || '—'],
-      ];
-      const grid = document.getElementById('intake-review-grid');
-      grid.innerHTML = rows.map(([label, val]) => `
-        <div class="intake-review-item">
-          <span class="intake-review-label">${label}</span>
-          <span class="intake-review-val">${val}</span>
-        </div>`).join('');
+      const { data: { user } } = sb.auth.getUser().then(({ data }) => {
+        const u = data?.user;
+        const rows = [
+          ['Email',            u?.email || '—'],
+          ['Business Name',    document.querySelector('#intake-s1 input[type="text"]')?.value || '—'],
+          ['Services Offered', document.querySelector('#intake-s1 textarea:nth-of-type(2)')?.value?.slice(0,60) || '—'],
+          ['Lead Sources',     document.querySelector('#intake-s2 textarea')?.value?.slice(0,60) || '—'],
+          ['Qualifies Lead',   document.querySelector('#intake-s3 textarea')?.value?.slice(0,60) || '—'],
+          ['Avg Leads/Month',  document.querySelectorAll('#intake-s4 input[type="number"]')[1]?.value || '—'],
+          ['Follow-Up Channels', document.querySelector('#intake-s5 select:last-of-type')?.value || '—'],
+          ['Agent Tone',       document.querySelector('#intake-s6 select:nth-of-type(2)')?.value || '—'],
+        ];
+        document.getElementById('intake-review-grid').innerHTML = rows.map(([label, val]) => `
+          <div class="intake-review-item">
+            <span class="intake-review-label">${label}</span>
+            <span class="intake-review-val">${escHtml(val)}</span>
+          </div>`).join('');
+      });
     }
 
     function saveIntakeData() {
       const data = {};
-      // Collect all form inputs/textareas/selects inside intake sections 1–7
       for (let i = 1; i <= 7; i++) {
         const section = document.getElementById('intake-s' + i);
         if (!section) continue;
@@ -2017,32 +2268,33 @@
         const dy = e.clientY - (rect.top + rect.height / 2);
         btn.style.transform = `translateY(-2px) scale(1.03) translate(${dx * 0.22}px, ${dy * 0.22}px)`;
       });
-      btn.addEventListener('mouseleave', () => {
-        btn.style.transform = '';
-      });
+      btn.addEventListener('mouseleave', () => { btn.style.transform = ''; });
     });
 
     // ── INIT ──
-    (function() {
+    (async function() {
       const hash = window.location.hash.replace('#', '');
-      const dashPages = ['dashboard','agents','leads','settings'];
-      const user = JSON.parse(localStorage.getItem('lunoai_user') || 'null');
+      const dashPages = ['dashboard','agents','leads','appointments','settings'];
+
+      const { data: { session } } = await sb.auth.getSession();
 
       if (hash === 'intake') {
         document.getElementById('screen-auth').classList.add('hidden');
         document.getElementById('dashboard-layout').classList.remove('hidden');
         navigate('dashboard');
-        if (user) loadUserData();
+        if (session) { await resolveClientId(session.user); await loadUserData(); }
         showIntakeModal();
-      } else if (dashPages.includes(hash)) {
-        // Direct deep link — restore session if user exists
-        document.getElementById('screen-auth').classList.add('hidden');
-        document.getElementById('dashboard-layout').classList.remove('hidden');
-        navigate(hash);
-        if (user) loadUserData();
-      } else if (user) {
-        // Auto-restore session for returning user
-        enterDashboard(false);
+      } else if (session) {
+        await resolveClientId(session.user);
+        if (dashPages.includes(hash)) {
+          document.getElementById('screen-auth').classList.add('hidden');
+          document.getElementById('dashboard-layout').classList.remove('hidden');
+          navigate(hash);
+          await loadUserData();
+          await loadDashboardData();
+        } else {
+          await enterDashboard(false);
+        }
       } else {
         document.getElementById('screen-auth').classList.remove('hidden');
       }
