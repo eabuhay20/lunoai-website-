@@ -2038,14 +2038,16 @@
         return;
       }
 
+      window._summaryStore = [];
       tbody.innerHTML = leads.map(l => {
         const badge = statusBadge(l.status, l.if_closed);
         const agent = l.contacted_by_agent
           ? `<span class="agent-pill"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>${escHtml(l.contacted_by_agent)}</span>`
           : '<span class="empty-cell">—</span>';
         const rawSummary = l['call summary'] || '';
+        const summaryIdx = rawSummary ? (window._summaryStore.push(rawSummary) - 1) : -1;
         const summary = rawSummary
-          ? `<span onclick="openSummaryModal(${JSON.stringify(escHtml(rawSummary))})" style="font-size:0.78rem;color:hsl(var(--primary-hi));cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px;">${escHtml(rawSummary).slice(0,70)}${rawSummary.length > 70 ? '…' : ''}</span>`
+          ? `<span onclick="openSummaryModal(${summaryIdx})" style="font-size:0.78rem;color:hsl(var(--primary-hi));cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px;">${escHtml(rawSummary).slice(0,70)}${rawSummary.length > 70 ? '…' : ''}</span>`
           : '<span class="empty-cell">—</span>';
         const recording = l['call recording']
           ? `<a href="${escHtml(l['call recording'])}" target="_blank" style="font-size:0.78rem;color:hsl(var(--primary-hi));text-decoration:none;display:flex;align-items:center;gap:0.25rem;">▶ Play</a>`
@@ -2082,9 +2084,11 @@
       return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
 
-    function openSummaryModal(htmlText) {
-      document.getElementById('summary-modal-text').textContent = htmlText
-        .replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"');
+    window._summaryStore = [];
+
+    function openSummaryModal(idx) {
+      const text = window._summaryStore[idx] || '';
+      document.getElementById('summary-modal-text').textContent = text;
       document.getElementById('summary-modal').classList.remove('hidden');
     }
     function closeSummaryModal() {
