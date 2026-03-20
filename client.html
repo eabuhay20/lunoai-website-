@@ -1745,6 +1745,15 @@
     <!-- ════════════════════════════════════════
          AGENT DETAIL MODAL
     ════════════════════════════════════════ -->
+    <!-- ── SUMMARY MODAL ── -->
+    <div id="summary-modal" class="agent-modal-backdrop hidden" onclick="if(event.target===this)closeSummaryModal()">
+      <div class="agent-modal-card" style="max-width:620px;">
+        <button class="agent-modal-close" onclick="closeSummaryModal()">×</button>
+        <p style="font-size:0.68rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:hsl(var(--muted-fg));margin-bottom:0.75rem;">Call Summary</p>
+        <p id="summary-modal-text" style="font-size:0.9rem;line-height:1.75;color:hsl(var(--fg));white-space:pre-wrap;"></p>
+      </div>
+    </div>
+
     <div id="agent-modal" class="agent-modal-backdrop hidden" onclick="closeAgentModal(event)">
       <div class="agent-modal-card">
         <button class="agent-modal-close" onclick="closeAgentModalDirect()">×</button>
@@ -1980,7 +1989,7 @@
       renderLeads(leads);
       renderAgents(agents);
       renderBilling(billing, leads);
-      renderAppointments(appts);
+      renderAppointments(appts, leads);
     }
 
     // ── METRICS ──
@@ -2034,8 +2043,9 @@
         const agent = l.contacted_by_agent
           ? `<span class="agent-pill"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>${escHtml(l.contacted_by_agent)}</span>`
           : '<span class="empty-cell">—</span>';
-        const summary = l['call summary']
-          ? `<span style="font-size:0.78rem;color:hsl(var(--muted-fg));">${escHtml(l['call summary']).slice(0,70)}${l['call summary'].length > 70 ? '…' : ''}</span>`
+        const rawSummary = l['call summary'] || '';
+        const summary = rawSummary
+          ? `<span onclick="openSummaryModal(${JSON.stringify(escHtml(rawSummary))})" style="font-size:0.78rem;color:hsl(var(--primary-hi));cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px;">${escHtml(rawSummary).slice(0,70)}${rawSummary.length > 70 ? '…' : ''}</span>`
           : '<span class="empty-cell">—</span>';
         const recording = l['call recording']
           ? `<a href="${escHtml(l['call recording'])}" target="_blank" style="font-size:0.78rem;color:hsl(var(--primary-hi));text-decoration:none;display:flex;align-items:center;gap:0.25rem;">▶ Play</a>`
@@ -2052,19 +2062,42 @@
     }
 
     function statusBadge(status, ifClosed) {
-      if ((ifClosed || 0) > 0 || status === 'closed')
+      if ((ifClosed || 0) > 0 || status === 'closed' || status?.toLowerCase() === 'converted')
         return '<span class="badge badge-green"><span class="badge-dot badge-dot-green"></span>Converted</span>';
       const map = {
-        scheduled:   '<span class="badge badge-blue">Scheduled</span>',
-        contacted:   '<span class="badge badge-purple"><span class="badge-dot badge-dot-purple"></span>Contacted</span>',
-        new:         '<span class="badge badge-amber">New</span>',
-        unqualified: '<span class="badge badge-red">Unqualified</span>',
+        scheduled:     '<span class="badge badge-blue">Scheduled</span>',
+        contacted:     '<span class="badge badge-purple"><span class="badge-dot badge-dot-purple"></span>Contacted</span>',
+        new:           '<span class="badge badge-amber">New</span>',
+        unqualified:   '<span class="badge badge-red">Unqualified</span>',
+        high:          '<span class="badge badge-green"><span class="badge-dot badge-dot-green"></span>High</span>',
+        'medium-high': '<span class="badge" style="background:hsl(38 95% 55% / 0.15);color:hsl(38 95% 65%);border-color:hsl(38 95% 55% / 0.3);"><span class="badge-dot" style="background:hsl(38 95% 60%);box-shadow:0 0 6px hsl(38 95% 60% / .7);animation:pulse-dot 2s ease-in-out infinite;"></span>Medium-High</span>',
+        medium:        '<span class="badge badge-amber">Medium</span>',
+        low:           '<span class="badge badge-red">Low</span>',
+        cold:          '<span class="badge badge-blue">Cold</span>',
       };
       return map[status?.toLowerCase()] || `<span class="badge badge-muted">${escHtml(status || '—')}</span>`;
     }
 
     function escHtml(s) {
       return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function openSummaryModal(htmlText) {
+      document.getElementById('summary-modal-text').textContent = htmlText
+        .replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"');
+      document.getElementById('summary-modal').classList.remove('hidden');
+    }
+    function closeSummaryModal() {
+      document.getElementById('summary-modal').classList.add('hidden');
+    }
+
+    function summaryToBullets(summary) {
+      if (!summary) return null;
+      // Split by sentence endings or newlines, filter short fragments, take up to 3
+      const raw = summary.split(/(?:[.\n!?]+\s+|\n+)/).map(s => s.trim()).filter(s => s.length > 20);
+      const bullets = raw.slice(0, 3);
+      if (!bullets.length) return null;
+      return bullets;
     }
 
     // ── AGENTS ──
@@ -2113,7 +2146,7 @@
     }
 
     // ── APPOINTMENTS ──
-    function renderAppointments(appts) {
+    function renderAppointments(appts, leads = []) {
       const tbody = document.getElementById('appointments-tbody');
       if (!tbody) return;
 
@@ -2121,6 +2154,14 @@
         tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:hsl(var(--muted-fg));padding:2rem;">No appointments yet</td></tr>';
         return;
       }
+
+      // Build a lookup: lead_name (lowercased) → call summary
+      const summaryByName = {};
+      leads.forEach(l => {
+        if (l.lead_name && l['call summary']) {
+          summaryByName[l.lead_name.trim().toLowerCase()] = l['call summary'];
+        }
+      });
 
       tbody.innerHTML = appts.map(a => {
         const time = a['Scheduled Time']
@@ -2132,11 +2173,27 @@
         const agent = a.agent_type
           ? a.agent_type.replace(/_/g,' ').replace(/\b\w/g, c => c.toUpperCase())
           : '—';
+
+        // Try to get call summary from matching lead
+        const leadKey = (a.lead_name || '').trim().toLowerCase();
+        const callSummary = summaryByName[leadKey] || null;
+        const bullets = callSummary ? summaryToBullets(callSummary) : null;
+
+        let notesCell;
+        if (bullets && bullets.length) {
+          const bulletHtml = bullets.map(b => `<li style="margin-bottom:0.3rem;">${escHtml(b)}</li>`).join('');
+          notesCell = `<ul style="margin:0;padding-left:1.1rem;font-size:0.78rem;color:hsl(var(--muted-fg));line-height:1.6;">${bulletHtml}</ul>`;
+        } else if (a.notes) {
+          notesCell = `<span style="font-size:0.8rem;color:hsl(var(--muted-fg));">${escHtml(a.notes)}</span>`;
+        } else {
+          notesCell = '<span class="empty-cell">—</span>';
+        }
+
         return `<tr>
           <td style="font-size:0.875rem;">${time}</td>
           <td>${badge}</td>
           <td><span class="agent-pill"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>${escHtml(agent)}</span></td>
-          <td><span style="font-size:0.8rem;color:hsl(var(--muted-fg));">${escHtml(a.notes || '—')}</span></td>
+          <td>${notesCell}</td>
         </tr>`;
       }).join('');
     }
