@@ -3,11 +3,11 @@
   "rewrites": [
     {
       "source": "/client",
-      "destination": "/client.html"
+      "destination": "/pages/client.html"
     },
     {
       "source": "/admin",
-      "destination": "/admin.html"
+      "destination": "/pages/admin.html"
     }
   ]
 }
