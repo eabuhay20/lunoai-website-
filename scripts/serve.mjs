@@ -22,9 +22,9 @@ const mimeTypes = {
 
 const server = createServer((req, res) => {
   let urlPath = req.url.split('?')[0];
-  if (urlPath === '/') urlPath = '/lunoai-index.html';
+  if (urlPath === '/') urlPath = '/pages/index.html';
 
-  const filePath = join(__dirname, urlPath);
+  const filePath = join(__dirname, '..', urlPath);
 
   if (existsSync(filePath)) {
     const ext = extname(filePath);
