@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Luno AI — Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,700&family=Fraunces:ital,opsz,wght@1,9..144,200;1,9..144,300;1,9..144,400;1,9..144,500;1,9..144,600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script>
+    tailwind.config = {
+      theme: { extend: { fontFamily: { sans: ['Plus Jakarta Sans','system-ui','sans-serif'] } } }
+    }
+  </script>
+  <style>
+    /* ─── TOKENS ─── */
+    :root {
+      --bg:           270 40% 4.5%;
+      --fg:           0 0% 97%;
+      --card:         270 32% 7.5%;
+      --primary:      270 55% 38%;
+      --primary-glow: 270 65% 54%;
+      --primary-hi:   270 72% 70%;
+      --secondary:    270 25% 14%;
+      --muted:        270 20% 11%;
+      --muted-fg:     240 5% 62%;
+      --accent:       270 45% 26%;
+      --border:       270 20% 17%;
+      --radius:       0.8rem;
+      --g-primary:    linear-gradient(135deg, hsl(270 55% 38%), hsl(270 65% 54%));
+      --g-card:       linear-gradient(145deg, hsl(270 32% 8%), hsl(270 28% 11%));
+      --shadow-glow:  0 0 40px hsl(270 65% 54% / .18);
+      --shadow-card:  0 8px 40px hsl(270 40% 3% / .55);
+      --sidebar-w:    68px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    * { scrollbar-width: thin; scrollbar-color: hsl(270 55% 38%) hsl(270 40% 5%); }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: hsl(270 40% 5%); }
+    ::-webkit-scrollbar-thumb { background: linear-gradient(135deg, hsl(270 55% 38%), hsl(270 65% 54%)); border-radius: 3px; }
+    html { scroll-behavior: smooth; }
+    body {
+      background-color: hsl(var(--bg));
+      color: hsl(var(--fg));
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      font-feature-settings: "cv02","cv03","cv04","cv11";
+      -webkit-font-smoothing: antialiased;
+      line-height: 1.7;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+
+    /* ─── BACKGROUND GLOWS ─── */
+    .scene-glow { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+    .glow-blob { position: absolute; border-radius: 50%; }
+    .glow-top {
+      top: -10%; left: 50%; transform: translateX(-50%);
+      width: 900px; height: 700px;
+      background: radial-gradient(ellipse, hsl(270 65% 52% / .2) 0%, hsl(270 55% 38% / .08) 45%, transparent 70%);
+    }
+    .glow-bottom {
+      bottom: 0; right: -10%;
+      width: 500px; height: 500px;
+      background: radial-gradient(ellipse, hsl(270 60% 46% / .1) 0%, transparent 70%);
+    }
+    .glow-noise {
+      position: absolute; inset: 0; opacity: 0.022;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size: 256px 256px;
+    }
+    #app { position: relative; z-index: 1; }
+
+    .serif-italic {
+      font-family: 'Fraunces', Georgia, serif;
+      font-style: italic; font-weight: 300; letter-spacing: 0.01em;
+    }
+    .gradient-text {
+      background: var(--g-primary);
+      -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+    }
+
+    /* ─── CARD ─── */
+    .card {
+      background: var(--g-card);
+      border: 1px solid hsl(var(--border));
+      border-radius: 1.28rem;
+      box-shadow: var(--shadow-card);
+      position: relative; overflow: hidden;
+      transition: border-color 0.3s cubic-bezier(.34,1.56,.64,1), box-shadow 0.3s ease;
+    }
+    .card::after {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,.035) 50%, transparent 60%);
+      transform: translateX(-100%); transition: transform 0.6s ease; pointer-events: none;
+    }
+    .card:hover::after { transform: translateX(100%); }
+    .card:hover { border-color: hsl(var(--primary) / .7); box-shadow: var(--shadow-glow), var(--shadow-card); }
+
+    /* ─── BUTTONS ─── */
+    .btn-primary {
+      background: var(--g-primary); color: #fff;
+      font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; font-size: 0.9375rem;
+      padding: 0.6875rem 1.75rem; border-radius: var(--radius); border: none; cursor: pointer;
+      box-shadow: var(--shadow-glow), 0 4px 20px hsl(270 55% 38% / .4);
+      transition: transform 0.25s cubic-bezier(.34,1.56,.64,1), box-shadow 0.25s ease;
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      text-decoration: none; white-space: nowrap;
+    }
+    .btn-primary:hover { transform: translateY(-2px) scale(1.03); box-shadow: 0 0 70px hsl(270 65% 54% / .35), 0 8px 28px hsl(270 55% 38% / .5); }
+    .btn-primary:active { transform: scale(0.97); }
+    .btn-ghost {
+      color: hsl(var(--fg)); font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 600; font-size: 0.875rem;
+      padding: 0.5rem 1.25rem; border-radius: var(--radius); border: 1px solid hsl(var(--border));
+      cursor: pointer; background: transparent;
+      transition: transform 0.25s cubic-bezier(.34,1.56,.64,1), background 0.2s, border-color 0.2s;
+      display: inline-flex; align-items: center; gap: 0.4rem; text-decoration: none; white-space: nowrap;
+    }
+    .btn-ghost:hover { background: hsl(var(--secondary)); border-color: hsl(var(--primary) / .6); transform: translateY(-1px); }
+
+    /* ─── BADGES ─── */
+    .badge {
+      display: inline-flex; align-items: center; gap: 0.35rem;
+      font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+      padding: 0.25rem 0.7rem; border-radius: 9999px;
+    }
+    .badge-green { background: hsl(142 50% 20% / .3); border: 1px solid hsl(142 60% 40% / .4); color: hsl(142 70% 55%); }
+    .badge-blue  { background: hsl(220 50% 22% / .3); border: 1px solid hsl(220 60% 50% / .4); color: hsl(220 80% 70%); }
+    .badge-amber { background: hsl(38 70% 20% / .3);  border: 1px solid hsl(38 80% 45% / .4);  color: hsl(38 90% 62%); }
+    .badge-red   { background: hsl(0 60% 20% / .3);   border: 1px solid hsl(0 70% 40% / .4);   color: hsl(0 80% 65%); }
+    .badge-purple{ background: hsl(var(--accent)/.28); border: 1px solid hsl(var(--primary)/.42); color: hsl(var(--primary-glow)); }
+    .badge-muted { background: hsl(var(--muted)); border: 1px solid hsl(var(--border)); color: hsl(var(--muted-fg)); }
+    .badge-dot   { width: 6px; height: 6px; border-radius: 50%; }
+    .badge-dot-green  { background: hsl(142 70% 55%); box-shadow: 0 0 6px hsl(142 70% 55% / .8); animation: pulse-dot 2s ease-in-out infinite; }
+    .badge-dot-purple { background: hsl(var(--primary-glow)); box-shadow: 0 0 6px hsl(270 65% 54% / .9); animation: pulse-dot 2.2s ease-in-out infinite; }
+    @keyframes pulse-dot { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(0.7); } }
+
+    /* ─── FORM ─── */
+    .form-group { display: flex; flex-direction: column; gap: 0.35rem; }
+    .form-label { font-size: 0.78rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: hsl(var(--muted-fg)); }
+    .form-input {
+      background: hsl(270 32% 6%); border: 1px solid hsl(var(--border));
+      border-radius: var(--radius); color: hsl(var(--fg));
+      padding: 0.625rem 0.875rem; font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 0.9rem; outline: none; transition: border-color 0.2s, box-shadow 0.2s; width: 100%;
+    }
+    .form-input:focus { border-color: hsl(var(--primary-glow)); box-shadow: 0 0 0 3px hsl(270 65% 54% / .12); }
+    .form-input::placeholder { color: hsl(var(--muted-fg) / .6); }
+
+    /* ─── AUTH ─── */
+    #screen-auth {
+      min-height: 100vh; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; padding: 2rem; gap: 2rem;
+    }
+    .auth-card { width: 100%; max-width: 440px; padding: 2.25rem; }
+    .auth-heading { font-size: 1.6rem; font-weight: 700; letter-spacing: -0.03em; margin-bottom: 0.3rem; }
+    .auth-sub { color: hsl(var(--muted-fg)); font-size: 0.875rem; margin-bottom: 1.75rem; }
+    .auth-fields { display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1.5rem; }
+    .auth-error { color: hsl(0 80% 65%); font-size: 0.82rem; text-align: center; margin-top: -0.5rem; min-height: 1.2em; }
+
+    /* ─── ICON-ONLY SIDEBAR ─── */
+    #sidebar {
+      position: fixed; left: 0; top: 0; bottom: 0;
+      width: var(--sidebar-w); z-index: 10;
+      background: var(--g-card);
+      border-right: 1px solid hsl(var(--border));
+      display: flex; flex-direction: column;
+      align-items: center;
+      padding: 1.25rem 0 1.25rem;
+      gap: 0;
+    }
+    .sidebar-logo {
+      width: 38px; height: 38px;
+      border-radius: 0.7rem;
+      background: hsl(var(--accent) / .3);
+      border: 1px solid hsl(var(--primary) / .4);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 0 16px hsl(270 65% 54% / .2);
+    }
+    .sidebar-nav { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0.3rem; width: 100%; padding: 0 8px; }
+    .nav-icon-item {
+      position: relative;
+      width: 44px; height: 44px;
+      border-radius: 0.75rem;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; border: 1px solid transparent;
+      color: hsl(var(--muted-fg));
+      transition: color 0.2s, background 0.2s, border-color 0.2s;
+    }
+    .nav-icon-item:hover {
+      color: hsl(var(--fg));
+      background: hsl(var(--secondary));
+    }
+    .nav-icon-item.active {
+      color: hsl(var(--primary-hi));
+      background: hsl(var(--primary) / .12);
+      border-color: hsl(var(--primary) / .25);
+    }
+    .nav-icon-item svg { flex-shrink: 0; }
+    /* tooltip */
+    .nav-icon-item::after {
+      content: attr(data-label);
+      position: absolute; left: calc(100% + 10px);
+      background: hsl(270 32% 9%);
+      border: 1px solid hsl(var(--border));
+      color: hsl(var(--fg));
+      font-size: 0.75rem; font-weight: 600;
+      padding: 0.3rem 0.7rem; border-radius: 0.5rem;
+      white-space: nowrap; pointer-events: none;
+      opacity: 0; transform: translateX(-4px);
+      transition: opacity 0.15s, transform 0.15s;
+      z-index: 50;
+    }
+    .nav-icon-item:hover::after { opacity: 1; transform: translateX(0); }
+
+    .sidebar-divider { width: 32px; height: 1px; background: hsl(var(--border)); margin: 0.5rem 0; }
+    .sidebar-bottom { margin-top: auto; display: flex; flex-direction: column; align-items: center; gap: 0.3rem; width: 100%; padding: 0 8px; }
+    .nav-signout {
+      position: relative;
+      width: 44px; height: 44px; border-radius: 0.75rem;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; border: 1px solid transparent;
+      color: hsl(var(--muted-fg));
+      background: transparent;
+      transition: color 0.2s, background 0.2s, border-color 0.2s;
+    }
+    .nav-signout:hover { color: hsl(0 70% 65%); background: hsl(0 60% 20% / .15); border-color: hsl(0 60% 40% / .25); }
+    .nav-signout::after {
+      content: 'Sign Out';
+      position: absolute; left: calc(100% + 10px);
+      background: hsl(270 32% 9%); border: 1px solid hsl(var(--border));
+      color: hsl(var(--fg)); font-size: 0.75rem; font-weight: 600;
+      padding: 0.3rem 0.7rem; border-radius: 0.5rem;
+      white-space: nowrap; pointer-events: none;
+      opacity: 0; transform: translateX(-4px);
+      transition: opacity 0.15s, transform 0.15s; z-index: 50;
+    }
+    .nav-signout:hover::after { opacity: 1; transform: translateX(0); }
+
+    /* ─── LAYOUT ─── */
+    #dashboard-layout { display: flex; min-height: 100vh; }
+    #main-content {
+      margin-left: var(--sidebar-w); flex: 1;
+      padding: 2.5rem 3rem; min-height: 100vh;
+    }
+    .content-panel { animation: fade-in-up 0.4s cubic-bezier(.34,1.56,.64,1) both; }
+    @keyframes fade-in-up { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    .hidden { display: none !important; }
+
+    /* ─── PAGE HEADER ─── */
+    .page-header { margin-bottom: 2rem; }
+    .page-title { font-size: 1.75rem; font-weight: 800; letter-spacing: -0.03em; line-height: 1.2; }
+    .page-subtitle { color: hsl(var(--muted-fg)); font-size: 0.9rem; margin-top: 0.3rem; }
+    .shine-line { height: 1px; background: linear-gradient(to right, transparent, hsl(var(--primary) / .35), transparent); margin: 1.75rem 0; }
+
+    /* ─── METRICS ─── */
+    .metrics-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1.1rem; margin-bottom: 2rem; }
+    .metric-card { padding: 1.3rem 1.4rem; display: flex; flex-direction: column; gap: 0.4rem; position: relative; }
+    .metric-label { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: hsl(var(--muted-fg)); }
+    .metric-value { font-size: 1.9rem; font-weight: 800; letter-spacing: -0.03em; line-height: 1; }
+    .metric-sub { font-size: 0.78rem; color: hsl(var(--muted-fg)); }
+    .metric-icon {
+      position: absolute; top: 1.1rem; right: 1.1rem;
+      width: 32px; height: 32px; border-radius: 0.55rem;
+      background: hsl(var(--accent) / .25); border: 1px solid hsl(var(--primary) / .2);
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* ─── TABLES ─── */
+    .table-card { overflow: hidden; }
+    .table-header-row { padding: 1.25rem 1.75rem; border-bottom: 1px solid hsl(var(--border)); display: flex; align-items: center; justify-content: space-between; }
+    .table-title { font-weight: 700; font-size: 1rem; }
+    table { width: 100%; border-collapse: collapse; }
+    thead tr { border-bottom: 1px solid hsl(var(--border)); }
+    thead th { padding: 0.75rem 1.5rem; text-align: left; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: hsl(var(--muted-fg)); }
+    tbody tr { border-bottom: 1px solid hsl(var(--border) / .5); transition: background 0.15s; cursor: pointer; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: hsl(var(--secondary) / .5); }
+    tbody td { padding: 0.9rem 1.5rem; font-size: 0.875rem; vertical-align: middle; }
+    .cell-main { font-weight: 600; }
+    .cell-sub { color: hsl(var(--muted-fg)); font-size: 0.78rem; }
+    .empty-cell { color: hsl(var(--muted-fg) / .5); font-size: 0.8rem; }
+
+    /* ─── CLIENTS GRID ─── */
+    .clients-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; margin-bottom: 2rem; }
+    .client-card { padding: 1.5rem; cursor: pointer; }
+    .client-card-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 1rem; }
+    .client-avatar {
+      width: 42px; height: 42px; border-radius: 0.7rem;
+      background: var(--g-primary); display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; font-weight: 800; color: #fff; flex-shrink: 0;
+      box-shadow: 0 4px 14px hsl(270 55% 38% / .3);
+    }
+    .client-name { font-weight: 700; font-size: 1rem; margin-bottom: 0.1rem; }
+    .client-company { font-size: 0.8rem; color: hsl(var(--muted-fg)); }
+    .client-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem; padding-top: 1rem; border-top: 1px solid hsl(var(--border)); }
+    .client-stat-label { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: hsl(var(--muted-fg)); margin-bottom: 0.2rem; }
+    .client-stat-val { font-size: 1rem; font-weight: 800; letter-spacing: -0.02em; }
+
+    /* ─── SECTION LABEL ─── */
+    .section-label { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: hsl(var(--muted-fg)); }
+
+    /* ─── AGENTS BY CLIENT ─── */
+    .client-agents-card { padding: 1.5rem 1.75rem; margin-bottom: 1rem; }
+    .client-agents-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid hsl(var(--border)); }
+    .client-agents-name { font-weight: 700; font-size: 1rem; display: flex; align-items: center; gap: 0.6rem; }
+    .agent-row { display: flex; align-items: center; justify-content: space-between; padding: 0.6rem 0; border-bottom: 1px solid hsl(var(--border)/.4); }
+    .agent-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .agent-row-left { display: flex; align-items: center; gap: 0.7rem; }
+    .agent-row-icon { width: 28px; height: 28px; border-radius: 0.45rem; background: hsl(var(--accent)/.25); border: 1px solid hsl(var(--primary)/.2); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .agent-row-name { font-weight: 600; font-size: 0.875rem; }
+    .agent-row-contacted { font-size: 0.78rem; color: hsl(var(--muted-fg)); }
+
+    /* ─── AGENTS SUMMARY ─── */
+    .agents-summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.1rem; margin-bottom: 2rem; }
+    .agent-type-card { padding: 1.4rem; text-align: center; }
+    .agent-type-icon {
+      width: 44px; height: 44px; border-radius: 0.75rem; margin: 0 auto 0.75rem;
+      background: hsl(var(--accent) / .25); border: 1px solid hsl(var(--primary) / .2);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .agent-type-count { font-size: 2rem; font-weight: 800; letter-spacing: -0.03em; line-height: 1; margin-bottom: 0.25rem; }
+    .agent-type-label { font-size: 0.78rem; font-weight: 600; color: hsl(var(--muted-fg)); }
+
+    /* ─── REVENUE ─── */
+    .revenue-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem; }
+    .revenue-card { padding: 1.75rem 2rem; }
+    .revenue-card-title { font-weight: 700; font-size: 1rem; margin-bottom: 1.25rem; }
+    .rev-rows { display: flex; flex-direction: column; }
+    .rev-row { display: flex; justify-content: space-between; align-items: center; padding: 0.7rem 0; border-bottom: 1px solid hsl(var(--border) / .5); }
+    .rev-row:last-child { border-bottom: none; }
+    .rev-label { font-size: 0.875rem; color: hsl(var(--muted-fg)); }
+    .rev-val { font-size: 0.9rem; font-weight: 600; }
+    .rev-row.total .rev-label { color: hsl(var(--fg)); font-weight: 600; }
+    .rev-row.total .rev-val { font-size: 1.15rem; font-weight: 800; background: var(--g-primary); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+
+    /* ─── ADMIN BADGE ─── */
+    .admin-badge {
+      display: inline-flex; align-items: center; gap: 0.3rem;
+      background: hsl(38 70% 20% / .3); border: 1px solid hsl(38 80% 45% / .4);
+      color: hsl(38 90% 62%); font-size: 0.65rem; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase; padding: 0.2rem 0.55rem; border-radius: 9999px;
+      margin-bottom: 1.5rem;
+    }
+
+    /* ─── CLIENT MODAL ─── */
+    .modal-backdrop {
+      position: fixed; inset: 0; z-index: 100;
+      background: hsl(270 40% 2% / .8);
+      backdrop-filter: blur(8px);
+      display: flex; align-items: center; justify-content: center; padding: 2rem;
+    }
+    .modal-card {
+      background: var(--g-card); border: 1px solid hsl(var(--border));
+      border-radius: 1.4rem; box-shadow: 0 24px 80px hsl(270 40% 3% / .7), var(--shadow-glow);
+      width: 100%; max-width: 680px; max-height: 80vh; overflow-y: auto; padding: 2rem;
+      position: relative;
+    }
+    .modal-close {
+      position: absolute; top: 1.25rem; right: 1.25rem;
+      width: 32px; height: 32px; border-radius: 50%;
+      background: hsl(var(--secondary)); border: 1px solid hsl(var(--border));
+      color: hsl(var(--muted-fg)); font-size: 1.2rem; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: color 0.2s, background 0.2s;
+    }
+    .modal-close:hover { color: hsl(var(--fg)); background: hsl(var(--accent) / .3); }
+  </style>
+</head>
+<body>
+  <div class="scene-glow">
+    <div class="glow-blob glow-top"></div>
+    <div class="glow-blob glow-bottom"></div>
+    <div class="glow-noise"></div>
+  </div>
+
+  <div id="app">
+
+    <!-- ── AUTH SCREEN ── -->
+    <div id="screen-auth">
+      <div style="text-align:center;">
+        <div style="font-size:1.4rem;font-weight:800;letter-spacing:-0.03em;margin-bottom:0.25rem;">
+          Luno <span class="gradient-text">AI</span>
+        </div>
+        <p style="font-size:0.85rem;color:hsl(var(--muted-fg));">Admin Portal</p>
+      </div>
+      <div class="card auth-card">
+        <h2 class="auth-heading">Admin Sign In</h2>
+        <p class="auth-sub">Restricted access — authorized personnel only</p>
+        <div class="auth-fields">
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input class="form-input" id="auth-email" type="email" placeholder="admin@lunoai.com" autocomplete="email">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <input class="form-input" id="auth-pass" type="password" placeholder="••••••••" autocomplete="current-password">
+          </div>
+        </div>
+        <p class="auth-error" id="auth-error"></p>
+        <button class="btn-primary" style="width:100%;justify-content:center;margin-top:0.5rem;" onclick="signIn()">
+          Sign In
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- ── DASHBOARD ── -->
+    <div id="dashboard-layout" class="hidden">
+
+      <!-- SIDEBAR -->
+      <nav id="sidebar">
+        <!-- Logo (crescent only) -->
+        <div class="sidebar-logo">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="20 40 115 90" width="30" height="30">
+            <defs>
+              <radialGradient id="sb-moonFill" cx="38%" cy="44%" r="80%" gradientUnits="objectBoundingBox">
+                <stop offset="0%" stop-color="#3a1870"/>
+                <stop offset="60%" stop-color="#1a0840"/>
+                <stop offset="100%" stop-color="#0a0220"/>
+              </radialGradient>
+              <filter id="sb-rimGlow" x="-40%" y="-40%" width="180%" height="180%">
+                <feGaussianBlur stdDeviation="3.5" result="blur"/>
+                <feMerge><feMergeNode in="blur"/><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+            </defs>
+            <path d="M 124,52 A 38,38 0 1,0 124,118 A 30,30 0 1,1 124,52 Z" fill="#6622cc" opacity="0.5" filter="url(#sb-moonBloom)"/>
+            <path d="M 124,52 A 38,38 0 1,0 124,118 A 30,30 0 1,1 124,52 Z" fill="url(#sb-moonFill)"/>
+            <path d="M 124,52 A 38,38 0 1,0 124,118 A 30,30 0 1,1 124,52 Z" fill="none" stroke="#d4aaff" stroke-width="1.4" opacity="0.92" filter="url(#sb-rimGlow)"/>
+          </svg>
+        </div>
+
+        <!-- Nav items -->
+        <div class="sidebar-nav">
+          <div class="nav-icon-item active" data-page="overview" data-label="Overview" onclick="navigate('overview')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          </div>
+          <div class="nav-icon-item" data-page="clients" data-label="Clients" onclick="navigate('clients')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          </div>
+          <div class="nav-icon-item" data-page="agents" data-label="Agents" onclick="navigate('agents')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          </div>
+          <div class="nav-icon-item" data-page="appointments" data-label="Appointments" onclick="navigate('appointments')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          </div>
+          <div class="nav-icon-item" data-page="revenue" data-label="Revenue" onclick="navigate('revenue')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          </div>
+        </div>
+
+        <div class="sidebar-bottom">
+          <div class="sidebar-divider"></div>
+          <button class="nav-signout" onclick="signOut()">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          </button>
+        </div>
+      </nav>
+
+      <!-- MAIN CONTENT -->
+      <main id="main-content">
+
+        <!-- ── OVERVIEW ── -->
+        <div id="panel-overview" class="content-panel">
+          <div class="page-header">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;">
+              <div class="admin-badge" style="margin-bottom:0;">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                Admin
+              </div>
+              <img src="reference-images/lunoai-logo-v2.svg" alt="Luno AI" style="height:52px;width:auto;opacity:0.92;filter:drop-shadow(0 0 12px hsl(270 65% 54% / .5));">
+            </div>
+            <h1 class="page-title">Overview <em class="serif-italic">Dashboard</em></h1>
+            <p class="page-subtitle">Everything happening across your Luno AI clients</p>
+          </div>
+          <div class="shine-line"></div>
+
+          <!-- My Revenue row -->
+          <p class="section-label" style="margin-bottom:0.75rem;">My Revenue</p>
+          <div class="metrics-grid" style="grid-template-columns:repeat(2,1fr);margin-bottom:1.75rem;">
+            <div class="card metric-card" style="border-color:hsl(var(--primary)/.35);box-shadow:var(--shadow-glow),var(--shadow-card);">
+              <p class="metric-label">My Total Revenue</p>
+              <p class="metric-value gradient-text" id="m-my-revenue">—</p>
+              <p class="metric-sub">Setup fees + retainers + commissions</p>
+              <div class="metric-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="hsl(270,72%,70%)" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div>
+            </div>
+            <div class="card metric-card" style="border-color:hsl(var(--primary)/.35);box-shadow:var(--shadow-glow),var(--shadow-card);">
+              <p class="metric-label">Monthly Recurring Revenue</p>
+              <p class="metric-value gradient-text" id="m-mrr">—</p>
+              <p class="metric-sub">Total retainers per month</p>
+              <div class="metric-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="hsl(270,72%,70%)" stroke-width="2"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/></svg></div>
+            </div>
+          </div>
+
+          <!-- Platform metrics row -->
+          <p class="section-label" style="margin-bottom:0.75rem;">Platform</p>
+          <div class="metrics-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:2rem;">
+            <div class="card metric-card">
+              <p class="metric-label">Clients' Deal Revenue</p>
+              <p class="metric-value" id="m-revenue">—</p>
+              <p class="metric-sub">All-time closed deals</p>
+              <div class="metric-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="hsl(270,72%,70%)" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+            </div>
+            <div class="card metric-card">
+              <p class="metric-label">Total Appointments</p>
+              <p class="metric-value" id="m-appts">—</p>
+              <p class="metric-sub">Booked by AI agents</p>
+              <div class="metric-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="hsl(270,72%,70%)" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+            </div>
+            <div class="card metric-card">
+              <p class="metric-label">Active Clients</p>
+              <p class="metric-value" id="m-clients">—</p>
+              <p class="metric-sub">On the platform</p>
+              <div class="metric-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="hsl(270,72%,70%)" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
+            </div>
+            <div class="card metric-card">
+              <p class="metric-label">Active Agents</p>
+              <p class="metric-value" id="m-agents">—</p>
+              <p class="metric-sub">Running across clients</p>
+              <div class="metric-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="hsl(270,72%,70%)" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
+            </div>
+          </div>
+
+          <!-- Clients quick view -->
+          <div style="margin-bottom:1rem;"><p class="page-title" style="font-size:1.1rem;">Clients <em class="serif-italic">at a Glance</em></p></div>
+          <div class="clients-grid" id="overview-clients-grid">
+            <div class="card" style="padding:2rem;text-align:center;color:hsl(var(--muted-fg));grid-column:1/-1;">Loading…</div>
+          </div>
+        </div>
+
+        <!-- ── CLIENTS ── -->
+        <div id="panel-clients" class="content-panel hidden">
+          <div class="page-header">
+            <h1 class="page-title">Clients <em class="serif-italic">Management</em></h1>
+            <p class="page-subtitle">All clients on the platform and their performance</p>
+          </div>
+          <div class="shine-line"></div>
+          <div class="card table-card">
+            <div class="table-header-row">
+              <p class="table-title">All Clients</p>
+              <span class="badge badge-muted" id="clients-count-badge">— clients</span>
+            </div>
+            <div style="overflow-x:auto;">
+              <table>
+                <thead><tr>
+                  <th>Client</th><th>Company</th><th>Agents</th><th>Total Leads</th><th>Converted</th><th>Revenue</th><th>Status</th>
+                </tr></thead>
+                <tbody id="clients-tbody">
+                  <tr><td colspan="7" style="text-align:center;color:hsl(var(--muted-fg));padding:2rem;">Loading…</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── AGENTS ── -->
+        <div id="panel-agents" class="content-panel hidden">
+          <div class="page-header">
+            <h1 class="page-title">Agents <em class="serif-italic">Overview</em></h1>
+            <p class="page-subtitle">All AI agents running across your client base</p>
+          </div>
+          <div class="shine-line"></div>
+          <div class="agents-summary-grid" id="agents-type-grid">
+            <div class="card" style="padding:1.5rem;text-align:center;color:hsl(var(--muted-fg));grid-column:1/-1;">Loading…</div>
+          </div>
+          <div style="margin-bottom:1.25rem;"><p class="page-title" style="font-size:1.1rem;">Agents <em class="serif-italic">by Client</em></p></div>
+          <div id="agents-by-client">
+            <div class="card" style="padding:2rem;text-align:center;color:hsl(var(--muted-fg));">Loading…</div>
+          </div>
+        </div>
+
+        <!-- ── APPOINTMENTS ── -->
+        <div id="panel-appointments" class="content-panel hidden">
+          <div class="page-header">
+            <h1 class="page-title">All <em class="serif-italic">Appointments</em></h1>
+            <p class="page-subtitle">Every appointment booked across all clients</p>
+          </div>
+          <div class="shine-line"></div>
+          <div class="card table-card">
+            <div class="table-header-row">
+              <p class="table-title">Appointments</p>
+              <span class="badge badge-muted" id="appts-count-badge">—</span>
+            </div>
+            <div style="overflow-x:auto;">
+              <table>
+                <thead><tr>
+                  <th>Lead Name</th><th>Client</th><th>Scheduled Time</th><th>Agent</th><th>Status</th><th>Notes</th>
+                </tr></thead>
+                <tbody id="all-appts-tbody">
+                  <tr><td colspan="6" style="text-align:center;color:hsl(var(--muted-fg));padding:2rem;">Loading…</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── REVENUE ── -->
+        <div id="panel-revenue" class="content-panel hidden">
+          <div class="page-header">
+            <h1 class="page-title">Revenue <em class="serif-italic">Breakdown</em></h1>
+            <p class="page-subtitle">Billing, commissions, and deal revenue across all clients</p>
+          </div>
+          <div class="shine-line"></div>
+
+          <!-- Top totals -->
+          <div class="metrics-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:2rem;">
+            <div class="card metric-card">
+              <p class="metric-label">Total Setup Fees</p>
+              <p class="metric-value gradient-text" id="rev-setup">—</p>
+              <div class="metric-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="hsl(270,72%,70%)" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div>
+            </div>
+            <div class="card metric-card">
+              <p class="metric-label">Monthly Retainers</p>
+              <p class="metric-value gradient-text" id="rev-retainer">—</p>
+              <p class="metric-sub">Per month recurring</p>
+              <div class="metric-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="hsl(270,72%,70%)" stroke-width="2"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/></svg></div>
+            </div>
+            <div class="card metric-card">
+              <p class="metric-label">Commission Earned</p>
+              <p class="metric-value gradient-text" id="rev-commission">—</p>
+              <p class="metric-sub">From closed deals</p>
+              <div class="metric-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="hsl(270,72%,70%)" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+            </div>
+          </div>
+
+          <!-- Per-client billing table -->
+          <div style="margin-bottom:1rem;"><p class="page-title" style="font-size:1.1rem;">Per-Client <em class="serif-italic">Billing</em></p></div>
+          <div class="card table-card">
+            <div style="overflow-x:auto;">
+              <table>
+                <thead><tr>
+                  <th>Client</th><th>Setup Fee</th><th>Monthly Retainer</th><th>Commission %</th><th>Deal Revenue</th><th>Commission Due</th>
+                </tr></thead>
+                <tbody id="revenue-tbody">
+                  <tr><td colspan="6" style="text-align:center;color:hsl(var(--muted-fg));padding:2rem;">Loading…</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+
+    <!-- ── CLIENT DETAIL MODAL ── -->
+    <div id="client-modal" class="modal-backdrop hidden" onclick="if(event.target===this)closeClientModal()">
+      <div class="modal-card">
+        <button class="modal-close" onclick="closeClientModal()">×</button>
+        <div id="client-modal-body" style="padding-top:0.5rem;"></div>
+      </div>
+    </div>
+
+  </div><!-- #app -->
+
+  <script>
+    // ── SUPABASE ──
+    const SUPABASE_URL = 'https://ucuxvcvamglngydpeaoy.supabase.co';
+    const ANON_KEY     = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjdXh2Y3ZhbWdsbmd5ZHBlYW95Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAzNzgyNDYsImV4cCI6MjA3NTk1NDI0Nn0.1IX3iIJZIptPTEEcUkhBhRB0dB455q8ZkXS-yavuiMM';
+    const SERVICE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjdXh2Y3ZhbWdsbmd5ZHBlYW95Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MDM3ODI0NiwiZXhwIjoyMDc1OTU0MjQ2fQ.jBBeIRNAtNDaZTGo3MFV8rVpq2tOKjHStlXCI-Gwpoo';
+
+    // Admin emails — only these can access
+    const ADMIN_EMAILS = ['eabuhay@gmu.edu', 'eabuhay20@gmail.com', 'eyosiasabuhay20@gmail.com'];
+
+    const { createClient } = supabase;
+    const sbAuth  = createClient(SUPABASE_URL, ANON_KEY);
+    const sbAdmin = createClient(SUPABASE_URL, SERVICE_KEY, { auth: { autoRefreshToken: false, persistSession: false } });
+
+    // ── AUTH ──
+    async function signIn() {
+      const email = document.getElementById('auth-email').value.trim();
+      const pass  = document.getElementById('auth-pass').value;
+      const errEl = document.getElementById('auth-error');
+      errEl.textContent = '';
+
+      if (!email || !pass) { errEl.textContent = 'Please enter email and password.'; return; }
+
+      const { data, error } = await sbAuth.auth.signInWithPassword({ email, password: pass });
+      if (error) { errEl.textContent = error.message; return; }
+
+      if (!ADMIN_EMAILS.includes(data.user.email)) {
+        await sbAuth.auth.signOut();
+        errEl.textContent = 'Access denied — not an admin account.';
+        return;
+      }
+
+      document.getElementById('screen-auth').classList.add('hidden');
+      document.getElementById('dashboard-layout').classList.remove('hidden');
+      loadAllData();
+    }
+
+    document.getElementById('auth-pass').addEventListener('keydown', e => { if (e.key === 'Enter') signIn(); });
+
+    async function signOut() {
+      await sbAuth.auth.signOut();
+      document.getElementById('dashboard-layout').classList.add('hidden');
+      document.getElementById('screen-auth').classList.remove('hidden');
+    }
+
+    // ── NAVIGATION ──
+    const panels = ['overview','clients','agents','appointments','revenue'];
+    function navigate(page) {
+      panels.forEach(p => {
+        document.getElementById('panel-' + p).classList.toggle('hidden', p !== page);
+      });
+      document.querySelectorAll('.nav-icon-item').forEach(el => {
+        el.classList.toggle('active', el.dataset.page === page);
+      });
+    }
+
+    // ── GLOBAL DATA ──
+    let allClients = [], allLeads = [], allAppts = [], allAgents = [], allBilling = [];
+
+    async function loadAllData() {
+      const [clientsRes, leadsRes, apptsRes, agentsRes, billingRes] = await Promise.all([
+        sbAdmin.from('clients').select('*'),
+        sbAdmin.from('leads').select('*'),
+        sbAdmin.from('appointments').select('*'),
+        sbAdmin.from('client_agents_enabled').select('*'),
+        sbAdmin.from('client_billing').select('*'),
+      ]);
+
+      allClients = clientsRes.data || [];
+      allLeads   = leadsRes.data   || [];
+      allAppts   = apptsRes.data   || [];
+      allAgents  = agentsRes.data  || [];
+      allBilling = billingRes.data || [];
+
+      renderOverview();
+      renderClients();
+      renderAgents();
+      renderAppointments();
+      renderRevenue();
+    }
+
+    // ── HELPERS ──
+    function fmt$(n) { return '$' + Number(n || 0).toLocaleString(); }
+    function escHtml(s) {
+      return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+    function clientName(id) {
+      const c = allClients.find(c => c.id === id);
+      return c ? (c.name || c.email || 'Client') : '—';
+    }
+    function statusBadge(status) {
+      const s = (status||'').toLowerCase();
+      if (s === 'scheduled') return '<span class="badge badge-green"><span class="badge-dot badge-dot-green"></span>Scheduled</span>';
+      if (s === 'completed') return '<span class="badge badge-blue">Completed</span>';
+      if (s === 'cancelled') return '<span class="badge badge-red">Cancelled</span>';
+      return `<span class="badge badge-muted">${escHtml(status||'—')}</span>`;
+    }
+
+    // ── OVERVIEW ──
+    function renderOverview() {
+      const totalDealRev   = allLeads.reduce((s,l) => s + (l.if_closed||0), 0);
+      const totalSetup     = allBilling.reduce((s,b) => s + (b.setup_fee||0), 0);
+      const totalRetainer  = allBilling.reduce((s,b) => s + (b.billing_amount||0), 0);
+      const totalComm      = allBilling.reduce((s,b) => {
+        if (!b.commission_percentage) return s;
+        const clientLeads = allLeads.filter(l => l.client_id === b.client_id);
+        const dealRev = clientLeads.reduce((x,l) => x + (l.if_closed||0), 0);
+        return s + (b.commission_percentage/100) * dealRev;
+      }, 0);
+      const myTotalRev = totalSetup + totalRetainer + Math.round(totalComm);
+
+      document.getElementById('m-my-revenue').textContent = fmt$(myTotalRev);
+      document.getElementById('m-mrr').textContent        = fmt$(totalRetainer) + '/mo';
+      document.getElementById('m-revenue').textContent    = fmt$(totalDealRev);
+      document.getElementById('m-appts').textContent      = allAppts.length;
+      document.getElementById('m-clients').textContent    = allClients.length;
+      document.getElementById('m-agents').textContent     = allAgents.filter(a => a.enabled).length;
+
+      // Clients at a glance (cards)
+      const grid = document.getElementById('overview-clients-grid');
+      if (!allClients.length) {
+        grid.innerHTML = '<div class="card" style="padding:2rem;text-align:center;color:hsl(var(--muted-fg));grid-column:1/-1;">No clients yet</div>';
+        return;
+      }
+      grid.innerHTML = allClients.map(c => {
+        const leads     = allLeads.filter(l => l.client_id === c.id);
+        const converted = leads.filter(l => (l.if_closed||0) > 0).length;
+        const rev       = leads.reduce((s,l) => s + (l.if_closed||0), 0);
+        const agents    = allAgents.filter(a => a.client_id === c.id && a.enabled).length;
+        const initials  = (c.name||c.email||'?').slice(0,1).toUpperCase();
+        return `<div class="card client-card" onclick="openClientModal('${c.id}')">
+          <div class="client-card-top">
+            <div style="display:flex;align-items:center;gap:0.75rem;">
+              <div class="client-avatar">${initials}</div>
+              <div>
+                <p class="client-name">${escHtml(c.name||c.email||'—')}</p>
+                <p class="client-company">${escHtml(c.company_name||'')}</p>
+              </div>
+            </div>
+            <span class="badge badge-${agents > 0 ? 'green' : 'muted'}">${agents > 0 ? agents + ' agent'+(agents!==1?'s':'') : 'No agents'}</span>
+          </div>
+          <div class="client-stats">
+            <div><p class="client-stat-label">Leads</p><p class="client-stat-val">${leads.length}</p></div>
+            <div><p class="client-stat-label">Converted</p><p class="client-stat-val" style="color:hsl(142 70% 55%);">${converted}</p></div>
+            <div><p class="client-stat-label">Revenue</p><p class="client-stat-val" style="font-size:0.85rem;">${rev > 0 ? fmt$(rev) : '—'}</p></div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    // ── CLIENTS PANEL ──
+    function renderClients() {
+      document.getElementById('clients-count-badge').textContent = allClients.length + ' client' + (allClients.length !== 1 ? 's' : '');
+      const tbody = document.getElementById('clients-tbody');
+      if (!allClients.length) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:hsl(var(--muted-fg));padding:2rem;">No clients</td></tr>';
+        return;
+      }
+      tbody.innerHTML = allClients.map(c => {
+        const leads     = allLeads.filter(l => l.client_id === c.id);
+        const converted = leads.filter(l => (l.if_closed||0) > 0).length;
+        const rev       = leads.reduce((s,l) => s + (l.if_closed||0), 0);
+        const agents    = allAgents.filter(a => a.client_id === c.id && a.enabled);
+        const initials  = (c.name||c.email||'?').slice(0,1).toUpperCase();
+        return `<tr onclick="openClientModal('${c.id}')">
+          <td>
+            <div style="display:flex;align-items:center;gap:0.6rem;">
+              <div class="client-avatar" style="width:32px;height:32px;font-size:0.8rem;border-radius:0.5rem;">${initials}</div>
+              <div><p class="cell-main">${escHtml(c.name||'—')}</p><p class="cell-sub">${escHtml(c.email||'')}</p></div>
+            </div>
+          </td>
+          <td>${escHtml(c.company_name||'—')}</td>
+          <td>${agents.length > 0 ? `<span class="badge badge-purple">${agents.length} active</span>` : '<span class="empty-cell">None</span>'}</td>
+          <td>${leads.length}</td>
+          <td style="color:hsl(142 70% 55%);font-weight:700;">${converted}</td>
+          <td style="font-weight:600;">${rev > 0 ? fmt$(rev) : '<span class="empty-cell">—</span>'}</td>
+          <td><span class="badge badge-green"><span class="badge-dot badge-dot-green"></span>Active</span></td>
+        </tr>`;
+      }).join('');
+    }
+
+    // ── AGENTS PANEL ──
+    function renderAgents() {
+      const agentLabels = {
+        speed_to_lead:      'Speed to Lead',
+        appointment_setter: 'Appointment Setter',
+        reactivation:       'Reactivation',
+        ai_sms:             'AI SMS',
+      };
+      const agentIcons = {
+        speed_to_lead:      '<path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>',
+        appointment_setter: '<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',
+        reactivation:       '<polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/>',
+        ai_sms:             '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',
+      };
+
+      const enabled = allAgents.filter(a => a.enabled);
+      const typeCounts = {};
+      enabled.forEach(a => { typeCounts[a.agent_type] = (typeCounts[a.agent_type]||0) + 1; });
+
+      // Summary type cards
+      const allTypes = ['speed_to_lead','appointment_setter','reactivation','ai_sms'];
+      document.getElementById('agents-type-grid').innerHTML = allTypes.map(type => {
+        const count = typeCounts[type] || 0;
+        const icon  = agentIcons[type] || '';
+        return `<div class="card agent-type-card">
+          <div class="agent-type-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="hsl(270,72%,70%)" stroke-width="2">${icon}</svg>
+          </div>
+          <p class="agent-type-count ${count > 0 ? 'gradient-text' : ''}">${count}</p>
+          <p class="agent-type-label">${agentLabels[type]||type}</p>
+        </div>`;
+      }).join('');
+
+      // Group by client
+      const container = document.getElementById('agents-by-client');
+      if (!enabled.length) {
+        container.innerHTML = '<div class="card" style="padding:2rem;text-align:center;color:hsl(var(--muted-fg));">No active agents</div>';
+        return;
+      }
+
+      // Build per-client cards
+      container.innerHTML = allClients.map(c => {
+        const clientAgents = enabled.filter(a => a.client_id === c.id);
+        if (!clientAgents.length) return '';
+        const initials = (c.name||c.email||'?').slice(0,1).toUpperCase();
+        const rows = clientAgents.map(a => {
+          const label = agentLabels[a.agent_type] || a.agent_type.replace(/_/g,' ').replace(/\b\w/g,x=>x.toUpperCase());
+          const icon  = agentIcons[a.agent_type] || '<path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>';
+          return `<div class="agent-row">
+            <div class="agent-row-left">
+              <div class="agent-row-icon">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="hsl(270,72%,70%)" stroke-width="2">${icon}</svg>
+              </div>
+              <div>
+                <p class="agent-row-name">${escHtml(label)}</p>
+                <p class="agent-row-contacted">${a.leads_contacted||0} leads contacted</p>
+              </div>
+            </div>
+            <span class="badge badge-green"><span class="badge-dot badge-dot-green"></span>Active</span>
+          </div>`;
+        }).join('');
+        return `<div class="card client-agents-card">
+          <div class="client-agents-header">
+            <div class="client-agents-name">
+              <div class="client-avatar" style="width:30px;height:30px;font-size:0.75rem;border-radius:0.45rem;">${initials}</div>
+              ${escHtml(c.name||c.email||'—')}
+              ${c.company_name ? `<span style="font-size:0.8rem;font-weight:400;color:hsl(var(--muted-fg));">· ${escHtml(c.company_name)}</span>` : ''}
+            </div>
+            <span class="badge badge-purple">${clientAgents.length} agent${clientAgents.length!==1?'s':''}</span>
+          </div>
+          ${rows}
+        </div>`;
+      }).filter(Boolean).join('');
+    }
+
+    // ── APPOINTMENTS PANEL ──
+    function summaryToBullets(summary) {
+      if (!summary) return null;
+      const parts = summary.split(/(?:[.!?]+\s+|\n+)/).map(s => s.trim()).filter(s => s.length > 20);
+      return parts.slice(0, 3);
+    }
+
+    function renderAppointments() {
+      const sorted = [...allAppts].sort((a,b) => new Date(b['Scheduled Time']||0) - new Date(a['Scheduled Time']||0));
+      document.getElementById('appts-count-badge').textContent = sorted.length + ' appointment' + (sorted.length!==1?'s':'');
+      const tbody = document.getElementById('all-appts-tbody');
+      if (!sorted.length) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:hsl(var(--muted-fg));padding:2rem;">No appointments yet</td></tr>';
+        return;
+      }
+
+      // Build lead summary lookup: lead_name (lowercase) → call summary, per client
+      const summaryMap = {};
+      allLeads.forEach(l => {
+        if (l.lead_name && l['call summary']) {
+          summaryMap[l.lead_name.trim().toLowerCase()] = l['call summary'];
+        }
+      });
+
+      tbody.innerHTML = sorted.map(a => {
+        const time  = a['Scheduled Time'] ? new Date(a['Scheduled Time']).toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'}) : '—';
+        const agent = a.agent_type ? a.agent_type.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase()) : '—';
+        const key   = (a.lead_name||'').trim().toLowerCase();
+        const callSum = summaryMap[key] || null;
+        const bullets = callSum ? summaryToBullets(callSum) : null;
+        let notesCell;
+        if (bullets && bullets.length) {
+          notesCell = `<ul style="margin:0;padding-left:1.1rem;font-size:0.75rem;color:hsl(var(--muted-fg));line-height:1.6;">${bullets.map(b=>`<li style="margin-bottom:0.2rem;">${escHtml(b)}</li>`).join('')}</ul>`;
+        } else if (a.notes) {
+          notesCell = `<span class="cell-sub">${escHtml(a.notes)}</span>`;
+        } else {
+          notesCell = '<span class="empty-cell">—</span>';
+        }
+        return `<tr>
+          <td><p class="cell-main">${escHtml(a.lead_name||'—')}</p></td>
+          <td><span class="cell-sub">${escHtml(clientName(a.client_id))}</span></td>
+          <td style="font-size:0.82rem;">${time}</td>
+          <td><span style="font-size:0.8rem;color:hsl(var(--primary-hi));">${escHtml(agent)}</span></td>
+          <td>${statusBadge(a.status)}</td>
+          <td>${notesCell}</td>
+        </tr>`;
+      }).join('');
+    }
+
+    // ── REVENUE PANEL ──
+    function renderRevenue() {
+      let totalSetup = 0, totalRetainer = 0, totalCommission = 0;
+
+      const rows = allClients.map(c => {
+        const billing   = allBilling.find(b => b.client_id === c.id);
+        const leads     = allLeads.filter(l => l.client_id === c.id);
+        const dealRev   = leads.reduce((s,l) => s + (l.if_closed||0), 0);
+        const setup     = billing?.setup_fee || 0;
+        const retainer  = billing?.billing_amount || 0;
+        const commPct   = billing?.commission_percentage || 0;
+        const commDue   = commPct > 0 ? (commPct/100) * dealRev : 0;
+
+        totalSetup      += setup;
+        totalRetainer   += retainer;
+        totalCommission += commDue;
+
+        return `<tr>
+          <td><p class="cell-main">${escHtml(c.name||c.email||'—')}</p></td>
+          <td style="font-weight:600;">${setup > 0 ? fmt$(setup) : '<span class="empty-cell">—</span>'}</td>
+          <td style="font-weight:600;">${retainer > 0 ? fmt$(retainer)+'/mo' : '<span class="empty-cell">—</span>'}</td>
+          <td>${commPct > 0 ? commPct+'%' : '<span class="empty-cell">—</span>'}</td>
+          <td style="font-weight:600;color:hsl(142 70% 55%);">${dealRev > 0 ? fmt$(dealRev) : '<span class="empty-cell">—</span>'}</td>
+          <td style="font-weight:700;">${commDue > 0 ? fmt$(Math.round(commDue)) : '<span class="empty-cell">—</span>'}</td>
+        </tr>`;
+      });
+
+      document.getElementById('rev-setup').textContent      = fmt$(totalSetup);
+      document.getElementById('rev-retainer').textContent   = fmt$(totalRetainer) + '/mo';
+      document.getElementById('rev-commission').textContent = fmt$(Math.round(totalCommission));
+
+      const tbody = document.getElementById('revenue-tbody');
+      tbody.innerHTML = rows.length ? rows.join('') : '<tr><td colspan="6" style="text-align:center;color:hsl(var(--muted-fg));padding:2rem;">No billing data</td></tr>';
+    }
+
+    // ── CLIENT DETAIL MODAL ──
+    function openClientModal(clientId) {
+      const c       = allClients.find(x => x.id === clientId);
+      if (!c) return;
+      const leads   = allLeads.filter(l => l.client_id === clientId);
+      const appts   = allAppts.filter(a => a.client_id === clientId);
+      const agents  = allAgents.filter(a => a.client_id === clientId && a.enabled);
+      const billing = allBilling.find(b => b.client_id === clientId);
+      const rev     = leads.reduce((s,l) => s + (l.if_closed||0), 0);
+      const conv    = leads.filter(l => (l.if_closed||0) > 0).length;
+      const initials= (c.name||c.email||'?').slice(0,1).toUpperCase();
+
+      document.getElementById('client-modal-body').innerHTML = `
+        <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem;">
+          <div class="client-avatar" style="width:52px;height:52px;font-size:1.3rem;">${initials}</div>
+          <div>
+            <h2 style="font-size:1.3rem;font-weight:800;letter-spacing:-0.03em;">${escHtml(c.name||'—')}</h2>
+            <p style="color:hsl(var(--muted-fg));font-size:0.85rem;">${escHtml(c.email||'')} ${c.company_name ? '· '+escHtml(c.company_name) : ''}</p>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0.75rem;margin-bottom:1.5rem;">
+          <div class="card" style="padding:1rem;text-align:center;">
+            <p style="font-size:0.65rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:hsl(var(--muted-fg));margin-bottom:0.2rem;">Leads</p>
+            <p style="font-size:1.5rem;font-weight:800;">${leads.length}</p>
+          </div>
+          <div class="card" style="padding:1rem;text-align:center;">
+            <p style="font-size:0.65rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:hsl(var(--muted-fg));margin-bottom:0.2rem;">Converted</p>
+            <p style="font-size:1.5rem;font-weight:800;color:hsl(142 70% 55%);">${conv}</p>
+          </div>
+          <div class="card" style="padding:1rem;text-align:center;">
+            <p style="font-size:0.65rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:hsl(var(--muted-fg));margin-bottom:0.2rem;">Appointments</p>
+            <p style="font-size:1.5rem;font-weight:800;">${appts.length}</p>
+          </div>
+          <div class="card" style="padding:1rem;text-align:center;">
+            <p style="font-size:0.65rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:hsl(var(--muted-fg));margin-bottom:0.2rem;">Revenue</p>
+            <p style="font-size:1.5rem;font-weight:800;">${rev > 0 ? fmt$(rev) : '—'}</p>
+          </div>
+        </div>
+        ${billing ? `
+        <div style="margin-bottom:1.25rem;">
+          <p style="font-size:0.72rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:hsl(var(--muted-fg));margin-bottom:0.6rem;">Billing</p>
+          <div style="display:flex;gap:1.5rem;flex-wrap:wrap;">
+            ${billing.setup_fee ? `<span style="font-size:0.875rem;"><span style="color:hsl(var(--muted-fg));">Setup fee</span> <strong>${fmt$(billing.setup_fee)}</strong></span>` : ''}
+            ${billing.billing_amount ? `<span style="font-size:0.875rem;"><span style="color:hsl(var(--muted-fg));">Retainer</span> <strong>${fmt$(billing.billing_amount)}/mo</strong></span>` : ''}
+            ${billing.commission_percentage ? `<span style="font-size:0.875rem;"><span style="color:hsl(var(--muted-fg));">Commission</span> <strong>${billing.commission_percentage}%</strong></span>` : ''}
+          </div>
+        </div>` : ''}
+        ${agents.length ? `
+        <div>
+          <p style="font-size:0.72rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:hsl(var(--muted-fg));margin-bottom:0.6rem;">Active Agents (${agents.length})</p>
+          <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
+            ${agents.map(a => `<span class="badge badge-purple"><span class="badge-dot badge-dot-purple"></span>${escHtml(a.agent_type.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase()))}</span>`).join('')}
+          </div>
+        </div>` : ''}
+      `;
+      document.getElementById('client-modal').classList.remove('hidden');
+    }
+    function closeClientModal() {
+      document.getElementById('client-modal').classList.add('hidden');
+    }
+  </script>
+</body>
+</html>
