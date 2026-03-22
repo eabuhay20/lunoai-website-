@@ -1839,7 +1839,7 @@
       errEl.style.display = 'none';
       const { error } = await sb.auth.signInWithOAuth({
         provider: 'google',
-        options: { redirectTo: 'https://lunoai.io/client' }
+        options: { redirectTo: 'https://www.lunoai.io/client' }
       });
       if (error) {
         errEl.textContent = error.message;
