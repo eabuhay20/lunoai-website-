@@ -1736,23 +1736,10 @@
       if (event === 'SIGNED_IN' && session?.user) {
         const user = session.user;
         await resolveClientId(user);
-        const isNew = !currentClientId;
-        if (isNew) {
-          // Create client record from Google profile
-          try {
-            const name = user.user_metadata?.full_name || user.email;
-            const { data: client, error: cErr } = await sb.from('clients').insert({
-              name, company_name: name, email: user.email, phone: null, approved: false
-            }).select('id').single();
-            if (!cErr && client) {
-              currentClientId = client.id;
-              await sb.from('client_users').insert({ client_id: client.id, user_id: user.id, role: 'client' });
-            }
-          } catch(e) {}
-        }
         const authScreen = document.getElementById('screen-auth');
         if (authScreen && !authScreen.classList.contains('hidden')) {
-          await enterDashboard(isNew);
+          const intakeDone = await hasCompletedIntake();
+          await enterDashboard(!intakeDone);
         }
       }
     });
@@ -1805,6 +1792,17 @@
         currentClientId = c.id;
         await sb.from('client_users').upsert({ client_id: c.id, user_id: user.id, role: 'client' }, { onConflict: 'user_id,client_id' });
       }
+    }
+
+    async function hasCompletedIntake() {
+      if (!currentClientId) return false;
+      const { data } = await sb.from('clients').select('intake_completed').eq('id', currentClientId).maybeSingle();
+      return data?.intake_completed === true;
+    }
+
+    async function markIntakeCompleted() {
+      if (!currentClientId) return;
+      await sb.from('clients').update({ intake_completed: true }).eq('id', currentClientId);
     }
 
     async function enterDashboard(isNewSignup) {
@@ -2134,6 +2132,7 @@
         // Save on submit, then advance to onboarding call section
         saveIntakeData();
         localStorage.setItem('lunoai_intake_submitted', 'true');
+        markIntakeCompleted();
         document.getElementById('intake-status-banner').style.display = 'flex';
         currentIntakeSection = 9;
         updateIntakeUI();
