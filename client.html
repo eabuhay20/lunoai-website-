@@ -1786,7 +1786,8 @@
       const errEl = document.getElementById('auth-error');
       errEl.style.display = 'none';
       const { error } = await sb.auth.signInWithOAuth({
-        provider: 'google'
+        provider: 'google',
+        options: { redirectTo: window.location.href }
       });
       if (error) {
         errEl.textContent = error.message;
