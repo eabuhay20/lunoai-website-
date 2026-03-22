@@ -1750,7 +1750,8 @@
             }
           } catch(e) {}
         }
-        if (document.getElementById('screen-auth') && !document.getElementById('screen-auth').classList.contains('hidden')) {
+        const authScreen = document.getElementById('screen-auth');
+        if (authScreen && !authScreen.classList.contains('hidden')) {
           await enterDashboard(isNew);
         }
       }
@@ -1786,7 +1787,7 @@
       errEl.style.display = 'none';
       const { error } = await sb.auth.signInWithOAuth({
         provider: 'google',
-        options: { redirectTo: window.location.href }
+        options: { redirectTo: window.location.origin + window.location.pathname }
       });
       if (error) {
         errEl.textContent = error.message;
