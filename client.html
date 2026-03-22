@@ -1958,7 +1958,7 @@
         clientData = data;
       }
 
-      const displayName = clientData?.name || user.email || '';
+      const displayName = clientData?.name || '';
       const firstName = displayName.split(' ')[0] || 'there';
       document.getElementById('user-first-name').textContent = firstName;
       document.getElementById('info-name').textContent    = clientData?.name          || '—';
