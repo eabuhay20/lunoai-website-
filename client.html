@@ -918,6 +918,12 @@
             </svg>
             Appointments
           </a>
+          <a class="nav-item" data-page="status" onclick="navigate('status')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+            </svg>
+            Project Status
+          </a>
           <a class="nav-item" data-page="settings" onclick="navigate('settings')">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M12 15a3 3 0 100-6 3 3 0 000 6z"/>
@@ -1364,6 +1370,26 @@
                 </div>
               </div>
               <p class="billing-note">Billing details will be confirmed by your account manager after onboarding.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── PROJECT STATUS PANEL ── -->
+        <div id="panel-status" class="content-panel hidden">
+          <div class="page-header">
+            <h1 class="page-title">Project <em class="serif-italic">Status</em></h1>
+            <p class="page-subtitle">Track your build progress in real time</p>
+          </div>
+          <div class="shine-line"></div>
+
+          <div class="card" style="max-width:640px;padding:2rem 2rem 1.5rem;">
+            <p style="font-size:0.82rem;color:hsl(var(--muted-fg));margin-bottom:1.75rem;line-height:1.6;">
+              Your account manager will check off each step as your AI system is built and deployed.
+              This page updates automatically — no need to refresh.
+            </p>
+            <div id="project-checklist-list" style="display:flex;flex-direction:column;gap:0;">
+              <!-- populated by renderProjectChecklist() -->
+              <div style="color:hsl(var(--muted-fg));font-size:0.85rem;padding:1rem 0;">Loading status…</div>
             </div>
           </div>
         </div>
@@ -1962,6 +1988,88 @@
       renderAgents(agents);
       renderBilling(billing, leads);
       renderAppointments(appts, leads);
+
+      // Load project checklist
+      loadProjectChecklist();
+    }
+
+    // ── PROJECT CHECKLIST ──
+    let _checklistChannel = null;
+
+    async function loadProjectChecklist() {
+      if (!currentClientId) return;
+      const { data, error } = await sb
+        .from('project_checklist')
+        .select('*')
+        .eq('client_id', currentClientId)
+        .order('order', { ascending: true });
+      renderProjectChecklist(data || []);
+
+      // Realtime subscription (replace if exists)
+      if (_checklistChannel) { sb.removeChannel(_checklistChannel); }
+      _checklistChannel = sb.channel('checklist-' + currentClientId)
+        .on('postgres_changes', {
+          event: '*', schema: 'public', table: 'project_checklist',
+          filter: 'client_id=eq.' + currentClientId
+        }, () => loadProjectChecklist())
+        .subscribe();
+    }
+
+    function renderProjectChecklist(steps) {
+      const container = document.getElementById('project-checklist-list');
+      if (!container) return;
+
+      const DEFAULT_STEPS = [
+        { key: 'got_info',      label: 'Got the information' },
+        { key: 'started',       label: 'Started building' },
+        { key: 'finished',      label: 'Finished building' },
+        { key: 'testing',       label: 'Testing' },
+        { key: 'ready_live',    label: 'Ready to go live' },
+      ];
+
+      // If admin hasn't seeded yet, show placeholder with default labels
+      const displaySteps = steps.length > 0 ? steps : DEFAULT_STEPS.map((s, i) => ({
+        step_key: s.key, step_label: s.label, completed: false, completed_at: null, order: i
+      }));
+
+      container.innerHTML = displaySteps.map((step, idx) => {
+        const done = step.completed;
+        const isLast = idx === displaySteps.length - 1;
+        const dateStr = done && step.completed_at
+          ? new Date(step.completed_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+          : '';
+
+        return `
+          <div style="display:flex;align-items:flex-start;gap:1rem;padding:1rem 0;${!isLast ? 'border-bottom:1px solid hsl(var(--border));' : ''}">
+            <!-- Icon -->
+            <div style="flex-shrink:0;width:36px;height:36px;border-radius:50%;
+              background:${done ? 'hsl(142 60% 35% / 0.15)' : 'hsl(var(--secondary))'};
+              border:1.5px solid ${done ? 'hsl(142 60% 45%)' : 'hsl(var(--border))'};
+              display:flex;align-items:center;justify-content:center;">
+              ${done
+                ? `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="hsl(142 70% 55%)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>`
+                : `<span style="width:9px;height:9px;border-radius:50%;background:hsl(var(--border));display:block;"></span>`
+              }
+            </div>
+            <!-- Label -->
+            <div style="flex:1;min-width:0;padding-top:0.4rem;">
+              <p style="font-size:0.9rem;font-weight:${done ? '600' : '400'};
+                color:${done ? 'hsl(var(--fg))' : 'hsl(var(--muted-fg))'};">
+                ${escHtml(step.step_label)}
+              </p>
+              ${done && dateStr ? `<p style="font-size:0.75rem;color:hsl(142 60% 45%);margin-top:0.15rem;">Completed ${escHtml(dateStr)}</p>` : ''}
+            </div>
+            <!-- Status pill -->
+            <div style="flex-shrink:0;padding-top:0.35rem;">
+              <span style="font-size:0.72rem;font-weight:600;letter-spacing:0.05em;padding:0.2rem 0.6rem;border-radius:999px;
+                background:${done ? 'hsl(142 60% 35% / 0.15)' : 'hsl(var(--secondary))'};
+                color:${done ? 'hsl(142 70% 55%)' : 'hsl(var(--muted-fg))'};
+                border:1px solid ${done ? 'hsl(142 60% 45% / 0.3)' : 'hsl(var(--border))'};">
+                ${done ? 'Done' : 'Pending'}
+              </span>
+            </div>
+          </div>`;
+      }).join('');
     }
 
     // ── METRICS ──
@@ -2270,16 +2378,78 @@
     }
 
     function saveIntakeData() {
-      const data = {};
-      for (let i = 1; i <= 7; i++) {
-        const section = document.getElementById('intake-s' + i);
-        if (!section) continue;
-        section.querySelectorAll('input, textarea, select').forEach((el, idx) => {
-          data[`s${i}_field${idx}`] = el.value;
+      // ── Collect named fields from each intake section ──
+      const s1 = document.getElementById('intake-s1');
+      const s2 = document.getElementById('intake-s2');
+      const s3 = document.getElementById('intake-s3');
+      const s4 = document.getElementById('intake-s4');
+      const s5 = document.getElementById('intake-s5');
+      const s6 = document.getElementById('intake-s6');
+      const s7 = document.getElementById('intake-s7');
+      const g = (sec, sel, i) => sec?.querySelectorAll(sel)[i]?.value || '';
+
+      const data = {
+        // Section 1: Business Information
+        company_name:          g(s1, 'input[type="text"]', 0),
+        business_description:  g(s1, 'textarea', 0),
+        services_offered:      g(s1, 'textarea', 1),
+        documents_references:  g(s1, 'textarea', 2),
+        topics_to_avoid:       g(s1, 'textarea', 3),
+
+        // Section 2: Lead Source & Flow
+        lead_sources:          g(s2, 'textarea', 0),
+        form_fields_collected: g(s2, 'textarea', 1),
+        response_time:         g(s2, 'select', 0),
+        after_hours_leads:     g(s2, 'select', 1),
+
+        // Section 3: Lead Qualification
+        qualifies_lead:        g(s3, 'textarea', 0),
+        disqualifies_lead:     g(s3, 'textarea', 1),
+        hard_filters:          g(s3, 'textarea', 2),
+        qualification_timing:  g(s3, 'select', 0),
+        unqualified_handling:  g(s3, 'select', 1),
+
+        // Section 4: ROI & Performance
+        avg_leads_per_week:    g(s4, 'input[type="number"]', 0),
+        current_response_time: g(s4, 'input[type="text"]', 0),
+        time_per_lead:         g(s4, 'input[type="text"]', 1),
+        current_booking_rate:  g(s4, 'input[type="number"]', 1),
+        current_close_rate:    g(s4, 'input[type="number"]', 2),
+        pays_for_leads:        g(s4, 'select', 0),
+        paid_pct_not_contacted:g(s4, 'input[type="number"]', 3),
+        avg_deal_value:        g(s4, 'input[type="number"]', 4),
+        reasons_deals_lost:    g(s4, 'textarea', 0),
+
+        // Section 5: Follow-Up Workflow
+        current_followup_sequence: g(s5, 'textarea', 0),
+        full_sequence_outline:     g(s5, 'textarea', 1),
+
+        // Section 6: Call Style
+        agent_introduction:    g(s6, 'input[type="text"]', 0),
+        desired_tone:          g(s6, 'select', 0),
+        call_flow_order:       g(s6, 'input[type="text"]', 1),
+
+        // Section 7: Additional Notes
+        compliance_concerns:   g(s7, 'textarea', 0),
+        special_handling_notes:g(s7, 'textarea', 1),
+
+        // Section 8: Additional notes field
+        additional_notes: document.getElementById('intake-additional-notes')?.value || '',
+      };
+
+      localStorage.setItem('lunoai_intake', JSON.stringify(data));
+
+      // ── Also persist to Supabase so admin sees it ──
+      if (currentClientId) {
+        sb.from('intake_submissions').upsert({
+          client_id: currentClientId,
+          data: data,
+          admin_acknowledged: false,
+          submitted_at: new Date().toISOString()
+        }, { onConflict: 'client_id' }).then(({ error }) => {
+          if (error) console.warn('Intake submission save error:', error.message);
         });
       }
-      data.additionalNotes = document.getElementById('intake-additional-notes')?.value || '';
-      localStorage.setItem('lunoai_intake', JSON.stringify(data));
     }
 
     function intakeBack() {

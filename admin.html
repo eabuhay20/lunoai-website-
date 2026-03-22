@@ -653,6 +653,24 @@
       </div>
     </div>
 
+    <!-- ── INTAKE ANSWERS MODAL ── -->
+    <div id="intake-answers-modal" class="modal-backdrop hidden" onclick="if(event.target===this)closeIntakeAnswersModal()" style="z-index:9999;">
+      <div class="modal-card" style="max-width:680px;max-height:85vh;display:flex;flex-direction:column;">
+        <button class="modal-close" onclick="closeIntakeAnswersModal()">×</button>
+        <div style="padding-top:0.25rem;margin-bottom:1rem;flex-shrink:0;">
+          <h2 style="font-size:1.1rem;font-weight:800;letter-spacing:-0.02em;">Intake Form Answers</h2>
+          <p id="intake-modal-submitted" style="font-size:0.78rem;color:hsl(var(--muted-fg));margin-top:0.15rem;"></p>
+        </div>
+        <div id="intake-modal-content" style="overflow-y:auto;flex:1;padding-right:0.25rem;"></div>
+        <div style="flex-shrink:0;padding-top:1rem;border-top:1px solid hsl(var(--border));margin-top:1rem;">
+          <button id="intake-ack-btn" onclick="" style="width:100%;padding:0.7rem;border-radius:0.6rem;background:hsl(var(--primary)/0.15);border:1px solid hsl(var(--primary-glow)/0.3);color:hsl(var(--primary-hi));font-size:0.85rem;font-weight:700;cursor:pointer;letter-spacing:0.02em;transition:background 0.15s;"
+            onmouseover="if(!this.disabled)this.style.background='hsl(var(--primary)/0.25)'" onmouseout="if(!this.disabled)this.style.background='hsl(var(--primary)/0.15)'">
+            Acknowledge — Mark as Reviewed
+          </button>
+        </div>
+      </div>
+    </div>
+
   </div><!-- #app -->
 
   <script>
@@ -712,18 +730,23 @@
 
     // ── GLOBAL DATA ──
     let allClients = [], allLeads = [], allAppts = [], allAgents = [], allBilling = [];
+    let allIntake = [], allChecklist = [];
 
     async function loadAllData() {
-      const [clientsRes, leadsRes, apptsRes, agentsRes, billingRes] = await Promise.all([
+      const [clientsRes, leadsRes, apptsRes, agentsRes, billingRes, intakeRes, checklistRes] = await Promise.all([
         sbAdmin.from('clients').select('*'),
         sbAdmin.from('leads').select('*'),
         sbAdmin.from('appointments').select('*'),
         sbAdmin.from('client_agents_enabled').select('*'),
         sbAdmin.from('client_billing').select('*'),
+        sbAdmin.from('intake_submissions').select('*'),
+        sbAdmin.from('project_checklist').select('*').order('order', { ascending: true }),
       ]);
 
-      allClients = clientsRes.data || [];
-      allLeads   = leadsRes.data   || [];
+      allClients   = clientsRes.data   || [];
+      allLeads     = leadsRes.data     || [];
+      allIntake    = intakeRes.data    || [];
+      allChecklist = checklistRes.data || [];
       allAppts   = apptsRes.data   || [];
       allAgents  = agentsRes.data  || [];
       allBilling = billingRes.data || [];
@@ -818,11 +841,18 @@
         const rev       = leads.reduce((s,l) => s + (l.if_closed||0), 0);
         const agents    = allAgents.filter(a => a.client_id === c.id && a.enabled);
         const initials  = (c.name||c.email||'?').slice(0,1).toUpperCase();
+        const hasNewIntake = allIntake.some(i => i.client_id === c.id && !i.admin_acknowledged);
         return `<tr onclick="openClientModal('${c.id}')">
           <td>
             <div style="display:flex;align-items:center;gap:0.6rem;">
               <div class="client-avatar" style="width:32px;height:32px;font-size:0.8rem;border-radius:0.5rem;">${initials}</div>
-              <div><p class="cell-main">${escHtml(c.name||'—')}</p><p class="cell-sub">${escHtml(c.email||'')}</p></div>
+              <div>
+                <div style="display:flex;align-items:center;gap:0.5rem;">
+                  <p class="cell-main">${escHtml(c.name||'—')}</p>
+                  ${hasNewIntake ? `<span style="font-size:0.65rem;font-weight:700;letter-spacing:0.06em;padding:0.15rem 0.45rem;border-radius:999px;background:hsl(270 65% 54%/0.18);color:hsl(270 72% 70%);border:1px solid hsl(270 65% 54%/0.35);">NEW</span>` : ''}
+                </div>
+                <p class="cell-sub">${escHtml(c.email||'')}</p>
+              </div>
             </div>
           </td>
           <td>${escHtml(c.company_name||'—')}</td>
@@ -995,24 +1025,36 @@
     }
 
     // ── CLIENT DETAIL MODAL ──
+    let _currentModalClientId = null;
+
     function openClientModal(clientId) {
+      _currentModalClientId = clientId;
       const c       = allClients.find(x => x.id === clientId);
       if (!c) return;
       const leads   = allLeads.filter(l => l.client_id === clientId);
       const appts   = allAppts.filter(a => a.client_id === clientId);
       const agents  = allAgents.filter(a => a.client_id === clientId && a.enabled);
       const billing = allBilling.find(b => b.client_id === clientId);
+      const intake  = allIntake.find(i => i.client_id === clientId);
       const rev     = leads.reduce((s,l) => s + (l.if_closed||0), 0);
       const conv    = leads.filter(l => (l.if_closed||0) > 0).length;
       const initials= (c.name||c.email||'?').slice(0,1).toUpperCase();
+      const hasNewIntake = intake && !intake.admin_acknowledged;
 
       document.getElementById('client-modal-body').innerHTML = `
-        <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem;">
+        <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap;">
           <div class="client-avatar" style="width:52px;height:52px;font-size:1.3rem;">${initials}</div>
-          <div>
-            <h2 style="font-size:1.3rem;font-weight:800;letter-spacing:-0.03em;">${escHtml(c.name||'—')}</h2>
+          <div style="flex:1;min-width:0;">
+            <div style="display:flex;align-items:center;gap:0.6rem;flex-wrap:wrap;">
+              <h2 style="font-size:1.3rem;font-weight:800;letter-spacing:-0.03em;">${escHtml(c.name||'—')}</h2>
+              ${hasNewIntake ? `<span style="font-size:0.65rem;font-weight:700;letter-spacing:0.06em;padding:0.2rem 0.55rem;border-radius:999px;background:hsl(270 65% 54%/0.18);color:hsl(270 72% 70%);border:1px solid hsl(270 65% 54%/0.35);">NEW INTAKE</span>` : ''}
+            </div>
             <p style="color:hsl(var(--muted-fg));font-size:0.85rem;">${escHtml(c.email||'')} ${c.company_name ? '· '+escHtml(c.company_name) : ''}</p>
           </div>
+          ${intake ? `<button onclick="openIntakeAnswers('${clientId}')" style="flex-shrink:0;padding:0.5rem 1rem;border-radius:0.5rem;background:hsl(var(--secondary));border:1px solid hsl(var(--border));color:hsl(var(--fg));font-size:0.8rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:0.4rem;" onmouseover="this.style.background='hsl(var(--primary)/0.15)'" onmouseout="this.style.background='hsl(var(--secondary))'">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            View Intake Form
+          </button>` : ''}
         </div>
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0.75rem;margin-bottom:1.5rem;">
           <div class="card" style="padding:1rem;text-align:center;">
@@ -1042,17 +1084,227 @@
           </div>
         </div>` : ''}
         ${agents.length ? `
-        <div>
+        <div style="margin-bottom:1.5rem;">
           <p style="font-size:0.72rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:hsl(var(--muted-fg));margin-bottom:0.6rem;">Active Agents (${agents.length})</p>
           <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
             ${agents.map(a => `<span class="badge badge-purple"><span class="badge-dot badge-dot-purple"></span>${escHtml(a.agent_type.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase()))}</span>`).join('')}
           </div>
         </div>` : ''}
+
+        <!-- ── PROJECT CHECKLIST ── -->
+        <div>
+          <p style="font-size:0.72rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:hsl(var(--muted-fg));margin-bottom:0.75rem;">Project Checklist</p>
+          <div id="admin-checklist-${clientId}" style="display:flex;flex-direction:column;gap:0;border-radius:0.75rem;border:1px solid hsl(var(--border));overflow:hidden;">
+            <div style="padding:0.75rem 1rem;color:hsl(var(--muted-fg));font-size:0.82rem;">Loading…</div>
+          </div>
+        </div>
       `;
+
       document.getElementById('client-modal').classList.remove('hidden');
+
+      // Render checklist asynchronously
+      renderAdminChecklist(clientId);
     }
+
+    const CHECKLIST_DEFAULTS = [
+      { key: 'got_info',   label: 'Got the information',  order: 0 },
+      { key: 'started',    label: 'Started building',     order: 1 },
+      { key: 'finished',   label: 'Finished building',    order: 2 },
+      { key: 'testing',    label: 'Testing',              order: 3 },
+      { key: 'ready_live', label: 'Ready to go live',     order: 4 },
+    ];
+
+    async function renderAdminChecklist(clientId) {
+      const container = document.getElementById('admin-checklist-' + clientId);
+      if (!container) return;
+
+      // Get existing steps from global cache
+      let steps = allChecklist.filter(s => s.client_id === clientId);
+
+      // Seed default steps if none exist
+      if (steps.length === 0) {
+        const inserts = CHECKLIST_DEFAULTS.map(s => ({ ...s, client_id: clientId, completed: false }));
+        const { data: seeded } = await sbAdmin.from('project_checklist').insert(inserts).select();
+        if (seeded) {
+          allChecklist.push(...seeded);
+          steps = seeded;
+        }
+      }
+
+      steps = steps.sort((a, b) => a.order - b.order);
+
+      container.innerHTML = steps.map((step, idx) => {
+        const done = step.completed;
+        const isLast = idx === steps.length - 1;
+        const dateStr = done && step.completed_at
+          ? new Date(step.completed_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+          : '';
+
+        return `<div style="display:flex;align-items:center;gap:0.875rem;padding:0.875rem 1rem;
+          ${!isLast ? 'border-bottom:1px solid hsl(var(--border));' : ''}
+          background:${done ? 'hsl(142 60% 35% / 0.05)' : 'transparent'};
+          cursor:pointer;transition:background 0.15s;"
+          onclick="toggleChecklistStep('${step.id}', ${done}, '${clientId}')"
+          onmouseover="this.style.background='hsl(var(--secondary))'"
+          onmouseout="this.style.background='${done ? 'hsl(142 60% 35% / 0.05)' : 'transparent'}'">
+          <!-- Checkbox -->
+          <div style="flex-shrink:0;width:20px;height:20px;border-radius:5px;
+            border:1.5px solid ${done ? 'hsl(142 60% 45%)' : 'hsl(var(--border))'};
+            background:${done ? 'hsl(142 60% 35% / 0.25)' : 'transparent'};
+            display:flex;align-items:center;justify-content:center;">
+            ${done ? `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="hsl(142 70% 55%)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>` : ''}
+          </div>
+          <!-- Label -->
+          <div style="flex:1;">
+            <p style="font-size:0.875rem;font-weight:${done ? '600' : '400'};
+              color:${done ? 'hsl(var(--fg))' : 'hsl(var(--muted-fg))'};">
+              ${escHtml(step.step_label)}
+            </p>
+            ${dateStr ? `<p style="font-size:0.72rem;color:hsl(142 60% 45%);margin-top:0.1rem;">${escHtml(dateStr)}</p>` : ''}
+          </div>
+          <!-- Done pill -->
+          <span style="font-size:0.7rem;font-weight:700;letter-spacing:0.05em;padding:0.15rem 0.5rem;border-radius:999px;flex-shrink:0;
+            background:${done ? 'hsl(142 60% 35% / 0.15)' : 'hsl(var(--secondary))'};
+            color:${done ? 'hsl(142 70% 55%)' : 'hsl(var(--muted-fg))'};
+            border:1px solid ${done ? 'hsl(142 60% 45% / 0.3)' : 'hsl(var(--border))'};">
+            ${done ? 'Done' : 'Pending'}
+          </span>
+        </div>`;
+      }).join('');
+    }
+
+    async function toggleChecklistStep(stepId, currentlyDone, clientId) {
+      const newDone = !currentlyDone;
+      const updates = { completed: newDone, completed_at: newDone ? new Date().toISOString() : null };
+      const { error } = await sbAdmin.from('project_checklist').update(updates).eq('id', stepId);
+      if (error) { console.warn('Checklist update error:', error.message); return; }
+
+      // Update global cache
+      const idx = allChecklist.findIndex(s => s.id === stepId);
+      if (idx !== -1) Object.assign(allChecklist[idx], updates);
+
+      renderAdminChecklist(clientId);
+      renderClients(); // refresh NEW badge counts if needed
+    }
+
+    // ── INTAKE ANSWERS MODAL ──
+    function openIntakeAnswers(clientId) {
+      const intake = allIntake.find(i => i.client_id === clientId);
+      if (!intake) return;
+
+      const d = intake.data || {};
+      const submitted = intake.submitted_at
+        ? new Date(intake.submitted_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+        : '—';
+
+      const sections = [
+        { title: 'Business Information', fields: [
+          ['Company Name', d.company_name],
+          ['Business Description', d.business_description],
+          ['Services Offered', d.services_offered],
+          ['Documents / References', d.documents_references],
+          ['Topics to Avoid', d.topics_to_avoid],
+        ]},
+        { title: 'Lead Source & Flow', fields: [
+          ['Where Leads Come From', d.lead_sources],
+          ['Form Fields Collected', d.form_fields_collected],
+          ['Response Time', d.response_time],
+          ['After-Hours Leads', d.after_hours_leads],
+        ]},
+        { title: 'Lead Qualification', fields: [
+          ['What Qualifies a Lead', d.qualifies_lead],
+          ['What Disqualifies a Lead', d.disqualifies_lead],
+          ['Hard Filters', d.hard_filters],
+          ['Qualification Timing', d.qualification_timing],
+          ['Unqualified Lead Handling', d.unqualified_handling],
+        ]},
+        { title: 'ROI & Performance', fields: [
+          ['Avg Leads Per Week', d.avg_leads_per_week],
+          ['Current Response Time', d.current_response_time],
+          ['Time Per Lead', d.time_per_lead],
+          ['Current Booking Rate', d.current_booking_rate ? d.current_booking_rate + '%' : null],
+          ['Current Close Rate', d.current_close_rate ? d.current_close_rate + '%' : null],
+          ['Pays for Leads', d.pays_for_leads],
+          ['Paid Leads Not Contacted %', d.paid_pct_not_contacted ? d.paid_pct_not_contacted + '%' : null],
+          ['Avg Deal Value', d.avg_deal_value ? '$' + d.avg_deal_value : null],
+          ['Reasons Deals Lost', d.reasons_deals_lost],
+        ]},
+        { title: 'Follow-Up Workflow', fields: [
+          ['Current Follow-Up Sequence', d.current_followup_sequence],
+          ['Full Sequence Outline', d.full_sequence_outline],
+        ]},
+        { title: 'Call Style & Flow', fields: [
+          ['Agent Introduction', d.agent_introduction],
+          ['Desired Tone', d.desired_tone],
+          ['Call Flow Order', d.call_flow_order],
+        ]},
+        { title: 'Additional Notes', fields: [
+          ['Compliance Concerns', d.compliance_concerns],
+          ['Special Handling Notes', d.special_handling_notes],
+          ['Additional Notes', d.additional_notes],
+        ]},
+      ];
+
+      const sectionsHtml = sections.map(sec => {
+        const rows = sec.fields.filter(([, v]) => v).map(([label, val]) => `
+          <div style="padding:0.6rem 0;border-bottom:1px solid hsl(var(--border));">
+            <p style="font-size:0.7rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:hsl(var(--muted-fg));margin-bottom:0.2rem;">${escHtml(label)}</p>
+            <p style="font-size:0.875rem;color:hsl(var(--fg));white-space:pre-wrap;line-height:1.5;">${escHtml(val)}</p>
+          </div>`).join('');
+        if (!rows) return '';
+        return `
+          <div style="margin-bottom:1.25rem;">
+            <p style="font-size:0.78rem;font-weight:800;letter-spacing:0.05em;text-transform:uppercase;color:hsl(var(--primary-hi));margin-bottom:0.25rem;">${escHtml(sec.title)}</p>
+            ${rows}
+          </div>`;
+      }).join('');
+
+      document.getElementById('intake-modal-submitted').textContent = 'Submitted: ' + submitted;
+      document.getElementById('intake-modal-content').innerHTML = sectionsHtml || '<p style="color:hsl(var(--muted-fg));">No intake data found.</p>';
+
+      const ackBtn = document.getElementById('intake-ack-btn');
+      if (intake.admin_acknowledged) {
+        ackBtn.textContent = '✓ Acknowledged';
+        ackBtn.disabled = true;
+        ackBtn.style.opacity = '0.5';
+      } else {
+        ackBtn.textContent = 'Acknowledge — Mark as Reviewed';
+        ackBtn.disabled = false;
+        ackBtn.style.opacity = '1';
+        ackBtn.onclick = () => acknowledgeIntake(clientId);
+      }
+
+      document.getElementById('intake-answers-modal').classList.remove('hidden');
+    }
+
+    async function acknowledgeIntake(clientId) {
+      const { error } = await sbAdmin.from('intake_submissions')
+        .update({ admin_acknowledged: true })
+        .eq('client_id', clientId);
+      if (error) { console.warn('Acknowledge error:', error.message); return; }
+
+      // Update global cache
+      const rec = allIntake.find(i => i.client_id === clientId);
+      if (rec) rec.admin_acknowledged = true;
+
+      document.getElementById('intake-ack-btn').textContent = '✓ Acknowledged';
+      document.getElementById('intake-ack-btn').disabled = true;
+      document.getElementById('intake-ack-btn').style.opacity = '0.5';
+
+      // Remove NEW badges
+      renderClients();
+      // Refresh modal header
+      openClientModal(clientId);
+      document.getElementById('intake-answers-modal').classList.remove('hidden');
+    }
+
     function closeClientModal() {
       document.getElementById('client-modal').classList.add('hidden');
+      _currentModalClientId = null;
+    }
+
+    function closeIntakeAnswersModal() {
+      document.getElementById('intake-answers-modal').classList.add('hidden');
     }
   </script>
 </body>
