@@ -1856,7 +1856,7 @@
       const btn = document.querySelector('#form-signup .btn-primary');
       btn.disabled = true; btn.textContent = 'Creating account…';
 
-      const { data, error } = await sb.auth.signUp({ email, password: pass });
+      const { data, error } = await sb.auth.signUp({ email, password: pass, options: { data: { name, company_name: company || name } } });
       btn.disabled = false;
       btn.innerHTML = 'Create Account <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
 
@@ -1958,13 +1958,13 @@
         clientData = data;
       }
 
-      const displayName = clientData?.name || '';
+      const displayName = clientData?.name || user.user_metadata?.name || '';
       const firstName = displayName.split(' ')[0] || 'there';
       document.getElementById('user-first-name').textContent = firstName;
-      document.getElementById('info-name').textContent    = clientData?.name          || '—';
-      document.getElementById('info-email').textContent   = clientData?.email         || user.email || '—';
-      document.getElementById('info-phone').textContent   = clientData?.phone         || '—';
-      document.getElementById('info-company').textContent = clientData?.company_name  || '—';
+      document.getElementById('info-name').textContent    = clientData?.name         || user.user_metadata?.name         || '—';
+      document.getElementById('info-email').textContent   = clientData?.email        || user.email                        || '—';
+      document.getElementById('info-phone').textContent   = clientData?.phone        || '—';
+      document.getElementById('info-company').textContent = clientData?.company_name || user.user_metadata?.company_name  || '—';
     }
 
     // ── LOAD ALL DASHBOARD DATA ──
