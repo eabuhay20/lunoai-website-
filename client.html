@@ -791,73 +791,62 @@
       </div>
 
       <div class="card auth-card">
-        <h2 class="auth-heading">Welcome to <em class="serif-italic">Luno AI</em></h2>
-        <p class="auth-sub" style="margin-bottom:1.75rem;">Sign in to access your client dashboard</p>
-        <p id="auth-error" style="color:hsl(0 70% 60%);font-size:0.82rem;margin-bottom:0.75rem;display:none;"></p>
-        <button onclick="handleGoogleSignIn()" style="width:100%;display:flex;align-items:center;justify-content:center;gap:0.75rem;background:#fff;color:#1f1f1f;font-weight:600;font-size:0.95rem;padding:0.85rem 1.5rem;border-radius:999px;border:1.5px solid #e0e0e0;cursor:pointer;transition:box-shadow 0.2s;" onmouseover="this.style.boxShadow='0 2px 12px rgba(0,0,0,0.12)'" onmouseout="this.style.boxShadow='none'">
-          <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#4285F4" d="M44.5 20H24v8.5h11.8C34.7 33.9 29.8 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 4.1 29.6 2 24 2 11.8 2 2 11.8 2 24s9.8 22 22 22c11 0 21-8 21-22 0-1.3-.2-2.7-.5-4z"/><path fill="#34A853" d="M6.3 14.7l7 5.1C15 16.1 19.1 13 24 13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 4.1 29.6 2 24 2c-7.6 0-14.2 4.5-17.7 11.1z" opacity=".9"/><path fill="#FBBC05" d="M24 46c5.5 0 10.5-1.9 14.4-5l-6.7-5.5C29.5 37 26.9 38 24 38c-5.7 0-10.6-3.1-11.7-7.5l-7 5.4C8.1 41.6 15.5 46 24 46z" opacity=".9"/><path fill="#EA4335" d="M44.5 20H24v8.5h11.8c-.6 2.8-2.3 5.1-4.6 6.6l6.7 5.5C42 37.3 45 31.1 45 24c0-1.3-.2-2.7-.5-4z" opacity=".9"/></svg>
-          Continue with Google
-        </button>
-      </div>
-    </div>
-
-    <!-- PROFILE SETUP SCREEN (new Google users) -->
-    <div id="screen-profile" class="hidden">
-      <div class="auth-logo-area">
-        <div style="display:flex;justify-content:center;margin-bottom:0.75rem;">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 215" width="64" height="69" style="filter:drop-shadow(0 0 18px hsl(270 65% 54% / 0.55));">
-            <defs>
-              <radialGradient id="pmf" cx="38%" cy="44%" r="80%" gradientUnits="objectBoundingBox">
-                <stop offset="0%" stop-color="#3a1870"/><stop offset="60%" stop-color="#1a0840"/><stop offset="100%" stop-color="#0a0220"/>
-              </radialGradient>
-              <filter id="pmb" x="-120%" y="-120%" width="340%" height="340%"><feGaussianBlur stdDeviation="22"/></filter>
-              <filter id="pmm" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="9"/></filter>
-              <filter id="prg" x="-40%" y="-40%" width="180%" height="180%">
-                <feGaussianBlur stdDeviation="3.5" result="blur"/>
-                <feMerge><feMergeNode in="blur"/><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-              </filter>
-              <filter id="ptg" x="-20%" y="-80%" width="140%" height="260%">
-                <feGaussianBlur stdDeviation="5" result="blur"/>
-                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-              </filter>
-            </defs>
-            <path d="M 124,52 A 38,38 0 1,0 124,118 A 30,30 0 1,1 124,52 Z" fill="#6622cc" opacity="0.5" filter="url(#pmb)"/>
-            <path d="M 124,52 A 38,38 0 1,0 124,118 A 30,30 0 1,1 124,52 Z" fill="#8833ee" opacity="0.25" filter="url(#pmm)"/>
-            <path d="M 124,52 A 38,38 0 1,0 124,118 A 30,30 0 1,1 124,52 Z" fill="url(#pmf)"/>
-            <path d="M 124,52 A 38,38 0 1,0 124,118 A 30,30 0 1,1 124,52 Z" fill="none" stroke="#d4aaff" stroke-width="1.4" opacity="0.92" filter="url(#prg)"/>
-            <text x="100" y="195" font-family="'Helvetica Neue',Helvetica,Arial,sans-serif" font-size="28" text-anchor="middle" filter="url(#ptg)">
-              <tspan font-weight="300" fill="#c890ff" letter-spacing="1">Luno </tspan><tspan font-weight="500" fill="#d8aaff" letter-spacing="3">AI</tspan>
-            </text>
-          </svg>
-        </div>
-        <h1 class="auth-title"><span class="gradient-text">Luno AI</span></h1>
-        <p class="auth-subtitle">Your AI Performance Dashboard</p>
-      </div>
-
-      <div class="card auth-card">
-        <h2 class="auth-heading">Create <em class="serif-italic">Account</em></h2>
-        <p class="auth-sub">Just a few details to get you started</p>
-        <div class="auth-fields">
-          <div class="intake-two-col">
+        <!-- LOGIN FORM -->
+        <div id="form-login">
+          <h2 class="auth-heading">Welcome <em class="serif-italic">back</em></h2>
+          <p class="auth-sub">Sign in to your client dashboard</p>
+          <div class="auth-fields">
             <div class="form-group">
-              <label class="form-label">Full Name</label>
-              <input type="text" class="form-input" placeholder="Your full name" id="profile-name">
+              <label class="form-label">Email Address</label>
+              <input type="email" class="form-input" placeholder="you@company.com" id="login-email">
             </div>
             <div class="form-group">
-              <label class="form-label">Phone</label>
-              <input type="tel" class="form-input" placeholder="Your phone number" id="profile-phone">
+              <label class="form-label">Password</label>
+              <input type="password" class="form-input" placeholder="••••••••" id="login-password">
             </div>
           </div>
-          <div class="form-group">
-            <label class="form-label">Email Address</label>
-            <input type="email" class="form-input" placeholder="you@company.com" id="profile-email">
-          </div>
+          <button class="btn-primary" style="width:100%;justify-content:center;" onclick="handleSignIn()">
+            Sign In
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </button>
+          <p class="auth-toggle-text">Don't have an account? <span class="auth-toggle-link" onclick="toggleAuth('signup')">Sign up</span></p>
         </div>
-        <p id="profile-error" style="color:hsl(0 70% 60%);font-size:0.82rem;margin-bottom:0.75rem;display:none;"></p>
-        <button class="btn-primary" style="width:100%;justify-content:center;" onclick="handleProfileSubmit()">
-          Continue
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-        </button>
+
+        <!-- SIGNUP FORM -->
+        <div id="form-signup" class="hidden">
+          <h2 class="auth-heading">Create <em class="serif-italic">Account</em></h2>
+          <p class="auth-sub">Get started with Luno AI today</p>
+          <div class="auth-fields">
+            <div class="intake-two-col">
+              <div class="form-group">
+                <label class="form-label">Full Name</label>
+                <input type="text" class="form-input" placeholder="Your full name" id="signup-name">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Phone</label>
+                <input type="tel" class="form-input" placeholder="Your phone number" id="signup-phone">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Company Name</label>
+              <input type="text" class="form-input" placeholder="Your company name" id="signup-company">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email Address</label>
+              <input type="email" class="form-input" placeholder="you@company.com" id="signup-email">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Password</label>
+              <input type="password" class="form-input" placeholder="••••••••" id="signup-password">
+            </div>
+          </div>
+          <p id="signup-error" style="color:hsl(0 70% 60%);font-size:0.82rem;margin-bottom:0.75rem;display:none;"></p>
+          <button class="btn-primary" style="width:100%;justify-content:center;" onclick="handleSignUp()">
+            Create Account
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </button>
+          <p class="auth-toggle-text">Already have an account? <span class="auth-toggle-link" onclick="toggleAuth('login')">Sign in</span></p>
+        </div>
       </div>
     </div>
 
@@ -1791,24 +1780,6 @@
     const { createClient } = supabase;
     const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // ── HANDLE GOOGLE OAUTH REDIRECT ──
-    sb.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_IN' && session?.user) {
-        const user = session.user;
-        await resolveClientId(user);
-        const authScreen = document.getElementById('screen-auth');
-        if (authScreen && !authScreen.classList.contains('hidden')) {
-          if (!currentClientId) {
-            // New user — show profile setup screen
-            showProfileScreen(user);
-          } else {
-            const intakeDone = await hasCompletedIntake();
-            await enterDashboard(!intakeDone);
-          }
-        }
-      }
-    });
-
     // ── STATE ──
     let currentPage = 'dashboard';
     let currentIntakeSection = 1;
@@ -1833,63 +1804,92 @@
       currentPage = page;
     }
 
-    // ── GOOGLE SIGN IN ──
-    async function handleGoogleSignIn() {
-      const errEl = document.getElementById('auth-error');
+    // ── AUTH TOGGLE ──
+    function toggleAuth(mode) {
+      document.getElementById('form-login').classList.toggle('hidden', mode === 'signup');
+      document.getElementById('form-signup').classList.toggle('hidden', mode === 'login');
+      document.getElementById('signup-error').style.display = 'none';
+    }
+
+    // ── SIGNUP ──
+    async function handleSignUp() {
+      const name    = document.getElementById('signup-name').value.trim();
+      const phone   = document.getElementById('signup-phone').value.trim();
+      const company = document.getElementById('signup-company').value.trim();
+      const email   = document.getElementById('signup-email').value.trim();
+      const pass    = document.getElementById('signup-password').value;
+      const errEl   = document.getElementById('signup-error');
+
+      if (!name || !email || !pass) {
+        errEl.textContent = 'Please fill in your name, email, and password.';
+        errEl.style.display = 'block';
+        return;
+      }
       errEl.style.display = 'none';
-      const { error } = await sb.auth.signInWithOAuth({
-        provider: 'google',
-        options: { redirectTo: 'https://www.lunoai.io/client' }
-      });
+
+      const btn = document.querySelector('#form-signup .btn-primary');
+      btn.disabled = true; btn.textContent = 'Creating account…';
+
+      const { data, error } = await sb.auth.signUp({ email, password: pass });
+      btn.disabled = false;
+      btn.innerHTML = 'Create Account <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
+
       if (error) {
         errEl.textContent = error.message;
         errEl.style.display = 'block';
-      }
-    }
-
-    function showProfileScreen(user) {
-      document.getElementById('screen-auth').classList.add('hidden');
-      const screen = document.getElementById('screen-profile');
-      screen.classList.remove('hidden');
-      // Pre-fill from Google metadata
-      const nameEl = document.getElementById('profile-name');
-      const emailEl = document.getElementById('profile-email');
-      if (nameEl && user.user_metadata?.full_name) nameEl.value = user.user_metadata.full_name;
-      if (emailEl && user.email) emailEl.value = user.email;
-    }
-
-    async function handleProfileSubmit() {
-      const name  = document.getElementById('profile-name').value.trim();
-      const phone = document.getElementById('profile-phone').value.trim();
-      const email = document.getElementById('profile-email').value.trim();
-      const errEl = document.getElementById('profile-error');
-      errEl.style.display = 'none';
-
-      if (!name || !email) {
-        errEl.textContent = 'Please fill in your name and email.';
-        errEl.style.display = 'block';
         return;
       }
 
-      const { data: { user } } = await sb.auth.getUser();
-      if (!user) return;
+      if (!data.session) {
+        errEl.style.cssText = 'color:hsl(142 70% 55%);font-size:0.82rem;margin-bottom:0.75rem;display:block;';
+        errEl.textContent = 'Check your email to confirm your account, then sign in.';
+        return;
+      }
 
-      // Create client record
-      const { data: newClient, error } = await sb.from('clients').insert({
-        name, email, phone: phone || null, approved: false
-      }).select('id').single();
+      // Try to create client record
+      try {
+        const { data: client, error: cErr } = await sb.from('clients').insert({
+          name, company_name: company || name, email, phone: phone || null, approved: false
+        }).select('id').single();
+        if (!cErr && client) {
+          currentClientId = client.id;
+          await sb.from('client_users').insert({ client_id: client.id, user_id: data.user.id, role: 'client' });
+        }
+      } catch(e) { /* RLS may block — admin will link client manually */ }
+
+      // Fallback: find existing client by email
+      if (!currentClientId) {
+        const { data: existing } = await sb.from('clients').select('id').eq('email', email).maybeSingle();
+        if (existing) {
+          currentClientId = existing.id;
+          await sb.from('client_users').upsert({ client_id: existing.id, user_id: data.user.id, role: 'client' }, { onConflict: 'user_id,client_id' });
+        }
+      }
+
+      localStorage.removeItem('lunoai_intake');
+      localStorage.removeItem('lunoai_intake_submitted');
+      await enterDashboard(true);
+    }
+
+    // ── SIGN IN ──
+    async function handleSignIn() {
+      const email = document.getElementById('login-email').value.trim();
+      const pass  = document.getElementById('login-password').value;
+
+      const btn = document.querySelector('#form-login .btn-primary');
+      btn.disabled = true; btn.textContent = 'Signing in…';
+
+      const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+      btn.disabled = false;
+      btn.innerHTML = 'Sign In <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
 
       if (error) {
-        errEl.textContent = 'Something went wrong. Please try again.';
-        errEl.style.display = 'block';
+        alert(error.message || 'Incorrect email or password.');
         return;
       }
 
-      currentClientId = newClient.id;
-      await sb.from('client_users').upsert({ client_id: newClient.id, user_id: user.id, role: 'client' }, { onConflict: 'user_id,client_id' });
-
-      document.getElementById('screen-profile').classList.add('hidden');
-      await enterDashboard(true); // true = new signup → show intake
+      await resolveClientId(data.user);
+      await enterDashboard(false);
     }
 
     async function resolveClientId(user) {
@@ -1902,17 +1902,6 @@
         currentClientId = c.id;
         await sb.from('client_users').upsert({ client_id: c.id, user_id: user.id, role: 'client' }, { onConflict: 'user_id,client_id' });
       }
-    }
-
-    async function hasCompletedIntake() {
-      if (!currentClientId) return false;
-      const { data } = await sb.from('clients').select('intake_completed').eq('id', currentClientId).maybeSingle();
-      return data?.intake_completed === true;
-    }
-
-    async function markIntakeCompleted() {
-      if (!currentClientId) return;
-      await sb.from('clients').update({ intake_completed: true }).eq('id', currentClientId);
     }
 
     async function enterDashboard(isNewSignup) {
@@ -2242,7 +2231,6 @@
         // Save on submit, then advance to onboarding call section
         saveIntakeData();
         localStorage.setItem('lunoai_intake_submitted', 'true');
-        markIntakeCompleted();
         document.getElementById('intake-status-banner').style.display = 'flex';
         currentIntakeSection = 9;
         updateIntakeUI();
