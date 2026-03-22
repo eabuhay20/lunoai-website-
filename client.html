@@ -801,6 +801,66 @@
       </div>
     </div>
 
+    <!-- PROFILE SETUP SCREEN (new Google users) -->
+    <div id="screen-profile" class="hidden">
+      <div class="auth-logo-area">
+        <div style="display:flex;justify-content:center;margin-bottom:0.75rem;">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 215" width="64" height="69" style="filter:drop-shadow(0 0 18px hsl(270 65% 54% / 0.55));">
+            <defs>
+              <radialGradient id="pmf" cx="38%" cy="44%" r="80%" gradientUnits="objectBoundingBox">
+                <stop offset="0%" stop-color="#3a1870"/><stop offset="60%" stop-color="#1a0840"/><stop offset="100%" stop-color="#0a0220"/>
+              </radialGradient>
+              <filter id="pmb" x="-120%" y="-120%" width="340%" height="340%"><feGaussianBlur stdDeviation="22"/></filter>
+              <filter id="pmm" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="9"/></filter>
+              <filter id="prg" x="-40%" y="-40%" width="180%" height="180%">
+                <feGaussianBlur stdDeviation="3.5" result="blur"/>
+                <feMerge><feMergeNode in="blur"/><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+              <filter id="ptg" x="-20%" y="-80%" width="140%" height="260%">
+                <feGaussianBlur stdDeviation="5" result="blur"/>
+                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+            </defs>
+            <path d="M 124,52 A 38,38 0 1,0 124,118 A 30,30 0 1,1 124,52 Z" fill="#6622cc" opacity="0.5" filter="url(#pmb)"/>
+            <path d="M 124,52 A 38,38 0 1,0 124,118 A 30,30 0 1,1 124,52 Z" fill="#8833ee" opacity="0.25" filter="url(#pmm)"/>
+            <path d="M 124,52 A 38,38 0 1,0 124,118 A 30,30 0 1,1 124,52 Z" fill="url(#pmf)"/>
+            <path d="M 124,52 A 38,38 0 1,0 124,118 A 30,30 0 1,1 124,52 Z" fill="none" stroke="#d4aaff" stroke-width="1.4" opacity="0.92" filter="url(#prg)"/>
+            <text x="100" y="195" font-family="'Helvetica Neue',Helvetica,Arial,sans-serif" font-size="28" text-anchor="middle" filter="url(#ptg)">
+              <tspan font-weight="300" fill="#c890ff" letter-spacing="1">Luno </tspan><tspan font-weight="500" fill="#d8aaff" letter-spacing="3">AI</tspan>
+            </text>
+          </svg>
+        </div>
+        <h1 class="auth-title"><span class="gradient-text">Luno AI</span></h1>
+        <p class="auth-subtitle">Your AI Performance Dashboard</p>
+      </div>
+
+      <div class="card auth-card">
+        <h2 class="auth-heading">Create <em class="serif-italic">Account</em></h2>
+        <p class="auth-sub">Just a few details to get you started</p>
+        <div class="auth-fields">
+          <div class="intake-two-col">
+            <div class="form-group">
+              <label class="form-label">Full Name</label>
+              <input type="text" class="form-input" placeholder="Your full name" id="profile-name">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Phone</label>
+              <input type="tel" class="form-input" placeholder="Your phone number" id="profile-phone">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email Address</label>
+            <input type="email" class="form-input" placeholder="you@company.com" id="profile-email">
+          </div>
+        </div>
+        <p id="profile-error" style="color:hsl(0 70% 60%);font-size:0.82rem;margin-bottom:0.75rem;display:none;"></p>
+        <button class="btn-primary" style="width:100%;justify-content:center;" onclick="handleProfileSubmit()">
+          Continue
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+    </div>
+
     <!-- ════════════════════════════════════════
          DASHBOARD LAYOUT
     ════════════════════════════════════════ -->
@@ -1738,8 +1798,13 @@
         await resolveClientId(user);
         const authScreen = document.getElementById('screen-auth');
         if (authScreen && !authScreen.classList.contains('hidden')) {
-          const intakeDone = await hasCompletedIntake();
-          await enterDashboard(!intakeDone);
+          if (!currentClientId) {
+            // New user — show profile setup screen
+            showProfileScreen(user);
+          } else {
+            const intakeDone = await hasCompletedIntake();
+            await enterDashboard(!intakeDone);
+          }
         }
       }
     });
@@ -1774,12 +1839,57 @@
       errEl.style.display = 'none';
       const { error } = await sb.auth.signInWithOAuth({
         provider: 'google',
-        options: { redirectTo: window.location.href }
+        options: { redirectTo: 'https://lunoai.io/client' }
       });
       if (error) {
         errEl.textContent = error.message;
         errEl.style.display = 'block';
       }
+    }
+
+    function showProfileScreen(user) {
+      document.getElementById('screen-auth').classList.add('hidden');
+      const screen = document.getElementById('screen-profile');
+      screen.classList.remove('hidden');
+      // Pre-fill from Google metadata
+      const nameEl = document.getElementById('profile-name');
+      const emailEl = document.getElementById('profile-email');
+      if (nameEl && user.user_metadata?.full_name) nameEl.value = user.user_metadata.full_name;
+      if (emailEl && user.email) emailEl.value = user.email;
+    }
+
+    async function handleProfileSubmit() {
+      const name  = document.getElementById('profile-name').value.trim();
+      const phone = document.getElementById('profile-phone').value.trim();
+      const email = document.getElementById('profile-email').value.trim();
+      const errEl = document.getElementById('profile-error');
+      errEl.style.display = 'none';
+
+      if (!name || !email) {
+        errEl.textContent = 'Please fill in your name and email.';
+        errEl.style.display = 'block';
+        return;
+      }
+
+      const { data: { user } } = await sb.auth.getUser();
+      if (!user) return;
+
+      // Create client record
+      const { data: newClient, error } = await sb.from('clients').insert({
+        name, email, phone: phone || null, approved: false
+      }).select('id').single();
+
+      if (error) {
+        errEl.textContent = 'Something went wrong. Please try again.';
+        errEl.style.display = 'block';
+        return;
+      }
+
+      currentClientId = newClient.id;
+      await sb.from('client_users').upsert({ client_id: newClient.id, user_id: user.id, role: 'client' }, { onConflict: 'user_id,client_id' });
+
+      document.getElementById('screen-profile').classList.add('hidden');
+      await enterDashboard(true); // true = new signup → show intake
     }
 
     async function resolveClientId(user) {
