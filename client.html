@@ -820,16 +820,16 @@
             <div class="intake-two-col">
               <div class="form-group">
                 <label class="form-label">Full Name</label>
-                <input type="text" class="form-input" placeholder="John Smith" id="signup-name">
+                <input type="text" class="form-input" placeholder="Your full name" id="signup-name">
               </div>
               <div class="form-group">
                 <label class="form-label">Phone</label>
-                <input type="tel" class="form-input" placeholder="+1 (555) 000-0000" id="signup-phone">
+                <input type="tel" class="form-input" placeholder="Your phone number" id="signup-phone">
               </div>
             </div>
             <div class="form-group">
               <label class="form-label">Company Name</label>
-              <input type="text" class="form-input" placeholder="Acme Solar Co." id="signup-company">
+              <input type="text" class="form-input" placeholder="Your company name" id="signup-company">
             </div>
             <div class="form-group">
               <label class="form-label">Email Address</label>
@@ -1421,7 +1421,7 @@
             <div class="intake-fields">
               <div class="form-group">
                 <label class="form-label">Company Name *</label>
-                <input type="text" class="form-input" placeholder="e.g., Trusty and Door">
+                <input type="text" class="form-input" placeholder="Your company name">
               </div>
               <div class="form-group">
                 <label class="form-label">Brief Description of What the Business Does *</label>
@@ -1432,20 +1432,12 @@
                 <textarea class="form-textarea" placeholder="List all services your business offers..."></textarea>
               </div>
               <div class="form-group">
-                <label class="form-label">Services Explicitly NOT Offered</label>
-                <textarea class="form-textarea" placeholder="List services you do not provide — the agent will never promise these..."></textarea>
-              </div>
-              <div class="form-group">
-                <label class="form-label">Service Area or Geographic Limits</label>
-                <input type="text" class="form-input" placeholder="e.g., DMV area only, nationwide, Southeast US">
-              </div>
-              <div class="form-group">
                 <label class="form-label">Documents / Q&amp;A Sheets / Internal References for the Agent</label>
                 <textarea class="form-textarea" style="min-height:60px;" placeholder="Describe or list any files, PDFs, FAQs, or references the agent should draw from..."></textarea>
               </div>
               <div class="form-group">
                 <label class="form-label">Language, Claims, or Topics the Agent Must Avoid</label>
-                <textarea class="form-textarea" style="min-height:60px;" placeholder="e.g., Do not mention pricing, do not make guarantees, avoid competitor comparisons..."></textarea>
+                <textarea class="form-textarea" style="min-height:60px;" placeholder="Topics, claims, or language the agent should never use..."></textarea>
               </div>
             </div>
           </div>
@@ -1459,11 +1451,11 @@
             <div class="intake-fields">
               <div class="form-group">
                 <label class="form-label">Where Do Leads Come From? *</label>
-                <textarea class="form-textarea" placeholder="e.g., Website form, funnel, Facebook Ads, inbound calls, webinar signups..."></textarea>
+                <textarea class="form-textarea" placeholder="Where do your leads come from?"></textarea>
               </div>
               <div class="form-group">
                 <label class="form-label">Form Fields Currently Collected from Leads</label>
-                <textarea class="form-textarea" placeholder="e.g., Name, phone, email, service needed, location, budget, notes..."></textarea>
+                <textarea class="form-textarea" placeholder="List the fields you currently collect from leads..."></textarea>
               </div>
               <div class="form-group">
                 <label class="form-label">How Quickly Should the Agent Respond After a Trigger? *</label>
@@ -1474,20 +1466,6 @@
                   <option>Within 10 minutes</option>
                   <option>Within 30 minutes</option>
                 </select>
-              </div>
-              <div class="intake-two-col">
-                <div class="form-group">
-                  <label class="form-label">If No Answer — Should Agent Retry?</label>
-                  <select class="form-select form-input">
-                    <option value="">Select</option>
-                    <option>Yes</option>
-                    <option>No</option>
-                  </select>
-                </div>
-                <div class="form-group">
-                  <label class="form-label">If Yes — How Many Retry Attempts?</label>
-                  <input type="number" class="form-input" placeholder="e.g., 3">
-                </div>
               </div>
               <div class="form-group">
                 <label class="form-label">Do Leads Arrive After Hours or on Weekends?</label>
@@ -1509,15 +1487,15 @@
             <div class="intake-fields">
               <div class="form-group">
                 <label class="form-label">What Qualifies a Lead? *</label>
-                <textarea class="form-textarea" placeholder="e.g., Homeowner in service area, budget over $5K, interested in solar installation..."></textarea>
+                <textarea class="form-textarea" placeholder="e.g., Decision-maker, budget over threshold, interested in your core service..."></textarea>
               </div>
               <div class="form-group">
                 <label class="form-label">What Disqualifies a Lead? *</label>
-                <textarea class="form-textarea" placeholder="e.g., Renter, outside service area, budget under threshold, already under contract..."></textarea>
+                <textarea class="form-textarea" placeholder="What would make someone the wrong fit?"></textarea>
               </div>
               <div class="form-group">
                 <label class="form-label">Hard Filters the Agent Must Enforce</label>
-                <textarea class="form-textarea" placeholder="e.g., Location restrictions, minimum budget, service exclusions..."></textarea>
+                <textarea class="form-textarea" placeholder="Hard rules the agent must always enforce..."></textarea>
               </div>
               <div class="form-group">
                 <label class="form-label">Should Qualification Happen…? *</label>
@@ -1546,24 +1524,18 @@
             <h3 class="intake-section-title">ROI &amp; <em class="serif-italic">Performance</em> Metrics</h3>
             <p class="intake-section-desc">Establish baseline performance so we can measure real before/after impact. These are not guarantees.</p>
             <div class="intake-fields">
-              <div class="intake-two-col">
-                <div class="form-group">
-                  <label class="form-label">Avg. Leads Per Week</label>
-                  <input type="number" class="form-input" placeholder="e.g., 25">
-                </div>
-                <div class="form-group">
-                  <label class="form-label">Avg. Leads Per Month</label>
-                  <input type="number" class="form-input" placeholder="e.g., 100">
-                </div>
+              <div class="form-group">
+                <label class="form-label">Avg. Leads Per Week</label>
+                <input type="number" class="form-input" placeholder="e.g., 25">
               </div>
               <div class="intake-two-col">
                 <div class="form-group">
                   <label class="form-label">Current Avg. Response Time to a New Lead</label>
-                  <input type="text" class="form-input" placeholder="e.g., 2 hours, next day...">
+                  <input type="text" class="form-input" placeholder="Your current avg. response time">
                 </div>
                 <div class="form-group">
                   <label class="form-label">Time Spent Manually Handling One Lead</label>
-                  <input type="text" class="form-input" placeholder="e.g., 15 minutes">
+                  <input type="text" class="form-input" placeholder="Time per lead manually">
                 </div>
               </div>
               <div class="intake-two-col">
@@ -1576,19 +1548,26 @@
                   <input type="number" class="form-input" placeholder="% of booked appointments that become clients">
                 </div>
               </div>
-              <div class="intake-two-col">
-                <div class="form-group">
-                  <label class="form-label">Est. % of Paid Leads Never Contacted</label>
-                  <input type="number" class="form-input" placeholder="e.g., 20">
-                </div>
-                <div class="form-group">
-                  <label class="form-label">Avg. Value of a Booked Appointment or Closed Client ($)</label>
-                  <input type="number" class="form-input" placeholder="e.g., 3200">
-                </div>
+              <div class="form-group">
+                <label class="form-label">Do You Pay for Leads?</label>
+                <select class="form-select form-input" id="s4-paid-leads-toggle" onchange="togglePaidLeadsField()">
+                  <option value="">Select</option>
+                  <option value="yes">Yes — I run paid ads or buy leads</option>
+                  <option value="no">No — inbound / organic only</option>
+                  <option value="both">Both — paid and organic</option>
+                </select>
+              </div>
+              <div class="form-group" id="s4-paid-pct-field" style="display:none;">
+                <label class="form-label">Est. % of Paid Leads Never Contacted</label>
+                <input type="number" class="form-input" placeholder="e.g., 20">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Avg. Value of a Booked Appointment or Closed Client ($)</label>
+                <input type="number" class="form-input" placeholder="e.g., 3200">
               </div>
               <div class="form-group">
                 <label class="form-label">Primary Reason Deals Are Currently Lost — if known</label>
-                <textarea class="form-textarea" style="min-height:60px;" placeholder="e.g., Slow response, no follow-up, no-shows, unqualified leads..."></textarea>
+                <textarea class="form-textarea" style="min-height:60px;" placeholder="What's the main reason deals fall through?"></textarea>
               </div>
             </div>
           </div>
@@ -1602,31 +1581,11 @@
             <div class="intake-fields">
               <div class="form-group">
                 <label class="form-label">Current Follow-Up Sequence *</label>
-                <textarea class="form-textarea" placeholder="e.g., Call → text → email, or text first then call after 1 hour..."></textarea>
-              </div>
-              <div class="intake-two-col">
-                <div class="form-group">
-                  <label class="form-label">Number of Follow-Up Attempts Per Lead</label>
-                  <input type="number" class="form-input" placeholder="e.g., 5">
-                </div>
-                <div class="form-group">
-                  <label class="form-label">Time Delay Between Attempts</label>
-                  <input type="text" class="form-input" placeholder="e.g., 1 hour, 24 hours, 3 days...">
-                </div>
+                <textarea class="form-textarea" placeholder="How do you currently follow up with a new lead?"></textarea>
               </div>
               <div class="form-group">
-                <label class="form-label">Allowed Follow-Up Channels *</label>
-                <select class="form-select form-input">
-                  <option value="">Select</option>
-                  <option>Text only</option>
-                  <option>Email only</option>
-                  <option>Both text and email</option>
-                  <option>Call, text, and email</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label class="form-label">When Should Follow-Up Stop?</label>
-                <textarea class="form-textarea" style="min-height:60px;" placeholder="e.g., After 5 attempts, after 7 days, once lead responds, once booked..."></textarea>
+                <label class="form-label">Full Sequence Outline *</label>
+                <textarea class="form-textarea" placeholder="Walk us through the full sequence step by step — e.g., Immediate text → Call after 1 hour → Text next morning → Email Day 3 → Final text Day 7"></textarea>
               </div>
             </div>
           </div>
@@ -1640,7 +1599,7 @@
             <div class="intake-fields">
               <div class="form-group">
                 <label class="form-label">How Should the Agent Introduce Itself? *</label>
-                <input type="text" class="form-input" placeholder="e.g., 'Hi, this is Aria calling on behalf of [Company]...'">
+                <input type="text" class="form-input" placeholder="How should the agent introduce itself?">
               </div>
               <div class="form-group">
                 <label class="form-label">Desired Tone *</label>
@@ -1654,23 +1613,7 @@
               </div>
               <div class="form-group">
                 <label class="form-label">Call Flow Order</label>
-                <input type="text" class="form-input" placeholder="e.g., Greet → verify → qualify → book → confirm">
-              </div>
-              <div class="form-group">
-                <label class="form-label">Should the Agent Gather Brief Context Before Booking?</label>
-                <select class="form-select form-input">
-                  <option value="">Select</option>
-                  <option>Yes — ask a few qualifying questions first</option>
-                  <option>No — go straight to scheduling</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label class="form-label">Should the Agent Mention Offers or Programs?</label>
-                <select class="form-select form-input">
-                  <option value="">Select</option>
-                  <option>Yes — mention offers/programs at a high level</option>
-                  <option>No — stay focused on scheduling only</option>
-                </select>
+                <input type="text" class="form-input" placeholder="The order of steps the agent should follow on a call">
               </div>
             </div>
           </div>
@@ -1683,29 +1626,12 @@
             <p class="intake-section-desc">Capture any sensitivities, restrictions, or special handling notes — and confirm required tool access.</p>
             <div class="intake-fields">
               <div class="form-group">
-                <label class="form-label">Compliance Concerns or Restrictions</label>
-                <textarea class="form-textarea" placeholder="e.g., TCPA compliance, do-not-call lists, industry-specific regulations..."></textarea>
-              </div>
-              <div class="form-group">
-                <label class="form-label">Topics the Agent Must Avoid</label>
-                <textarea class="form-textarea" placeholder="e.g., Pricing discussions, competitor mentions, legal guarantees..."></textarea>
+                <label class="form-label">Compliance Concerns &amp; Topics to Avoid</label>
+                <textarea class="form-textarea" placeholder="Any compliance rules, restricted topics, or things the agent must never say..."></textarea>
               </div>
               <div class="form-group">
                 <label class="form-label">Special Handling Notes</label>
-                <textarea class="form-textarea" placeholder="Anything discovered during discovery that affects how the agent should behave..."></textarea>
-              </div>
-              <div class="form-group" style="background:hsl(var(--primary)/0.06);border:1px solid hsl(var(--primary-glow)/0.2);border-radius:14px;padding:1rem 1.1rem;">
-                <label class="form-label" style="color:hsl(var(--primary-glow));margin-bottom:0.6rem;">Required Tools &amp; Access — Pre-Build Gate</label>
-                <p style="font-size:0.8rem;color:hsl(var(--muted-fg));margin-bottom:0.75rem;line-height:1.5;">Admin access must be provided to all of the following before the build begins. No access = build does not start.</p>
-                <div style="display:flex;flex-direction:column;gap:0.5rem;">
-                  <label style="display:flex;align-items:center;gap:0.6rem;font-size:0.85rem;font-weight:600;cursor:pointer;"><input type="checkbox" style="accent-color:hsl(var(--primary-glow));"> OpenAI Platform</label>
-                  <label style="display:flex;align-items:center;gap:0.6rem;font-size:0.85rem;font-weight:600;cursor:pointer;"><input type="checkbox" style="accent-color:hsl(var(--primary-glow));"> Make.com</label>
-                  <label style="display:flex;align-items:center;gap:0.6rem;font-size:0.85rem;font-weight:600;cursor:pointer;"><input type="checkbox" style="accent-color:hsl(var(--primary-glow));"> GoHighLevel</label>
-                  <label style="display:flex;align-items:center;gap:0.6rem;font-size:0.85rem;font-weight:600;cursor:pointer;"><input type="checkbox" style="accent-color:hsl(var(--primary-glow));"> VAPI</label>
-                  <label style="display:flex;align-items:center;gap:0.6rem;font-size:0.85rem;font-weight:600;cursor:pointer;"><input type="checkbox" style="accent-color:hsl(var(--primary-glow));"> Twilio</label>
-                  <label style="display:flex;align-items:center;gap:0.6rem;font-size:0.85rem;font-weight:600;cursor:pointer;"><input type="checkbox" style="accent-color:hsl(var(--primary-glow));"> Cal.com</label>
-                  <label style="display:flex;align-items:center;gap:0.6rem;font-size:0.85rem;font-weight:600;cursor:pointer;"><input type="checkbox" style="accent-color:hsl(var(--primary-glow));"> Dashboard (client signup required during intake)</label>
-                </div>
+                <textarea class="form-textarea" placeholder="Anything else that affects how the agent should behave..."></textarea>
               </div>
             </div>
           </div>
@@ -1727,6 +1653,49 @@
               <input type="checkbox" id="intake-confirm-checkbox">
               <span class="intake-confirm-text">I confirm that the information provided is accurate and I'm ready to activate my Luno AI agents. I understand my agents will be configured within 2–3 business days.</span>
             </label>
+          </div>
+        </div>
+
+        <!-- ── SECTION 9: Book Onboarding Call ── -->
+        <div class="intake-section" id="intake-s9">
+          <div class="intake-card" style="text-align:center;">
+            <div style="width:56px;height:56px;border-radius:50%;background:hsl(var(--primary)/0.15);border:1.5px solid hsl(var(--primary-glow)/0.4);display:flex;align-items:center;justify-content:center;margin:0 auto 1.25rem;">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="hsl(270 65% 54%)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+            </div>
+            <h3 class="intake-section-title" style="text-align:center;margin-bottom:0.4rem;">Intake <em class="serif-italic">Complete</em></h3>
+            <p style="font-size:0.9rem;color:hsl(var(--muted-fg));margin-bottom:1.75rem;line-height:1.6;">Next step: book your onboarding call so we can get everything set up.</p>
+
+            <div style="background:hsl(var(--muted));border-radius:14px;padding:1.25rem 1.4rem;margin-bottom:1.75rem;text-align:left;">
+              <p style="font-size:0.72rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:hsl(var(--muted-fg));margin-bottom:0.75rem;">Before the Call — Have These Ready</p>
+              <div style="display:flex;flex-direction:column;gap:0.55rem;">
+                <div style="display:flex;align-items:center;gap:0.65rem;font-size:0.875rem;font-weight:600;">
+                  <span style="width:6px;height:6px;border-radius:50%;background:hsl(var(--primary-glow));flex-shrink:0;"></span> OpenAI Platform
+                </div>
+                <div style="display:flex;align-items:center;gap:0.65rem;font-size:0.875rem;font-weight:600;">
+                  <span style="width:6px;height:6px;border-radius:50%;background:hsl(var(--primary-glow));flex-shrink:0;"></span> Make.com
+                </div>
+                <div style="display:flex;align-items:center;gap:0.65rem;font-size:0.875rem;font-weight:600;">
+                  <span style="width:6px;height:6px;border-radius:50%;background:hsl(var(--primary-glow));flex-shrink:0;"></span> GoHighLevel
+                </div>
+                <div style="display:flex;align-items:center;gap:0.65rem;font-size:0.875rem;font-weight:600;">
+                  <span style="width:6px;height:6px;border-radius:50%;background:hsl(var(--primary-glow));flex-shrink:0;"></span> VAPI
+                </div>
+                <div style="display:flex;align-items:center;gap:0.65rem;font-size:0.875rem;font-weight:600;">
+                  <span style="width:6px;height:6px;border-radius:50%;background:hsl(var(--primary-glow));flex-shrink:0;"></span> Twilio
+                </div>
+                <div style="display:flex;align-items:center;gap:0.65rem;font-size:0.875rem;font-weight:600;">
+                  <span style="width:6px;height:6px;border-radius:50%;background:hsl(var(--primary-glow));flex-shrink:0;"></span> Cal.com
+                </div>
+              </div>
+            </div>
+
+            <p style="font-size:0.875rem;color:hsl(var(--muted-fg));line-height:1.7;margin-bottom:1.75rem;">On this call, I'll walk you through setting up each tool. Once everything is live, you'll have a full dashboard to track everything that happens.</p>
+
+            <a href="https://cal.com/eyu-abuhay-ys8yw6/onboarding-call" target="_blank" rel="noopener"
+               style="display:inline-flex;align-items:center;gap:0.6rem;background:hsl(var(--primary-glow));color:#fff;font-weight:700;font-size:0.95rem;padding:0.85rem 1.75rem;border-radius:999px;text-decoration:none;letter-spacing:-0.01em;box-shadow:0 0 24px hsl(270 65% 54% / 0.35);">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+              Book Your Onboarding Call
+            </a>
           </div>
         </div>
 
@@ -1814,7 +1783,7 @@
     // ── STATE ──
     let currentPage = 'dashboard';
     let currentIntakeSection = 1;
-    const totalIntakeSections = 8;
+    const totalIntakeSections = 9;
     let currentClientId = null;
 
     const agentDescriptions = {
@@ -2218,6 +2187,12 @@
     }
 
     // ── INTAKE ──
+    function togglePaidLeadsField() {
+      const val = document.getElementById('s4-paid-leads-toggle')?.value;
+      const field = document.getElementById('s4-paid-pct-field');
+      if (field) field.style.display = (val === 'yes' || val === 'both') ? 'block' : 'none';
+    }
+
     function showIntakeModal() {
       currentIntakeSection = 1;
       updateIntakeUI();
@@ -2229,37 +2204,47 @@
         const s = document.getElementById('intake-s' + i);
         if (s) s.classList.toggle('active', i === currentIntakeSection);
       }
-      document.getElementById('intake-counter').textContent = `Section ${currentIntakeSection} of ${totalIntakeSections}`;
+      document.getElementById('intake-counter').textContent = currentIntakeSection === 9 ? '' : `Section ${currentIntakeSection} of 8`;
       const dotsContainer = document.getElementById('intake-dots');
       dotsContainer.innerHTML = '';
-      for (let i = 1; i <= totalIntakeSections; i++) {
+      const dotCount = currentIntakeSection === 9 ? 8 : totalIntakeSections - 1;
+      for (let i = 1; i <= dotCount; i++) {
         const dot = document.createElement('div');
         dot.className = 'progress-dot';
         if (i < currentIntakeSection) dot.classList.add('completed');
         else if (i === currentIntakeSection) dot.classList.add('active');
         dotsContainer.appendChild(dot);
       }
-      document.getElementById('intake-back-btn').classList.toggle('hidden', currentIntakeSection === 1);
+      document.getElementById('intake-back-btn').classList.toggle('hidden', currentIntakeSection === 1 || currentIntakeSection === 9);
       const nextBtn = document.getElementById('intake-next-btn');
-      if (currentIntakeSection === totalIntakeSections) {
+      if (currentIntakeSection === 8) {
         nextBtn.innerHTML = 'Complete Onboarding <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>';
+      } else if (currentIntakeSection === 9) {
+        nextBtn.innerHTML = 'Close <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>';
       } else {
         nextBtn.innerHTML = 'Save &amp; Continue <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
       }
     }
 
     function intakeNext() {
-      if (currentIntakeSection < totalIntakeSections) {
+      if (currentIntakeSection === 8) {
+        // Save on submit, then advance to onboarding call section
+        saveIntakeData();
+        localStorage.setItem('lunoai_intake_submitted', 'true');
+        document.getElementById('intake-status-banner').style.display = 'flex';
+        currentIntakeSection = 9;
+        updateIntakeUI();
+        document.querySelector('.intake-container').scrollTop = 0;
+        document.getElementById('intake-modal').scrollTop = 0;
+      } else if (currentIntakeSection < totalIntakeSections) {
         currentIntakeSection++;
-        if (currentIntakeSection === totalIntakeSections) populateIntakeReview();
+        if (currentIntakeSection === 8) populateIntakeReview();
         updateIntakeUI();
         document.querySelector('.intake-container').scrollTop = 0;
         document.getElementById('intake-modal').scrollTop = 0;
       } else {
-        saveIntakeData();
-        localStorage.setItem('lunoai_intake_submitted', 'true');
+        // Section 9 — close
         document.getElementById('intake-modal').classList.add('hidden');
-        document.getElementById('intake-status-banner').style.display = 'flex';
       }
     }
 
@@ -2272,8 +2257,8 @@
           ['Services Offered', document.querySelector('#intake-s1 textarea:nth-of-type(2)')?.value?.slice(0,60) || '—'],
           ['Lead Sources',     document.querySelector('#intake-s2 textarea')?.value?.slice(0,60) || '—'],
           ['Qualifies Lead',   document.querySelector('#intake-s3 textarea')?.value?.slice(0,60) || '—'],
-          ['Avg Leads/Month',  document.querySelectorAll('#intake-s4 input[type="number"]')[1]?.value || '—'],
-          ['Follow-Up Channels', document.querySelector('#intake-s5 select:last-of-type')?.value || '—'],
+          ['Avg Leads/Week',   document.querySelector('#intake-s4 input[type="number"]')?.value || '—'],
+          ['Follow-Up Sequence', document.querySelector('#intake-s5 textarea')?.value?.slice(0,60) || '—'],
           ['Agent Tone',       document.querySelector('#intake-s6 select:nth-of-type(2)')?.value || '—'],
         ];
         document.getElementById('intake-review-grid').innerHTML = rows.map(([label, val]) => `
