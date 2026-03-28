@@ -756,6 +756,18 @@
       renderAgents();
       renderAppointments();
       renderRevenue();
+
+      // ── Realtime: watch for new intake submissions ──
+      sbAdmin.channel('admin-intake-watch')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'intake_submissions' }, payload => {
+          const incoming = payload.new;
+          if (!incoming) return;
+          const idx = allIntake.findIndex(i => i.client_id === incoming.client_id);
+          if (idx !== -1) allIntake[idx] = incoming;
+          else allIntake.push(incoming);
+          renderClients();
+        })
+        .subscribe();
     }
 
     // ── HELPERS ──
@@ -1074,22 +1086,55 @@
             <p style="font-size:1.5rem;font-weight:800;">${rev > 0 ? fmt$(rev) : '—'}</p>
           </div>
         </div>
-        ${billing ? `
+        <!-- ── BILLING (editable) ── -->
         <div style="margin-bottom:1.25rem;">
-          <p style="font-size:0.72rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:hsl(var(--muted-fg));margin-bottom:0.6rem;">Billing</p>
-          <div style="display:flex;gap:1.5rem;flex-wrap:wrap;">
-            ${billing.setup_fee ? `<span style="font-size:0.875rem;"><span style="color:hsl(var(--muted-fg));">Setup fee</span> <strong>${fmt$(billing.setup_fee)}</strong></span>` : ''}
-            ${billing.billing_amount ? `<span style="font-size:0.875rem;"><span style="color:hsl(var(--muted-fg));">Retainer</span> <strong>${fmt$(billing.billing_amount)}/mo</strong></span>` : ''}
-            ${billing.commission_percentage ? `<span style="font-size:0.875rem;"><span style="color:hsl(var(--muted-fg));">Commission</span> <strong>${billing.commission_percentage}%</strong></span>` : ''}
+          <div style="display:flex;align-items:center;gap:0.6rem;margin-bottom:0.6rem;">
+            <p style="font-size:0.72rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:hsl(var(--muted-fg));margin:0;">Billing</p>
+            <button onclick="toggleBillingEdit('${clientId}')" id="billing-edit-btn-${clientId}" style="padding:0.15rem 0.55rem;border-radius:0.4rem;background:hsl(var(--secondary));border:1px solid hsl(var(--border));color:hsl(var(--muted-fg));font-size:0.72rem;font-weight:600;cursor:pointer;letter-spacing:0.03em;">Edit</button>
           </div>
-        </div>` : ''}
-        ${agents.length ? `
+          <!-- View mode -->
+          <div id="billing-view-${clientId}">
+            ${(billing?.setup_fee || billing?.billing_amount || billing?.commission_percentage) ? `
+            <div style="display:flex;gap:1.5rem;flex-wrap:wrap;">
+              ${billing.setup_fee ? `<span style="font-size:0.875rem;"><span style="color:hsl(var(--muted-fg));">Setup fee</span> <strong>${fmt$(billing.setup_fee)}</strong></span>` : ''}
+              ${billing.billing_amount ? `<span style="font-size:0.875rem;"><span style="color:hsl(var(--muted-fg));">Retainer</span> <strong>${fmt$(billing.billing_amount)}/mo</strong></span>` : ''}
+              ${billing?.commission_percentage ? `<span style="font-size:0.875rem;"><span style="color:hsl(var(--muted-fg));">Commission</span> <strong>${billing.commission_percentage}%</strong></span>` : ''}
+            </div>` : `<p style="font-size:0.82rem;color:hsl(var(--muted-fg));">No billing set — click Edit to add.</p>`}
+          </div>
+          <!-- Edit mode (hidden by default) -->
+          <div id="billing-edit-${clientId}" style="display:none;">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;margin-bottom:0.6rem;">
+              <div>
+                <label style="font-size:0.72rem;color:hsl(var(--muted-fg));display:block;margin-bottom:0.2rem;">Setup Fee ($)</label>
+                <input type="number" id="b-setup-${clientId}" value="${billing?.setup_fee||''}" placeholder="0" style="width:100%;padding:0.45rem 0.6rem;border-radius:0.5rem;border:1px solid hsl(var(--border));background:hsl(var(--secondary));color:hsl(var(--fg));font-size:0.875rem;">
+              </div>
+              <div>
+                <label style="font-size:0.72rem;color:hsl(var(--muted-fg));display:block;margin-bottom:0.2rem;">Monthly Retainer ($)</label>
+                <input type="number" id="b-retainer-${clientId}" value="${billing?.billing_amount||''}" placeholder="0" style="width:100%;padding:0.45rem 0.6rem;border-radius:0.5rem;border:1px solid hsl(var(--border));background:hsl(var(--secondary));color:hsl(var(--fg));font-size:0.875rem;">
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:0.6rem;margin-bottom:0.5rem;">
+              <input type="checkbox" id="b-comm-toggle-${clientId}" ${billing?.commission_percentage ? 'checked' : ''} onchange="document.getElementById('b-comm-row-${clientId}').style.display=this.checked?'flex':'none'" style="cursor:pointer;">
+              <label for="b-comm-toggle-${clientId}" style="font-size:0.82rem;color:hsl(var(--fg));cursor:pointer;">Commission-based?</label>
+            </div>
+            <div id="b-comm-row-${clientId}" style="display:${billing?.commission_percentage?'flex':'none'};align-items:center;gap:0.5rem;margin-bottom:0.75rem;">
+              <input type="number" id="b-comm-${clientId}" value="${billing?.commission_percentage||''}" placeholder="%" min="0" max="100" style="width:80px;padding:0.45rem 0.6rem;border-radius:0.5rem;border:1px solid hsl(var(--border));background:hsl(var(--secondary));color:hsl(var(--fg));font-size:0.875rem;">
+              <span style="font-size:0.82rem;color:hsl(var(--muted-fg));">% of deal revenue</span>
+            </div>
+            <div style="display:flex;gap:0.5rem;">
+              <button onclick="saveBilling('${clientId}')" style="padding:0.4rem 1rem;border-radius:0.5rem;background:hsl(var(--primary)/0.2);border:1px solid hsl(var(--primary)/0.4);color:hsl(var(--primary-hi));font-size:0.8rem;font-weight:600;cursor:pointer;">Save</button>
+              <button onclick="toggleBillingEdit('${clientId}')" style="padding:0.4rem 0.8rem;border-radius:0.5rem;background:hsl(var(--secondary));border:1px solid hsl(var(--border));color:hsl(var(--muted-fg));font-size:0.8rem;cursor:pointer;">Cancel</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── AGENTS (manage) ── -->
         <div style="margin-bottom:1.5rem;">
-          <p style="font-size:0.72rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:hsl(var(--muted-fg));margin-bottom:0.6rem;">Active Agents (${agents.length})</p>
-          <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
-            ${agents.map(a => `<span class="badge badge-purple"><span class="badge-dot badge-dot-purple"></span>${escHtml(a.agent_type.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase()))}</span>`).join('')}
+          <p style="font-size:0.72rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:hsl(var(--muted-fg));margin-bottom:0.75rem;">Agents</p>
+          <div id="agents-manage-${clientId}">
+            ${renderAgentManageHTML(clientId, allAgents.filter(a => a.client_id === clientId))}
           </div>
-        </div>` : ''}
+        </div>
 
         <!-- ── PROJECT CHECKLIST ── -->
         <div>
@@ -1107,11 +1152,11 @@
     }
 
     const CHECKLIST_DEFAULTS = [
-      { key: 'got_info',   label: 'Got the information',  order: 0 },
-      { key: 'started',    label: 'Started building',     order: 1 },
-      { key: 'finished',   label: 'Finished building',    order: 2 },
-      { key: 'testing',    label: 'Testing',              order: 3 },
-      { key: 'ready_live', label: 'Ready to go live',     order: 4 },
+      { key: 'got_info',   step_label: 'Got the information',  order: 0 },
+      { key: 'started',    step_label: 'Started building',     order: 1 },
+      { key: 'finished',   step_label: 'Finished building',    order: 2 },
+      { key: 'testing',    step_label: 'Testing',              order: 3 },
+      { key: 'ready_live', step_label: 'Ready to go live',     order: 4 },
     ];
 
     async function renderAdminChecklist(clientId) {
@@ -1185,6 +1230,135 @@
 
       renderAdminChecklist(clientId);
       renderClients(); // refresh NEW badge counts if needed
+    }
+
+    // ── BILLING EDIT ──
+    function toggleBillingEdit(clientId) {
+      const view = document.getElementById('billing-view-' + clientId);
+      const edit = document.getElementById('billing-edit-' + clientId);
+      const btn  = document.getElementById('billing-edit-btn-' + clientId);
+      const isEditing = edit.style.display !== 'none';
+      view.style.display = isEditing ? '' : 'none';
+      edit.style.display = isEditing ? 'none' : '';
+      btn.textContent = isEditing ? 'Edit' : 'Cancel';
+    }
+
+    async function saveBilling(clientId) {
+      const setup     = parseFloat(document.getElementById('b-setup-' + clientId)?.value) || 0;
+      const retainer  = parseFloat(document.getElementById('b-retainer-' + clientId)?.value) || 0;
+      const commOn    = document.getElementById('b-comm-toggle-' + clientId)?.checked;
+      const comm      = commOn ? (parseFloat(document.getElementById('b-comm-' + clientId)?.value) || 0) : null;
+
+      const payload = { client_id: clientId, setup_fee: setup, billing_amount: retainer, commission_percentage: comm };
+      const { error } = await sbAdmin.from('client_billing').upsert(payload, { onConflict: 'client_id' });
+      if (error) { alert('Save failed: ' + error.message); return; }
+
+      // Update cache
+      const idx = allBilling.findIndex(b => b.client_id === clientId);
+      if (idx !== -1) Object.assign(allBilling[idx], payload);
+      else allBilling.push(payload);
+
+      // Refresh modal view
+      openClientModal(clientId);
+    }
+
+    // ── AGENT MANAGEMENT ──
+    const PREDEFINED_AGENTS = [
+      { type: 'receptionist_agent', label: 'Receptionist Agent' },
+      { type: 'outbound_agent',     label: 'Outbound Agent' },
+      { type: 'followup_agent',     label: 'Follow-up Agent' },
+    ];
+
+    function renderAgentManageHTML(clientId, clientAgents) {
+      const rows = PREDEFINED_AGENTS.map(pa => {
+        const existing = clientAgents.find(a => a.agent_type === pa.type);
+        const on = existing?.enabled === true;
+        return `<div style="display:flex;align-items:center;justify-content:space-between;padding:0.6rem 0;border-bottom:1px solid hsl(var(--border)/0.5);">
+          <span style="font-size:0.875rem;color:hsl(var(--fg));">${escHtml(pa.label)}</span>
+          <button onclick="toggleAgent('${clientId}','${pa.type}',${on})" style="padding:0.25rem 0.75rem;border-radius:999px;font-size:0.72rem;font-weight:700;letter-spacing:0.04em;cursor:pointer;transition:all 0.15s;
+            background:${on?'hsl(270 65% 54%/0.2)':'hsl(var(--secondary))'};
+            border:1px solid ${on?'hsl(270 65% 54%/0.5)':'hsl(var(--border))'};
+            color:${on?'hsl(var(--primary-hi))':'hsl(var(--muted-fg))'};">
+            ${on?'Enabled':'Disabled'}
+          </button>
+        </div>`;
+      }).join('');
+
+      const customAgents = clientAgents.filter(a => !PREDEFINED_AGENTS.find(p => p.type === a.agent_type));
+      const customRows = customAgents.map(a => {
+        const on = a.enabled === true;
+        const displayName = a.agent_name || a.agent_type.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+        return `<div style="display:flex;align-items:center;justify-content:space-between;padding:0.6rem 0;border-bottom:1px solid hsl(var(--border)/0.5);">
+          <div>
+            <span style="font-size:0.875rem;color:hsl(var(--fg));">${escHtml(displayName)}</span>
+            ${a.agent_description?`<p style="font-size:0.72rem;color:hsl(var(--muted-fg));margin:0;">${escHtml(a.agent_description)}</p>`:''}
+          </div>
+          <div style="display:flex;gap:0.4rem;align-items:center;">
+            <button onclick="toggleAgent('${clientId}','${escHtml(a.agent_type)}',${on})" style="padding:0.25rem 0.75rem;border-radius:999px;font-size:0.72rem;font-weight:700;cursor:pointer;
+              background:${on?'hsl(270 65% 54%/0.2)':'hsl(var(--secondary))'};
+              border:1px solid ${on?'hsl(270 65% 54%/0.5)':'hsl(var(--border))'};
+              color:${on?'hsl(var(--primary-hi))':'hsl(var(--muted-fg))'};">${on?'Enabled':'Disabled'}</button>
+            <button onclick="deleteAgent('${clientId}','${escHtml(a.agent_type)}')" style="padding:0.25rem 0.5rem;border-radius:0.4rem;font-size:0.72rem;cursor:pointer;background:hsl(0 50% 15%);border:1px solid hsl(0 55% 35%/0.5);color:hsl(0 65% 60%);">✕</button>
+          </div>
+        </div>`;
+      }).join('');
+
+      return rows + customRows + `
+        <div id="add-agent-form-${clientId}" style="margin-top:0.75rem;">
+          <button onclick="showAddAgentForm('${clientId}')" id="add-agent-btn-${clientId}" style="padding:0.3rem 0.8rem;border-radius:0.5rem;background:hsl(var(--secondary));border:1px solid hsl(var(--border));color:hsl(var(--muted-fg));font-size:0.78rem;cursor:pointer;">+ Add Custom Agent</button>
+          <div id="add-agent-fields-${clientId}" style="display:none;margin-top:0.5rem;display:none;">
+            <input type="text" id="new-agent-name-${clientId}" placeholder="Agent name *" style="width:100%;padding:0.4rem 0.6rem;border-radius:0.5rem;border:1px solid hsl(var(--border));background:hsl(var(--secondary));color:hsl(var(--fg));font-size:0.82rem;margin-bottom:0.4rem;">
+            <input type="text" id="new-agent-desc-${clientId}" placeholder="Brief description (optional)" style="width:100%;padding:0.4rem 0.6rem;border-radius:0.5rem;border:1px solid hsl(var(--border));background:hsl(var(--secondary));color:hsl(var(--fg));font-size:0.82rem;margin-bottom:0.4rem;">
+            <div style="display:flex;gap:0.4rem;">
+              <button onclick="addCustomAgent('${clientId}')" style="padding:0.35rem 0.9rem;border-radius:0.5rem;background:hsl(var(--primary)/0.2);border:1px solid hsl(var(--primary)/0.4);color:hsl(var(--primary-hi));font-size:0.78rem;font-weight:600;cursor:pointer;">Add</button>
+              <button onclick="document.getElementById('add-agent-fields-${clientId}').style.display='none';document.getElementById('add-agent-btn-${clientId}').style.display='';" style="padding:0.35rem 0.7rem;border-radius:0.5rem;background:hsl(var(--secondary));border:1px solid hsl(var(--border));color:hsl(var(--muted-fg));font-size:0.78rem;cursor:pointer;">Cancel</button>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    function showAddAgentForm(clientId) {
+      document.getElementById('add-agent-btn-' + clientId).style.display = 'none';
+      document.getElementById('add-agent-fields-' + clientId).style.display = '';
+    }
+
+    async function toggleAgent(clientId, agentType, currentlyOn) {
+      const newState = !currentlyOn;
+      const { error } = await sbAdmin.from('client_agents_enabled')
+        .upsert({ client_id: clientId, agent_type: agentType, enabled: newState }, { onConflict: 'client_id,agent_type' });
+      if (error) { console.warn('Agent toggle error:', error.message); return; }
+
+      const idx = allAgents.findIndex(a => a.client_id === clientId && a.agent_type === agentType);
+      if (idx !== -1) allAgents[idx].enabled = newState;
+      else allAgents.push({ client_id: clientId, agent_type: agentType, enabled: newState });
+
+      document.getElementById('agents-manage-' + clientId).innerHTML =
+        renderAgentManageHTML(clientId, allAgents.filter(a => a.client_id === clientId));
+    }
+
+    async function deleteAgent(clientId, agentType) {
+      const { error } = await sbAdmin.from('client_agents_enabled')
+        .delete().eq('client_id', clientId).eq('agent_type', agentType);
+      if (error) { console.warn('Agent delete error:', error.message); return; }
+
+      allAgents = allAgents.filter(a => !(a.client_id === clientId && a.agent_type === agentType));
+      document.getElementById('agents-manage-' + clientId).innerHTML =
+        renderAgentManageHTML(clientId, allAgents.filter(a => a.client_id === clientId));
+    }
+
+    async function addCustomAgent(clientId) {
+      const name = document.getElementById('new-agent-name-' + clientId)?.value.trim();
+      if (!name) { alert('Agent name is required.'); return; }
+      const desc = document.getElementById('new-agent-desc-' + clientId)?.value.trim() || null;
+      const agentType = name.toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'');
+
+      const payload = { client_id: clientId, agent_type: agentType, agent_name: name, agent_description: desc, enabled: true };
+      const { error } = await sbAdmin.from('client_agents_enabled').insert(payload);
+      if (error) { alert('Could not add agent: ' + error.message); return; }
+
+      allAgents.push(payload);
+      document.getElementById('agents-manage-' + clientId).innerHTML =
+        renderAgentManageHTML(clientId, allAgents.filter(a => a.client_id === clientId));
     }
 
     // ── INTAKE ANSWERS MODAL ──

@@ -1459,7 +1459,18 @@
               </div>
               <div class="form-group">
                 <label class="form-label">Documents / Q&amp;A Sheets / Internal References for the Agent</label>
-                <textarea class="form-textarea" style="min-height:60px;" placeholder="Describe or list any files, PDFs, FAQs, or references the agent should draw from..."></textarea>
+                <div id="docs-dropzone" onclick="document.getElementById('docs-file-input').click()"
+                  ondragover="event.preventDefault();this.style.borderColor='hsl(var(--primary-glow))';this.style.background='hsl(270 40% 10%/0.6)'"
+                  ondragleave="this.style.borderColor='';this.style.background=''"
+                  ondrop="handleDocsDrop(event)"
+                  style="border:2px dashed hsl(var(--border));border-radius:0.75rem;padding:1.5rem 1rem;text-align:center;cursor:pointer;transition:border-color 0.2s,background 0.2s;background:hsl(270 25% 7%/0.4);">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="hsl(var(--primary-hi))" stroke-width="1.5" style="margin:0 auto 0.5rem;display:block;opacity:0.7"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  <p id="docs-dropzone-label" style="font-size:0.85rem;color:hsl(var(--muted-fg));margin:0;">Drop file here or <span style="color:hsl(var(--primary-hi));font-weight:600;">click to browse</span></p>
+                  <p style="font-size:0.72rem;color:hsl(var(--muted-fg));margin-top:0.3rem;opacity:0.7;">PDF, DOC, DOCX, TXT, CSV, images</p>
+                </div>
+                <input type="file" id="docs-file-input" accept=".pdf,.doc,.docx,.txt,.csv,image/*" style="display:none;" onchange="handleDocsFileSelect(this)">
+                <input type="hidden" id="docs-file-url" value="">
+                <div id="docs-upload-status" style="display:none;font-size:0.8rem;margin-top:0.4rem;"></div>
               </div>
               <div class="form-group">
                 <label class="form-label">Language, Claims, or Topics the Agent Must Avoid</label>
@@ -1610,7 +1621,7 @@
                 <textarea class="form-textarea" placeholder="How do you currently follow up with a new lead?"></textarea>
               </div>
               <div class="form-group">
-                <label class="form-label">Full Sequence Outline *</label>
+                <label class="form-label">Dream Follow-up Sequence *</label>
                 <textarea class="form-textarea" placeholder="Walk us through the full sequence step by step — e.g., Immediate text → Call after 1 hour → Text next morning → Email Day 3 → Final text Day 7"></textarea>
               </div>
             </div>
@@ -1636,10 +1647,6 @@
                   <option>Formal</option>
                   <option>Neutral</option>
                 </select>
-              </div>
-              <div class="form-group">
-                <label class="form-label">Call Flow Order</label>
-                <input type="text" class="form-input" placeholder="The order of steps the agent should follow on a call">
               </div>
             </div>
           </div>
@@ -2377,6 +2384,45 @@
       });
     }
 
+    function showIntakeSubmitError(msg) {
+      const existing = document.getElementById('intake-submit-error');
+      if (existing) existing.remove();
+      const el = document.createElement('div');
+      el.id = 'intake-submit-error';
+      el.style.cssText = 'position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);z-index:9999;background:hsl(0 50% 15%);border:1px solid hsl(0 55% 40%/0.5);color:hsl(0 75% 70%);padding:0.75rem 1.25rem;border-radius:0.75rem;font-size:0.85rem;max-width:420px;text-align:center;box-shadow:0 4px 24px hsl(0 0% 0%/0.4);';
+      el.innerHTML = '⚠ Could not save your form to the server. <br><span style="font-size:0.78rem;opacity:0.8;">' + escHtml(msg || 'Please try again or contact support.') + '</span><br><button onclick="saveIntakeData();this.parentElement.remove();" style="margin-top:0.5rem;padding:0.3rem 0.9rem;border-radius:0.5rem;background:hsl(0 50% 30%);border:1px solid hsl(0 55% 45%/0.5);color:hsl(0 75% 80%);font-size:0.78rem;cursor:pointer;">Retry</button>';
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 12000);
+    }
+
+    async function uploadDocsFile(file) {
+      const statusEl = document.getElementById('docs-upload-status');
+      statusEl.style.display = 'block';
+      statusEl.style.color = 'hsl(var(--muted-fg))';
+      statusEl.textContent = 'Uploading…';
+      const path = (currentClientId || 'unknown') + '/' + Date.now() + '_' + file.name;
+      const { data, error } = await sb.storage.from('intake-docs').upload(path, file, { upsert: true });
+      if (error) {
+        statusEl.style.color = 'hsl(0 65% 60%)';
+        statusEl.textContent = 'Upload failed: ' + error.message;
+        return;
+      }
+      const { data: urlData } = sb.storage.from('intake-docs').getPublicUrl(data.path);
+      document.getElementById('docs-file-url').value = urlData.publicUrl;
+      statusEl.style.color = 'hsl(142 65% 55%)';
+      statusEl.textContent = '✓ ' + file.name + ' uploaded';
+      document.getElementById('docs-dropzone-label').innerHTML = '<strong style="color:hsl(var(--fg));">' + escHtml(file.name) + '</strong> <span style="color:hsl(var(--muted-fg));">— click to replace</span>';
+    }
+    function handleDocsFileSelect(input) {
+      if (input.files[0]) uploadDocsFile(input.files[0]);
+    }
+    function handleDocsDrop(e) {
+      e.preventDefault();
+      const dz = document.getElementById('docs-dropzone');
+      dz.style.borderColor = ''; dz.style.background = '';
+      if (e.dataTransfer.files[0]) uploadDocsFile(e.dataTransfer.files[0]);
+    }
+
     function saveIntakeData() {
       // ── Collect named fields from each intake section ──
       const s1 = document.getElementById('intake-s1');
@@ -2393,8 +2439,8 @@
         company_name:          g(s1, 'input[type="text"]', 0),
         business_description:  g(s1, 'textarea', 0),
         services_offered:      g(s1, 'textarea', 1),
-        documents_references:  g(s1, 'textarea', 2),
-        topics_to_avoid:       g(s1, 'textarea', 3),
+        documents_references:  document.getElementById('docs-file-url')?.value || '',
+        topics_to_avoid:       g(s1, 'textarea', 2),
 
         // Section 2: Lead Source & Flow
         lead_sources:          g(s2, 'textarea', 0),
@@ -2427,7 +2473,6 @@
         // Section 6: Call Style
         agent_introduction:    g(s6, 'input[type="text"]', 0),
         desired_tone:          g(s6, 'select', 0),
-        call_flow_order:       g(s6, 'input[type="text"]', 1),
 
         // Section 7: Additional Notes
         compliance_concerns:   g(s7, 'textarea', 0),
@@ -2447,8 +2492,13 @@
           admin_acknowledged: false,
           submitted_at: new Date().toISOString()
         }, { onConflict: 'client_id' }).then(({ error }) => {
-          if (error) console.warn('Intake submission save error:', error.message);
+          if (error) {
+            console.error('Intake submission save error:', error.message);
+            showIntakeSubmitError(error.message);
+          }
         });
+      } else {
+        showIntakeSubmitError('Your session could not be verified. Please sign out and sign back in, then resubmit.');
       }
     }
 
