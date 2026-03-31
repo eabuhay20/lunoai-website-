@@ -1926,14 +1926,28 @@
     }
 
     async function resolveClientId(user) {
-      // Try client_users link first
+      // 1. Try client_users link first
       const { data: cu } = await sb.from('client_users').select('client_id').eq('user_id', user.id).maybeSingle();
       if (cu) { currentClientId = cu.client_id; return; }
-      // Fallback: match by email in clients table
+
+      // 2. Fallback: match by email in clients table
       const { data: c } = await sb.from('clients').select('id').eq('email', user.email).maybeSingle();
       if (c) {
         currentClientId = c.id;
         await sb.from('client_users').upsert({ client_id: c.id, user_id: user.id, role: 'client' }, { onConflict: 'user_id,client_id' });
+        return;
+      }
+
+      // 3. No client record at all — create one now
+      const { data: created } = await sb.from('clients').insert({
+        email: user.email,
+        name: user.user_metadata?.full_name || user.email.split('@')[0],
+        company_name: user.user_metadata?.company_name || null,
+        approved: false
+      }).select('id').maybeSingle();
+      if (created) {
+        currentClientId = created.id;
+        await sb.from('client_users').insert({ client_id: created.id, user_id: user.id, role: 'client' });
       }
     }
 
