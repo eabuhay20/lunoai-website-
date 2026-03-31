@@ -1092,82 +1092,6 @@
               </div>
             </div>
 
-            <!-- Coming Soon Agent Cards (preview) -->
-            <div class="card agent-card" onclick="openAgentModal('Speed to Lead')" style="opacity:0.6;">
-              <div class="agent-card-header">
-                <div>
-                  <p class="agent-name">Speed to Lead</p>
-                  <p class="agent-desc" style="margin-bottom:0;">Instant lead response automation</p>
-                </div>
-                <span class="badge badge-muted">Coming Soon</span>
-              </div>
-              <div class="agent-stats">
-                <div><p class="agent-stat-label">Leads Contacted</p><p class="agent-stat-val text-muted">—</p></div>
-                <div><p class="agent-stat-label">Time Saved</p><p class="agent-stat-val text-muted">—</p></div>
-                <div><p class="agent-stat-label">Labor Saved</p><p class="agent-stat-val text-muted">—</p></div>
-              </div>
-              <a class="agent-view-link">
-                Click to view details
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-              </a>
-            </div>
-
-            <div class="card agent-card" onclick="openAgentModal('Appointment Setter')" style="opacity:0.6;">
-              <div class="agent-card-header">
-                <div>
-                  <p class="agent-name">Appointment Setter</p>
-                  <p class="agent-desc" style="margin-bottom:0;">Automated meeting scheduling</p>
-                </div>
-                <span class="badge badge-muted">Coming Soon</span>
-              </div>
-              <div class="agent-stats">
-                <div><p class="agent-stat-label">Leads Contacted</p><p class="agent-stat-val text-muted">—</p></div>
-                <div><p class="agent-stat-label">Time Saved</p><p class="agent-stat-val text-muted">—</p></div>
-                <div><p class="agent-stat-label">Labor Saved</p><p class="agent-stat-val text-muted">—</p></div>
-              </div>
-              <a class="agent-view-link">
-                Click to view details
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-              </a>
-            </div>
-
-            <div class="card agent-card" onclick="openAgentModal('Reactivation')" style="opacity:0.6;">
-              <div class="agent-card-header">
-                <div>
-                  <p class="agent-name">Reactivation</p>
-                  <p class="agent-desc" style="margin-bottom:0;">Re-engage dormant leads</p>
-                </div>
-                <span class="badge badge-muted">Coming Soon</span>
-              </div>
-              <div class="agent-stats">
-                <div><p class="agent-stat-label">Leads Contacted</p><p class="agent-stat-val text-muted">—</p></div>
-                <div><p class="agent-stat-label">Time Saved</p><p class="agent-stat-val text-muted">—</p></div>
-                <div><p class="agent-stat-label">Labor Saved</p><p class="agent-stat-val text-muted">—</p></div>
-              </div>
-              <a class="agent-view-link">
-                Click to view details
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-              </a>
-            </div>
-
-            <div class="card agent-card" onclick="openAgentModal('AI SMS Agent')" style="opacity:0.6;">
-              <div class="agent-card-header">
-                <div>
-                  <p class="agent-name">AI SMS Agent</p>
-                  <p class="agent-desc" style="margin-bottom:0;">Automated SMS messaging and follow-ups</p>
-                </div>
-                <span class="badge badge-muted">Coming Soon</span>
-              </div>
-              <div class="agent-stats">
-                <div><p class="agent-stat-label">Leads Contacted</p><p class="agent-stat-val text-muted">—</p></div>
-                <div><p class="agent-stat-label">Time Saved</p><p class="agent-stat-val text-muted">—</p></div>
-                <div><p class="agent-stat-label">Labor Saved</p><p class="agent-stat-val text-muted">—</p></div>
-              </div>
-              <a class="agent-view-link">
-                Click to view details
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-              </a>
-            </div>
           </div>
         </div>
 
@@ -1873,30 +1797,18 @@
         return;
       }
 
+      // Save signup info to localStorage so resolveClientId can use it on sign-in
+      localStorage.setItem('lunoai_signup_meta', JSON.stringify({ name, company: company || name, phone: phone || null, email }));
+
+      // Try to create client record now (works if email confirmation is OFF)
+      if (data.session) {
+        await resolveClientId(data.user);
+      }
+
       if (!data.session) {
         errEl.style.cssText = 'color:hsl(142 70% 55%);font-size:0.82rem;margin-bottom:0.75rem;display:block;';
         errEl.textContent = 'Check your email to confirm your account, then sign in.';
         return;
-      }
-
-      // Try to create client record
-      try {
-        const { data: client, error: cErr } = await sb.from('clients').insert({
-          name, company_name: company || name, email, phone: phone || null, approved: false
-        }).select('id').single();
-        if (!cErr && client) {
-          currentClientId = client.id;
-          await sb.from('client_users').insert({ client_id: client.id, user_id: data.user.id, role: 'client' });
-        }
-      } catch(e) { /* RLS may block — admin will link client manually */ }
-
-      // Fallback: find existing client by email
-      if (!currentClientId) {
-        const { data: existing } = await sb.from('clients').select('id').eq('email', email).maybeSingle();
-        if (existing) {
-          currentClientId = existing.id;
-          await sb.from('client_users').upsert({ client_id: existing.id, user_id: data.user.id, role: 'client' }, { onConflict: 'user_id,client_id' });
-        }
       }
 
       localStorage.removeItem('lunoai_intake');
@@ -1939,14 +1851,20 @@
       }
 
       // 3. No client record at all — create one now
-      const { data: created } = await sb.from('clients').insert({
+      const signupMeta = JSON.parse(localStorage.getItem('lunoai_signup_meta') || '{}');
+      const { data: created, error: insertErr } = await sb.from('clients').insert({
         email: user.email,
-        name: user.user_metadata?.full_name || user.email.split('@')[0],
-        company_name: user.user_metadata?.company_name || null,
+        name: signupMeta.name || user.user_metadata?.full_name || user.email.split('@')[0],
+        company_name: signupMeta.company || user.user_metadata?.company_name || null,
+        phone: signupMeta.phone || null,
         approved: false
       }).select('id').maybeSingle();
+      if (insertErr) {
+        console.error('resolveClientId INSERT error:', insertErr.message, insertErr.code);
+      }
       if (created) {
         currentClientId = created.id;
+        localStorage.removeItem('lunoai_signup_meta');
         await sb.from('client_users').insert({ client_id: created.id, user_id: user.id, role: 'client' });
       }
     }
