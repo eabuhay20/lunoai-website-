@@ -2399,19 +2399,25 @@
       const statusEl = document.getElementById('docs-upload-status');
       statusEl.style.display = 'block';
       statusEl.style.color = 'hsl(var(--muted-fg))';
-      statusEl.textContent = 'Uploading…';
-      const path = (currentClientId || 'unknown') + '/' + Date.now() + '_' + file.name;
-      const { data, error } = await sb.storage.from('intake-docs').upload(path, file, { upsert: true });
-      if (error) {
+      statusEl.textContent = 'Reading file…';
+
+      // Convert to base64 data URL — no Storage bucket required
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const dataUrl = e.target.result;
+        // Store as JSON: {name, type, size, data}
+        const stored = JSON.stringify({ name: file.name, type: file.type, size: file.size, data: dataUrl });
+        document.getElementById('docs-file-url').value = stored;
+        statusEl.style.color = 'hsl(142 65% 55%)';
+        statusEl.textContent = '✓ ' + file.name + ' attached';
+        document.getElementById('docs-dropzone-label').innerHTML =
+          '<strong style="color:hsl(var(--fg));">' + escHtml(file.name) + '</strong> <span style="color:hsl(var(--muted-fg));">— click to replace</span>';
+      };
+      reader.onerror = function() {
         statusEl.style.color = 'hsl(0 65% 60%)';
-        statusEl.textContent = 'Upload failed: ' + error.message;
-        return;
-      }
-      const { data: urlData } = sb.storage.from('intake-docs').getPublicUrl(data.path);
-      document.getElementById('docs-file-url').value = urlData.publicUrl;
-      statusEl.style.color = 'hsl(142 65% 55%)';
-      statusEl.textContent = '✓ ' + file.name + ' uploaded';
-      document.getElementById('docs-dropzone-label').innerHTML = '<strong style="color:hsl(var(--fg));">' + escHtml(file.name) + '</strong> <span style="color:hsl(var(--muted-fg));">— click to replace</span>';
+        statusEl.textContent = 'Could not read file. Try a different format.';
+      };
+      reader.readAsDataURL(file);
     }
     function handleDocsFileSelect(input) {
       if (input.files[0]) uploadDocsFile(input.files[0]);
@@ -2485,21 +2491,31 @@
       localStorage.setItem('lunoai_intake', JSON.stringify(data));
 
       // ── Also persist to Supabase so admin sees it ──
-      if (currentClientId) {
-        sb.from('intake_submissions').upsert({
+      (async () => {
+        // If currentClientId isn't set, try to resolve it from the live session
+        if (!currentClientId) {
+          const { data: { user } } = await sb.auth.getUser();
+          if (user) await resolveClientId(user);
+        }
+
+        if (!currentClientId) {
+          console.error('Intake save: currentClientId still null after re-resolve');
+          showIntakeSubmitError('Could not link your account. Please contact support.');
+          return;
+        }
+
+        const { error } = await sb.from('intake_submissions').upsert({
           client_id: currentClientId,
           data: data,
           admin_acknowledged: false,
           submitted_at: new Date().toISOString()
-        }, { onConflict: 'client_id' }).then(({ error }) => {
-          if (error) {
-            console.error('Intake submission save error:', error.message);
-            showIntakeSubmitError(error.message);
-          }
-        });
-      } else {
-        showIntakeSubmitError('Your session could not be verified. Please sign out and sign back in, then resubmit.');
-      }
+        }, { onConflict: 'client_id' });
+
+        if (error) {
+          console.error('Intake submission save error:', error.message);
+          showIntakeSubmitError(error.message);
+        }
+      })();
     }
 
     function intakeBack() {
