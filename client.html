@@ -1852,15 +1852,20 @@
 
       // 3. No client record at all — create one now
       const signupMeta = JSON.parse(localStorage.getItem('lunoai_signup_meta') || '{}');
-      const { data: created, error: insertErr } = await sb.from('clients').insert({
+      const insertPayload = {
         email: user.email,
         name: signupMeta.name || user.user_metadata?.full_name || user.email.split('@')[0],
-        company_name: signupMeta.company || user.user_metadata?.company_name || null,
-        phone: signupMeta.phone || null,
-        approved: false
-      }).select('id').maybeSingle();
+      };
+      if (signupMeta.company) insertPayload.company_name = signupMeta.company;
+      if (signupMeta.phone)   insertPayload.phone = signupMeta.phone;
+
+      const { data: created, error: insertErr } = await sb.from('clients').insert(insertPayload).select('id').maybeSingle();
       if (insertErr) {
-        console.error('resolveClientId INSERT error:', insertErr.message, insertErr.code);
+        console.error('resolveClientId INSERT error:', insertErr.message, insertErr.code, insertErr.details);
+        // Surface error so we can debug
+        const errBanner = document.getElementById('signup-error');
+        if (errBanner) { errBanner.style.display = 'block'; errBanner.textContent = 'Account setup failed: ' + insertErr.message; }
+        return;
       }
       if (created) {
         currentClientId = created.id;
