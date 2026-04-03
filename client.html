@@ -1857,25 +1857,22 @@
 
       // 3. No client record at all — create one now
       const signupMeta = JSON.parse(localStorage.getItem('lunoai_signup_meta') || '{}');
-      const insertPayload = {
-        email: user.email,
-        name: signupMeta.name || user.user_metadata?.full_name || user.email.split('@')[0],
-      };
-      if (signupMeta.company) insertPayload.company_name = signupMeta.company;
-      if (signupMeta.phone)   insertPayload.phone = signupMeta.phone;
-
-      const { data: created, error: insertErr } = await sb.from('clients').insert(insertPayload).select('id').maybeSingle();
+      const { data: newId, error: insertErr } = await sb.rpc('create_client_self', {
+        p_email:   user.email,
+        p_name:    signupMeta.name || user.user_metadata?.full_name || user.email.split('@')[0],
+        p_company: signupMeta.company || null,
+        p_phone:   signupMeta.phone || null,
+        p_user_id: user.id
+      });
       if (insertErr) {
-        console.error('resolveClientId INSERT error:', insertErr.message, insertErr.code, insertErr.details);
-        // Surface error so we can debug
+        console.error('resolveClientId RPC error:', insertErr.message);
         const errBanner = document.getElementById('signup-error');
         if (errBanner) { errBanner.style.display = 'block'; errBanner.textContent = 'Account setup failed: ' + insertErr.message; }
         return;
       }
-      if (created) {
-        currentClientId = created.id;
+      if (newId) {
+        currentClientId = newId;
         localStorage.removeItem('lunoai_signup_meta');
-        await sb.from('client_users').insert({ client_id: created.id, user_id: user.id, role: 'client' });
       }
     }
 
