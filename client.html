@@ -1851,7 +1851,7 @@
       const { data: c } = await sb.from('clients').select('id').eq('email', user.email).maybeSingle();
       if (c) {
         currentClientId = c.id;
-        await sb.from('client_users').upsert({ client_id: c.id, user_id: user.id, role: 'client' }, { onConflict: 'user_id,client_id' });
+        await sb.from('client_users').upsert({ client_id: c.id, user_id: user.id, role: 'owner' }, { onConflict: 'user_id,client_id' });
         return;
       }
 
