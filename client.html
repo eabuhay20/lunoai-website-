@@ -1857,10 +1857,12 @@
 
       // 3. No client record at all — create one now
       const signupMeta = JSON.parse(localStorage.getItem('lunoai_signup_meta') || '{}');
+      const resolvedName    = signupMeta.name || user.user_metadata?.full_name || user.email.split('@')[0];
+      const resolvedCompany = signupMeta.company || resolvedName;
       const { data: newId, error: insertErr } = await sb.rpc('create_client_self', {
         p_email:   user.email,
-        p_name:    signupMeta.name || user.user_metadata?.full_name || user.email.split('@')[0],
-        p_company: signupMeta.company || null,
+        p_name:    resolvedName,
+        p_company: resolvedCompany,
         p_phone:   signupMeta.phone || null,
         p_user_id: user.id
       });
