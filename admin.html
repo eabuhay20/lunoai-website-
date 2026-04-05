@@ -1152,11 +1152,11 @@
     }
 
     const CHECKLIST_DEFAULTS = [
-      { key: 'got_info',   step_label: 'Got the information',  order: 0 },
-      { key: 'started',    step_label: 'Started building',     order: 1 },
-      { key: 'finished',   step_label: 'Finished building',    order: 2 },
-      { key: 'testing',    step_label: 'Testing',              order: 3 },
-      { key: 'ready_live', step_label: 'Ready to go live',     order: 4 },
+      { step_key: 'got_info',   step_label: 'Got the information', order: 0 },
+      { step_key: 'started',    step_label: 'Started building',    order: 1 },
+      { step_key: 'finished',   step_label: 'Finished building',   order: 2 },
+      { step_key: 'testing',    step_label: 'Testing',             order: 3 },
+      { step_key: 'ready_live', step_label: 'Ready to go live',    order: 4 },
     ];
 
     async function renderAdminChecklist(clientId) {
@@ -1169,7 +1169,12 @@
       // Seed default steps if none exist
       if (steps.length === 0) {
         const inserts = CHECKLIST_DEFAULTS.map(s => ({ ...s, client_id: clientId, completed: false }));
-        const { data: seeded } = await sbAdmin.from('project_checklist').insert(inserts).select();
+        const { data: seeded, error: seedErr } = await sbAdmin.from('project_checklist').insert(inserts).select();
+        if (seedErr) {
+          console.error('Checklist seed error:', seedErr.message);
+          container.innerHTML = `<div style="padding:0.75rem 1rem;color:hsl(0 65% 60%);font-size:0.82rem;">Failed to create checklist: ${seedErr.message}</div>`;
+          return;
+        }
         if (seeded) {
           allChecklist.push(...seeded);
           steps = seeded;
@@ -1264,8 +1269,8 @@
 
     // ── AGENT MANAGEMENT ──
     const PREDEFINED_AGENTS = [
-      { type: 'receptionist_agent', label: 'Receptionist Agent' },
-      { type: 'outbound_agent',     label: 'Outbound Agent' },
+      { type: 'speed_to_lead',      label: 'Speed to Lead Agent' },
+      { type: 'appointment_setter', label: 'Appointment Setter Agent' },
       { type: 'followup_agent',     label: 'Follow-up Agent' },
     ];
 
@@ -1324,14 +1329,18 @@
 
     async function toggleAgent(clientId, agentType, currentlyOn) {
       const newState = !currentlyOn;
-      const { error } = await sbAdmin.from('client_agents_enabled')
-        .upsert({ client_id: clientId, agent_type: agentType, enabled: newState }, { onConflict: 'client_id,agent_type' });
+      const existing = allAgents.find(a => a.client_id === clientId && a.agent_type === agentType);
+      let error;
+      if (existing) {
+        ({ error } = await sbAdmin.from('client_agents_enabled').update({ enabled: newState }).eq('id', existing.id));
+        if (!error) existing.enabled = newState;
+      } else {
+        const { data: inserted, error: insertErr } = await sbAdmin.from('client_agents_enabled')
+          .insert({ client_id: clientId, agent_type: agentType, enabled: newState }).select().maybeSingle();
+        error = insertErr;
+        if (!error && inserted) allAgents.push(inserted);
+      }
       if (error) { console.warn('Agent toggle error:', error.message); return; }
-
-      const idx = allAgents.findIndex(a => a.client_id === clientId && a.agent_type === agentType);
-      if (idx !== -1) allAgents[idx].enabled = newState;
-      else allAgents.push({ client_id: clientId, agent_type: agentType, enabled: newState });
-
       document.getElementById('agents-manage-' + clientId).innerHTML =
         renderAgentManageHTML(clientId, allAgents.filter(a => a.client_id === clientId));
     }
