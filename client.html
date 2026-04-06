@@ -1843,6 +1843,9 @@
     }
 
     async function resolveClientId(user) {
+      // Admin account — never create a client record
+      if (user.email === 'eabuhay20@gmail.com') return;
+
       // 1. Try client_users link first
       const { data: cu } = await sb.from('client_users').select('client_id').eq('user_id', user.id).maybeSingle();
       if (cu) { currentClientId = cu.client_id; return; }
