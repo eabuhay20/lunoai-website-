@@ -2,6 +2,10 @@
   "cleanUrls": true,
   "rewrites": [
     {
+      "source": "/toms",
+      "destination": "/toms-course.html"
+    },
+    {
       "source": "/client",
       "destination": "/client.html"
     },
