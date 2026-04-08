@@ -2,6 +2,11 @@
   "cleanUrls": true,
   "rewrites": [
     {
+      "source": "/",
+      "has": [{ "type": "host", "value": "toms.mdmarketinsights.com" }],
+      "destination": "/toms-course.html"
+    },
+    {
       "source": "/(.*)",
       "has": [{ "type": "host", "value": "toms.mdmarketinsights.com" }],
       "destination": "/toms-course.html"
