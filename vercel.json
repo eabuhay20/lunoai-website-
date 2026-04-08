@@ -21,6 +21,10 @@
     {
       "source": "/skillsite",
       "destination": "/skillsite.html"
+    },
+    {
+      "source": "/thank-you",
+      "destination": "/thank-you.html"
     }
   ]
 }
