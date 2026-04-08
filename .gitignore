@@ -3,6 +3,9 @@ node_modules/
 temporary screenshots/
 *.docx
 *.pdf
+!ebook-trade-lifecycle.pdf
+!ebook-interview-playbook.pdf
+!ebook-systems-handbook.pdf
 checkout.html
 mdmi.html
 mdmi-ebooks.html
