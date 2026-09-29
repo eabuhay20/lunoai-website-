@@ -190,10 +190,11 @@
     .ba div:last-child p { color: var(--text); }
     .nums { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-3); padding: var(--sp-3) 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
     .nums .stat { font-size: 36px; }
+    .nums--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .nums div div:last-child { font-size: 15px; line-height: 1.5; color: var(--muted); }
     .bridge { font-family: var(--sans); font-weight: 600; font-size: 22px; line-height: 1.4; letter-spacing: -0.01em; }
     .report { margin: 0; display: flex; flex-direction: column; gap: 12px; }
-    .report-card { min-height: 420px; border-radius: 20px; padding: 36px; display: flex; flex-direction: column; justify-content: space-between; transform: rotate(1.5deg); box-shadow: var(--shadow-float);
+    .report-card { min-height: 340px; border-radius: 20px; padding: 36px; display: flex; flex-direction: column; justify-content: space-between; transform: rotate(1.5deg); box-shadow: var(--shadow-float);
       background: radial-gradient(320px 260px at 80% 10%, #3A2479 0%, rgba(58,36,121,0) 70%), #150E2B; border: 1px solid rgba(167,139,250,.2); font-family: var(--sans); }
     .report-card .k { font-size: 13px; font-weight: 600; color: var(--lavender); }
     .report-card .t { margin-top: 8px; font-weight: 800; font-size: 32px; letter-spacing: -0.03em; line-height: 1.05; }
@@ -389,9 +390,9 @@
     </svg>
   </div>
   <div class="proof-line">
-    <div><span class="stat">2,100+</span><span>calls handled by AI for one client</span></div>
-    <div><span class="stat">~$20k</span><span>a month in potential revenue for one client</span></div>
-    <div><span class="stat">30+</span><span>hours a week back for another</span></div>
+    <div><span class="stat">2,100+</span><span>calls handled by AI</span></div>
+    <div><span class="stat">~$20k</span><span>a month in potential revenue created</span></div>
+    <div><span class="stat">30+ hrs</span><span>a week given back to a team</span></div>
   </div>
 </section>
 
@@ -502,12 +503,11 @@
         <div class="case-who">Extreme Cleanup, a commercial cleaning company running the Lead Engine</div>
         <div class="ba">
           <div><h4>Before</h4><p>Twenty years in business. The owner was too busy running jobs to work his leads.</p></div>
-          <div><h4>After</h4><p>An AI that calls his leads, qualifies them and books him. Zero staff hours.</p></div>
+          <div><h4>After</h4><p>An AI that calls his leads, qualifies them and books callbacks for him while he runs his jobs.</p></div>
         </div>
-        <div class="nums">
-          <div><div class="stat">2,100+</div><div>calls across two campaigns</div></div>
-          <div><div class="stat">119</div><div>property decision-makers reached</div></div>
-          <div><div class="stat">~$20k</div><div>a month in potential contracts</div></div>
+        <div class="nums nums--2">
+          <div><div class="stat">478</div><div>leads worked in a single month</div></div>
+          <div><div class="stat">0</div><div>staff hours spent chasing them</div></div>
         </div>
         <p class="bridge">Swap his leads for your rental inquiries. Same problem, same fix.</p>
       </div>
@@ -516,10 +516,8 @@
         <div class="report-card">
           <div><div class="k">Campaign performance report</div><div class="t">Extreme Cleanup</div></div>
           <div class="report-grid">
-            <div><b>478</b><span>leads contacted</span></div>
-            <div><b>1,061</b><span>calls placed</span></div>
-            <div><b>23</b><span>warm leads</span></div>
-            <div><b>5</b><span>callbacks booked</span></div>
+            <div><b>1,061</b><span>calls placed by AI</span></div>
+            <div><b>119</b><span>property decision-makers reached</span></div>
           </div>
         </div>
         <figcaption>Page 1 of Extreme Cleanup's May campaign report.</figcaption>
@@ -530,11 +528,10 @@
       <div class="case-body">
         <div class="case-who">An education and consulting business, running the Operations Engine</div>
         <div class="ba">
-          <div><h4>Before</h4><p>The owner spent 4+ hours a day on content by hand, and still missed days.</p></div>
+          <div><h4>Before</h4><p>The owner wrote and posted every piece of content by hand, and still missed days.</p></div>
           <div><h4>After</h4><p>One command, in his voice, posted everywhere. He spends the time on clients now.</p></div>
         </div>
-        <div class="nums">
-          <div><div class="stat">30+ hrs</div><div>a week back</div></div>
+        <div class="nums nums--2">
           <div><div class="stat">4+ hrs</div><div>a day of manual work, gone</div></div>
           <div><div class="stat">1</div><div>command to post everywhere</div></div>
         </div>
