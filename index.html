@@ -298,6 +298,20 @@
       .guarantee { padding: 120px 0; }
       .booking { min-height: 360px; }
     }
+    @media (max-width: 560px) {
+      /* Stats read as aligned rows: number column, then label */
+      .proof-line div, .nums > div { display: grid; grid-template-columns: 112px minmax(0, 1fr); align-items: baseline; gap: 12px; }
+      .proof-line span:last-child, .nums div div:last-child { line-height: 1.4; }
+      .nums { gap: 16px; }
+      .nums .stat { font-size: 26px; }
+      /* Report card: lighter padding, tight labels */
+      .report-card { min-height: 0; padding: 24px; gap: 24px; }
+      .report-card .t { font-size: 26px; }
+      .report-grid b { font-size: 22px; }
+      .report-grid span { display: block; margin-top: 4px; line-height: 1.35; }
+      .placeholder { min-height: 200px; }
+      .guarantee { padding: 88px 0; }
+    }
 
     @media (prefers-reduced-motion: reduce) {
       html { scroll-behavior: auto; }
