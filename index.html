@@ -239,8 +239,11 @@
     .cta h2 { margin-top: var(--sp-4); max-width: 820px; font-size: clamp(40px, 4.8vw, 64px); line-height: 1.04; letter-spacing: -0.035em; color: #fff; }
     .cta p { margin-top: var(--sp-3); max-width: 600px; font-size: 20px; line-height: 1.65; color: #D6CCF5; }
     .cta .btn { margin-top: 40px; }
-    .booking { margin-top: 56px; width: 100%; max-width: 880px; min-height: 480px; border-radius: 24px; background: #F7F4FF; box-shadow: 0 50px 90px -40px rgba(8,4,20,.9), 0 20px 40px -24px rgba(106,59,222,.6);
-      display: flex; align-items: center; justify-content: center; padding: var(--sp-4); font-family: var(--sans); font-size: 16px; color: #5B4D86; }
+    .booking { margin-top: 56px; width: 100%; max-width: 980px; min-height: 640px; border-radius: 24px; background: #FFFFFF; overflow: hidden; text-align: left; box-shadow: 0 50px 90px -40px rgba(8,4,20,.9), 0 20px 40px -24px rgba(106,59,222,.6); }
+    .booking-alt { margin-top: var(--sp-3); font-family: var(--sans); font-size: 15px; color: #D6CCF5; }
+    .booking-alt a { color: var(--moonlight); text-decoration: underline; text-underline-offset: 3px; transition: opacity .2s; }
+    .booking-alt a:hover { opacity: .75; }
+    .booking-alt a:active { opacity: .55; }
 
     /* ─── Footer ─── */
     .footer { background: var(--s8); border-top: 1px solid rgba(234,226,255,.1); }
@@ -305,7 +308,7 @@
       .you .wrap { grid-template-columns: 1fr; gap: 40px; }
       .portrait { width: 100%; max-width: 340px; }
       .guarantee { padding: 120px 0; }
-      .booking { min-height: 360px; }
+      .booking { min-height: 560px; border-radius: 18px; }
     }
     @media (max-width: 560px) {
       /* Stats read as aligned rows: number column, then label */
@@ -578,9 +581,9 @@
   <div class="wrap">
     <div class="cta-mark"><img src="/brand_assets/logo/luno-mark.svg" alt=""></div>
     <h2 id="cta-h">See how it would run for your firm.</h2>
-    <p>Start with a free 20-minute audit. You leave knowing where your team's hours go, whether you work with us or not.</p>
-    <!-- TODO: replace with the real Calendly inline embed once the link is ready -->
-    <div class="booking" id="calendly">[Calendly booking calendar: free 20-minute audit]</div>
+    <p>Start with a free 30-minute audit. You leave knowing where your team's hours go, whether you work with us or not.</p>
+    <div class="booking" id="cal-audit"></div>
+    <p class="booking-alt">Calendar not loading? <a href="https://cal.com/eyu-abuhay-ys8yw6/audit-call" target="_blank" rel="noopener">Book on Cal.com</a></p>
   </div>
 </section>
 
@@ -605,6 +608,12 @@
 </footer>
 
 <script>
+  // Cal.com inline booking: free audit call
+  (function (C, A, L) { let p = function (a, ar) { a.q.push(ar); }; let d = C.document; C.Cal = C.Cal || function () { let cal = C.Cal; let ar = arguments; if (!cal.loaded) { cal.ns = {}; cal.q = cal.q || []; d.head.appendChild(d.createElement("script")).src = A; cal.loaded = true; } if (ar[0] === L) { const api = function () { p(api, arguments); }; const namespace = ar[1]; api.q = api.q || []; if (typeof namespace === "string") { cal.ns[namespace] = cal.ns[namespace] || api; p(cal.ns[namespace], ar); p(cal, ["initNamespace", namespace]); } else p(cal, ar); return; } p(cal, ar); }; })(window, "https://app.cal.com/embed/embed.js", "init");
+  Cal("init", "audit-call", { origin: "https://cal.com" });
+  Cal.ns["audit-call"]("inline", { elementOrSelector: "#cal-audit", calLink: "eyu-abuhay-ys8yw6/audit-call", config: { layout: "month_view", theme: "light" } });
+  Cal.ns["audit-call"]("ui", { theme: "light", cssVarsPerTheme: { light: { "cal-brand": "#6A3BDE" } }, hideEventTypeDetails: false, layout: "month_view" });
+
   // How it works: light the moon as each step reaches the middle of the screen
   (function () {
     const steps = [...document.querySelectorAll('.step')];
