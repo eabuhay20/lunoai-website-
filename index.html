@@ -313,27 +313,41 @@
     .aios-feed em { font-style: normal; color: #9FE3BD; }
     .aios-note { padding: 0 32px 24px; font-family: var(--sans); font-size: 12px; color: var(--faint); }
 
-    /* ─── Example terminal (operations case) ─── */
-    .term { border-radius: 18px; overflow: hidden; background: #0D0919; border: 1px solid rgba(167,139,250,.22); box-shadow: var(--shadow-float); }
-    .term-bar { display: flex; align-items: center; gap: 7px; padding: 12px 16px; background: #171029; border-bottom: 1px solid rgba(167,139,250,.14); }
-    .term-bar i { width: 10px; height: 10px; border-radius: 50%; background: rgba(241,237,255,.16); }
-    .term-bar span { margin-left: 10px; font-family: var(--sans); font-size: 12px; font-weight: 600; color: var(--faint); }
-    .term-body { padding: 20px 22px 22px; display: flex; flex-direction: column; gap: 7px; font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; font-size: 13px; line-height: 1.5; color: #CFC6EA; }
-    .t-cmd { color: var(--text); margin-bottom: 6px; }
-    .t-prompt { color: var(--violet-mid); }
-    .t-caret { display: inline-block; width: 7px; height: 15px; margin-left: 2px; vertical-align: -3px; background: var(--moonlight); animation: caret 1s steps(1) infinite; }
-    @keyframes caret { 50% { opacity: 0; } }
-    .t-mark { color: var(--violet-mid); font-size: 10px; margin-right: 4px; vertical-align: 1px; }
-    .t-hi { color: var(--moonlight); }
-    .t-subs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 12px; padding-left: 18px; }
-    .t-sub { color: #B4A9D6; }
-    .t-ok { color: #9FE3BD; }
-    .t-done { margin-top: 6px; color: var(--moonlight); font-weight: 600; }
-    .js .term.armed .t-line { opacity: 0; transform: translateY(4px); }
-    .js .term.armed .t-line.shown { opacity: 1; transform: none; transition: opacity .3s var(--ease-out), transform .4s var(--ease-out); }
-    .js .term.armed .t-cmd { opacity: 1; transform: none; }
+    /* ─── Content system example (operations case) ─── */
+    .post-demo { position: relative; display: flex; flex-direction: column; gap: 14px; padding: 22px; border-radius: 22px; background: radial-gradient(300px 220px at 85% 0%, #2E2163 0%, rgba(46,33,99,0) 70%), #160F2D; border: 1px solid rgba(167,139,250,.2); box-shadow: var(--shadow-float); font-family: var(--sans); }
+    .pd-btn { align-self: flex-start; display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 999px; background: var(--violet); color: #fff; font-size: 14px; font-weight: 700; box-shadow: 0 10px 24px -12px rgba(106,59,222,.8); transition: transform .35s var(--spring); }
+    .pd-btn svg { width: 15px; height: 15px; max-width: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+    .pd-card { border-radius: 16px; background: #F7F4FF; color: #1B1236; padding: 16px; display: flex; flex-direction: column; gap: 10px; transition: opacity .5s var(--ease-out), transform .6s var(--spring); }
+    .pd-head { display: flex; align-items: center; gap: 10px; }
+    .pd-avatar { width: 30px; height: 30px; border-radius: 50%; background: linear-gradient(135deg, #1F2A55, #3B4A8A); flex-shrink: 0; }
+    .pd-head b { display: block; font-size: 13px; }
+    .pd-head small { display: block; font-size: 11.5px; color: #6B5F92; }
+    .pd-title { font-weight: 700; font-size: 15px; line-height: 1.35; letter-spacing: -0.01em; }
+    .pd-lines { display: flex; flex-direction: column; gap: 6px; }
+    .pd-lines i { display: block; height: 7px; border-radius: 4px; background: #DDD5F5; transform-origin: left; transition: transform .6s var(--ease-out); }
+    .pd-lines i:nth-child(2) { width: 88%; }
+    .pd-lines i:nth-child(3) { width: 62%; }
+    .pd-img { height: 84px; border-radius: 10px; overflow: hidden; background: linear-gradient(135deg, #1F2A55 0%, #2D3B78 60%, #B8963E 140%); transition: opacity .6s var(--ease-out); }
+    .pd-img svg { width: 100%; height: 100%; max-width: none; fill: none; stroke: #E9D9A6; stroke-width: 2; vector-effect: non-scaling-stroke; }
+    .pd-plats { display: flex; flex-wrap: wrap; gap: 6px; }
+    .pd-plat { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 999px; background: rgba(241,237,255,.05); border: 1px solid rgba(167,139,250,.2); font-size: 12px; font-weight: 600; color: var(--muted); transition: color .3s, border-color .3s, background-color .3s; }
+    .pd-plat i { display: grid; place-items: center; width: 14px; height: 14px; border-radius: 50%; background: #9FE3BD; transition: transform .45s var(--spring); }
+    .pd-plat svg { width: 10px; height: 10px; max-width: none; fill: none; stroke: #120D22; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+    .pd-plat.on, .post-demo:not(.armed) .pd-plat { color: var(--text); border-color: rgba(159,227,189,.5); background: rgba(159,227,189,.08); }
+    .pd-done { font-size: 14px; font-weight: 700; color: #9FE3BD; transition: opacity .5s var(--ease-out), transform .5s var(--spring); }
+    /* armed: starts empty, then plays (JS) */
+    .js .post-demo.armed .pd-btn.press { transform: scale(.94); }
+    .js .post-demo.armed:not(.s1) .pd-card { opacity: 0; transform: translateY(12px) scale(.97); }
+    .js .post-demo.armed:not(.s1) .pd-title { opacity: 0; }
+    .pd-title { transition: opacity .5s var(--ease-out) .25s; }
+    .js .post-demo.armed:not(.s2) .pd-lines i { transform: scaleX(0); }
+    .js .post-demo.armed.s2 .pd-lines i:nth-child(2) { transition-delay: .2s; }
+    .js .post-demo.armed.s2 .pd-lines i:nth-child(3) { transition-delay: .4s; }
+    .js .post-demo.armed:not(.s3) .pd-img { opacity: 0; }
+    .js .post-demo.armed .pd-plat:not(.on) i { transform: scale(0); }
+    .js .post-demo.armed:not(.s4) .pd-done { opacity: 0; transform: translateY(6px); }
 
-    /* ─── Motion (only when JS runs and motion is allowed; see the head script) ─── */
+    /* ─── Motion (only when JS runs    /* ─── Motion (only when JS runs and motion is allowed; see the head script) ─── */
     .js .reveal { opacity: 0; transform: translateY(28px); transition: opacity .9s var(--ease-out) var(--d, 0s), transform .9s var(--ease-out) var(--d, 0s); }
     .js .reveal.in { opacity: 1; transform: none; }
     .js .nav .wrap { animation: rise .8s var(--ease-out) both; }
@@ -457,8 +471,7 @@
       .report-card .t { font-size: 26px; }
       .report-grid b { font-size: 22px; }
       .report-grid span { display: block; margin-top: 4px; line-height: 1.35; }
-      .term-body { padding: 16px; font-size: 12px; }
-      .t-subs { grid-template-columns: 1fr; padding-left: 14px; }
+      .post-demo { padding: 16px; }
       .guarantee { padding: 88px 0; }
     }
 
@@ -721,28 +734,18 @@
         </div>
         <p class="bridge">Your version of his content is tenant questions, repair calls and owner updates.</p>
       </div>
-      <!-- Illustrative example of his content-engine run (real setup lives on his Mac). Swap for a real terminal capture when available. -->
-      <figure class="report term-fig">
-        <div class="term" role="img" aria-label="Example: typing generate posts writes eight posts in his voice, creates the image and publishes to seven platforms">
-          <div class="term-bar" aria-hidden="true"><i></i><i></i><i></i><span>content-engine</span></div>
-          <div class="term-body" aria-hidden="true">
-            <div class="t-line t-cmd"><span class="t-prompt">&gt;</span> <span class="t-typed" data-text="generate posts">generate posts</span><span class="t-caret"></span></div>
-            <div class="t-line"><span class="t-mark">●</span> Reading his content profile and voice</div>
-            <div class="t-line"><span class="t-mark">●</span> Topic: <span class="t-hi">What T+1 settlement means for your trades</span></div>
-            <div class="t-line"><span class="t-mark">●</span> Writing 8 posts in his voice</div>
-            <div class="t-subs">
-            <div class="t-line t-sub"><span class="t-ok">✓</span> LinkedIn page</div>
-            <div class="t-line t-sub"><span class="t-ok">✓</span> LinkedIn personal</div>
-            <div class="t-line t-sub"><span class="t-ok">✓</span> X, 2 posts</div>
-            <div class="t-line t-sub"><span class="t-ok">✓</span> Facebook</div>
-            <div class="t-line t-sub"><span class="t-ok">✓</span> Instagram</div>
-            <div class="t-line t-sub"><span class="t-ok">✓</span> TikTok</div>
-            <div class="t-line t-sub"><span class="t-ok">✓</span> YouTube community</div>
-            </div>
-            <div class="t-line"><span class="t-mark">●</span> Creating the post image <span class="t-ok">✓</span></div>
-            <div class="t-line"><span class="t-mark">●</span> Publishing everywhere <span class="t-ok">✓</span></div>
-            <div class="t-line t-done">Done. 8 posts live across 7 platforms.</div>
+      <!-- Illustrative example of his content system (real setup lives on his Mac). Swap for a real capture when available. -->
+      <figure class="report post-fig">
+        <div class="post-demo" role="img" aria-label="Example: one tap writes today's post in his voice, makes the image and posts it to seven platforms">
+          <div class="pd-btn" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/></svg>Generate today's posts</div>
+          <div class="pd-card" aria-hidden="true">
+            <div class="pd-head"><span class="pd-avatar"></span><div><b>Today's post</b><small>Written in his voice</small></div></div>
+            <p class="pd-title">What T+1 settlement means for your trades</p>
+            <div class="pd-lines"><i></i><i></i><i></i></div>
+            <div class="pd-img"><svg viewBox="0 0 200 60" preserveAspectRatio="none"><path d="M0 48 L30 40 L55 44 L85 26 L110 32 L140 14 L170 20 L200 6"/></svg></div>
           </div>
+          <div class="pd-plats" aria-hidden="true"><span class="pd-plat"><i aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg></i>LinkedIn page</span><span class="pd-plat"><i aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg></i>LinkedIn personal</span><span class="pd-plat"><i aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg></i>X</span><span class="pd-plat"><i aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg></i>Facebook</span><span class="pd-plat"><i aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg></i>Instagram</span><span class="pd-plat"><i aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg></i>TikTok</span><span class="pd-plat"><i aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg></i>YouTube</span></div>
+          <div class="pd-done" aria-hidden="true">8 posts live across 7 platforms</div>
         </div>
         <figcaption>Example of his setup: one command writes, designs and posts his content everywhere.</figcaption>
       </figure>
@@ -1021,23 +1024,26 @@
       })();
     })();
 
-    // Example terminal: the command types itself, then each step reports in
-    const term = document.querySelector('.term');
-    if (term) {
-      const typed = term.querySelector('.t-typed'), text = typed.dataset.text;
-      const lines = [...term.querySelectorAll('.t-line:not(.t-cmd)')];
-      term.classList.add('armed'); typed.textContent = '';
+    // Content system example: tap, the post writes itself, then it goes out everywhere
+    const demo = document.querySelector('.post-demo');
+    if (demo) {
+      const btn = demo.querySelector('.pd-btn'), plats = [...demo.querySelectorAll('.pd-plat')];
+      demo.classList.add('armed');
       new IntersectionObserver(async (entries, o) => {
         if (!entries[0].isIntersecting) return;
         o.disconnect();
-        await wait(400);
-        for (const ch of text) { typed.textContent += ch; await wait(65); }
-        await wait(350);
-        for (const l of lines) { l.classList.add('shown'); await wait(l.classList.contains('t-sub') ? 160 : 420); }
-      }, { threshold: .5 }).observe(term);
+        await wait(500);
+        btn.classList.add('press'); await wait(180); btn.classList.remove('press');
+        await wait(250); demo.classList.add('s1');
+        await wait(500); demo.classList.add('s2');
+        await wait(900); demo.classList.add('s3');
+        await wait(700);
+        for (const p of plats) { p.classList.add('on'); await wait(220); }
+        await wait(200); demo.classList.add('s4');
+      }, { threshold: .5 }).observe(demo);
     }
 
-    // Numbers count up the first time they're seen
+    // Numbers count up the first time    // Numbers count up the first time they're seen
     const countIO = new IntersectionObserver((entries) => {
       entries.forEach(({ isIntersecting, target: el }) => {
         if (!isIntersecting) return;
