@@ -269,6 +269,50 @@
     .footer-links { display: flex; gap: var(--sp-4); align-items: center; font-family: var(--sans); font-size: 14px; color: #BDB2DC; flex-wrap: wrap; }
     .footer-links .nav-link { font-size: 14px; color: #BDB2DC; }
 
+    /* ─── AIOS orbit (What we build) ─── */
+    .aios { margin-bottom: var(--sp-4); border-radius: 28px; border: 1px solid var(--line); box-shadow: var(--shadow-raised); overflow: hidden;
+      background: radial-gradient(640px 380px at 26% 55%, #241A48 0%, rgba(27,18,54,0) 70%), var(--ink-raised); }
+    .aios-top { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 24px 32px 0; font-family: var(--sans); }
+    .aios-live { display: inline-flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 600; color: var(--lavender); }
+    .aios-live i { position: relative; width: 8px; height: 8px; border-radius: 50%; background: #9FE3BD; }
+    .aios-live i::after { content: ''; position: absolute; inset: 0; border-radius: 50%; background: #9FE3BD; animation: live 1.8s ease-out infinite; }
+    @keyframes live { to { transform: scale(2.8); opacity: 0; } }
+    .aios-clock { font-size: 14px; color: var(--faint); font-variant-numeric: tabular-nums; }
+    .aios-clock b { color: var(--text); font-weight: 700; }
+    .aios-grid { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: var(--sp-4); align-items: center; padding: 8px 32px 8px; }
+    .aios-orbit { position: relative; width: 100%; max-width: 500px; aspect-ratio: 1; margin: 0 auto; }
+    .aios-ring { position: absolute; left: 50%; top: 50%; border-radius: 50%; border: 1px solid rgba(167,139,250,.16); }
+    .aios-ring.r1 { width: 56%; height: 56%; transform: translate(-50%, -50%); animation: aios-spin 70s linear infinite; }
+    .aios-ring.r2 { width: 92%; height: 92%; transform: translate(-50%, -50%); border-style: dashed; border-color: rgba(167,139,250,.13); animation: aios-spin 110s linear infinite reverse; }
+    @keyframes aios-spin { from { transform: translate(-50%, -50%) rotate(0deg); } to { transform: translate(-50%, -50%) rotate(360deg); } }
+    @keyframes aios-unspin { to { transform: rotate(-360deg); } }
+    .aios-node { position: absolute; left: var(--x, 50%); top: var(--y, 50%); transform: translate(-50%, -50%); }
+    .aios-chip { display: inline-flex; align-items: center; gap: 7px; padding: 8px 12px; border-radius: 999px; white-space: nowrap; background: #1B1236; border: 1px solid rgba(167,139,250,.25);
+      font-family: var(--sans); font-size: 12.5px; font-weight: 600; color: var(--muted); transition: color .4s, border-color .4s; }
+    .r1 .aios-chip { animation: aios-unspin 70s linear infinite; }
+    .r2 .aios-chip { animation: aios-unspin 110s linear infinite reverse; }
+    .aios-chip svg { width: 14px; height: 14px; max-width: none; flex-shrink: 0; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+    .aios-chip.hot { color: var(--text); border-color: var(--violet-mid); }
+    .aios-hub { position: absolute; left: 50%; top: 50%; width: 24%; aspect-ratio: 1; transform: translate(-50%, -50%); display: grid; place-items: center; }
+    .aios-hub::before { content: ''; position: absolute; inset: -35%; border-radius: 50%; background: radial-gradient(closest-side, rgba(139,92,246,.4), rgba(139,92,246,0)); animation: breathe 6s ease-in-out infinite; }
+    .aios-hub svg { position: relative; width: 82%; height: 82%; transition: transform .5s var(--spring); }
+    .aios-hub.glint svg { transform: scale(1.1) rotate(-4deg); }
+    .aios-flash { position: absolute; inset: 0; border-radius: 50%; border: 1px solid var(--moonlight); opacity: 0; }
+    .aios-hub.glint .aios-flash { animation: aios-ring 0.9s var(--ease-out); }
+    @keyframes aios-ring { from { opacity: .8; transform: scale(.7); } to { opacity: 0; transform: scale(1.8); } }
+    .aios-label { position: absolute; left: 50%; top: 66%; transform: translateX(-50%); font-family: var(--sans); font-size: 11px; font-weight: 700; letter-spacing: .32em; color: var(--lavender); white-space: nowrap; }
+    .aios-beam { position: absolute; left: 0; top: 0; width: 8px; height: 8px; margin: -4px; border-radius: 50%; background: var(--moonlight); box-shadow: 0 0 12px 4px rgba(174,146,251,.7); pointer-events: none; }
+    .aios-feed { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; height: 340px; overflow: hidden; font-family: var(--sans); -webkit-mask-image: linear-gradient(#000 78%, transparent); mask-image: linear-gradient(#000 78%, transparent); }
+    .aios-feed li { display: grid; grid-template-columns: 62px minmax(0, 1fr); gap: 12px; padding: 13px 16px; border-radius: 16px; background: rgba(241,237,255,.035); border: 1px solid rgba(167,139,250,.1); flex-shrink: 0; }
+    .aios-feed li:first-child { background: rgba(106,59,222,.16); border-color: rgba(174,146,251,.38); }
+    .aios-feed li.new { animation: aios-in .6s var(--spring) both; }
+    @keyframes aios-in { from { opacity: 0; transform: translateY(-14px) scale(.97); } }
+    .aios-feed time { font-size: 13px; font-weight: 700; color: var(--lavender); font-variant-numeric: tabular-nums; padding-top: 1px; }
+    .aios-feed b { display: block; font-size: 15px; font-weight: 600; }
+    .aios-feed span { display: block; margin-top: 2px; font-size: 13.5px; line-height: 1.45; color: var(--muted); }
+    .aios-feed em { font-style: normal; color: #9FE3BD; }
+    .aios-note { padding: 0 32px 24px; font-family: var(--sans); font-size: 12px; color: var(--faint); }
+
     /* ─── Example terminal (operations case) ─── */
     .term { border-radius: 18px; overflow: hidden; background: #0D0919; border: 1px solid rgba(167,139,250,.22); box-shadow: var(--shadow-float); }
     .term-bar { display: flex; align-items: center; gap: 7px; padding: 12px 16px; background: #171029; border-bottom: 1px solid rgba(167,139,250,.14); }
@@ -371,6 +415,18 @@
       .problem-close { margin-left: 0; font-size: 18px; }
       .build-head { flex-direction: column; align-items: start; gap: var(--sp-3); }
       .engines { grid-template-columns: 1fr; }
+      .aios-top { padding: 20px 20px 0; }
+      .aios-live { font-size: 13px; }
+      .aios-grid { grid-template-columns: 1fr; padding: 4px 12px 8px; gap: 8px; }
+      .aios-orbit { max-width: 360px; }
+      .aios-ring.r2 { width: 72%; height: 72%; }
+      .aios-ring.r1 { width: 44%; height: 44%; }
+      .aios-hub { width: 22%; }
+      .aios-label { top: 63%; font-size: 10px; }
+      .aios-chip { padding: 6px 9px; font-size: 11px; gap: 5px; }
+      .aios-chip svg { width: 12px; height: 12px; }
+      .aios-feed { height: 330px; padding: 0 8px; }
+      .aios-note { padding: 0 20px 20px; }
       .engine { padding: 24px; }
       .thread { padding: 20px; }
       .msg { max-width: 90%; }
@@ -408,7 +464,7 @@
 
     @media (prefers-reduced-motion: reduce) {
       html { scroll-behavior: auto; }
-      .hero-moon *, .cta-mark svg, .cta-mark::before { animation: none !important; }
+      .hero-moon *, .cta-mark svg, .cta-mark::before, .aios *, .aios *::before, .aios *::after { animation: none !important; }
       .hm-sweep { opacity: .2; transform: rotate(-130deg); }
       .hm-halo, .hm-orbit { opacity: 1; }
       .moon-ring, .step, .btn, .btn::after { transition: none; }
@@ -527,6 +583,20 @@
     <div class="build-head">
       <h2 class="h2" id="build-h">An AI operating system that does the work, not another tool to learn.</h2>
       <p>We build it, run it and maintain it. Two engines and one dashboard, live in about two weeks.</p>
+    </div>
+    <!-- The AIOS at work: jobs orbit the Luno moon and get pulled in and handled (example night) -->
+    <div class="aios" aria-label="Example night: the AI operating system handling inquiries, repairs, late rent and owner updates">
+      <div class="aios-top"><span class="aios-live"><i></i>Running while your team is off</span><span class="aios-clock"><b>8:47pm</b></span></div>
+      <div class="aios-grid">
+        <div class="aios-orbit" aria-hidden="true">
+          <div class="aios-ring r2"><div class="aios-node" data-ring="2" data-key="web"><div class="aios-chip"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>Web chat</div></div><div class="aios-node" data-ring="2" data-key="maint"><div class="aios-chip"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z"/></svg>Repairs</div></div><div class="aios-node" data-ring="2" data-key="rent"><div class="aios-chip"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h3"/></svg>Late rent</div></div><div class="aios-node" data-ring="2" data-key="owner"><div class="aios-chip"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 11 9-7 9 7M5 10v10h14V10"/></svg>Owner updates</div></div></div>
+          <div class="aios-ring r1"><div class="aios-node" data-ring="1" data-key="text"><div class="aios-chip"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>Texts</div></div><div class="aios-node" data-ring="1" data-key="call"><div class="aios-chip"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></svg>Calls</div></div><div class="aios-node" data-ring="1" data-key="email"><div class="aios-chip"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>Emails</div></div></div>
+          <div class="aios-hub"><span class="aios-flash"></span><svg viewBox="0 0 100 100"><defs><linearGradient id="aios-luno" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#EAE2FF"/><stop offset=".5" stop-color="#AE92FB"/><stop offset="1" stop-color="#6A3BDE"/></linearGradient></defs><path transform="translate(18.6 0) rotate(-18 44 50)" d="M67.97 17.98 A40 40 0 1 0 67.97 82.02 A33 33 0 1 1 67.97 17.98Z" fill="url(#aios-luno)"/></svg></div>
+          <div class="aios-label">LUNO AI</div>
+        </div>
+        <ul class="aios-feed" aria-live="off"><li><time>8:47pm</time><div><b>Tenant asks when trash day is</b><span>Answered from your policies. <em>No staff needed</em></span></div></li><li><time>8:20pm</time><div><b>Inquiry from a listing site</b><span>Replied and qualified. <em>Tour booked, Thu 5:30pm</em></span></div></li><li><time>7:58pm</time><div><b>Missed call from a renter</b><span>Called back and qualified. <em>Added to your pipeline</em></span></div></li></ul>
+      </div>
+      <p class="aios-note">Example night. Times and tasks are illustrative.</p>
     </div>
     <div class="engines">
       <article class="engine">
@@ -821,6 +891,16 @@
     hero.addEventListener('pointerleave', () => { near.style.transform = ''; far.style.transform = ''; });
   }
 
+  // AIOS orbit: spread each ring's jobs evenly around it
+  document.querySelectorAll('.aios-ring').forEach((ring) => {
+    const nodes = [...ring.querySelectorAll('.aios-node')], off = ring.classList.contains('r1') ? -1.2 : .3;
+    nodes.forEach((n, i) => {
+      const a = (i / nodes.length) * Math.PI * 2 + off;
+      n.style.setProperty('--x', (50 + Math.cos(a) * 50) + '%');
+      n.style.setProperty('--y', (50 + Math.sin(a) * 50) + '%');
+    });
+  });
+
   // How it works: the moon waxes one phase per step as you scroll
   (function () {
     const steps = [...document.querySelectorAll('.step')];
@@ -859,7 +939,7 @@
     // Sections ease in as they enter, siblings a beat apart
     const groups = [
       ['.problem-intro > *'], ['.timeline > li', .14], ['.problem-close'],
-      ['.build-head > *', .1], ['.engine', .12], ['.dash'],
+      ['.build-head > *', .1], ['.aios'], ['.engine', .12], ['.dash'],
       ['.how-h'], ['.proof .h2'], ['.case'], ['.quote-row > *', .15],
       ['.portrait'], ['.you-copy > *', .1], ['.guarantee .wrap > *', .14],
       ['.cta h2'], ['.cta .wrap > p', .1], ['.booking']
@@ -899,6 +979,47 @@
         outcome.classList.add('shown');
       }, { threshold: .45 }).observe(thread);
     });
+
+    // AIOS orbit: one job at a time gets pulled into the moon and logged
+    (function () {
+      const panel = document.querySelector('.aios');
+      if (!panel) return;
+      const orbit = panel.querySelector('.aios-orbit'), hub = panel.querySelector('.aios-hub');
+      const feed = panel.querySelector('.aios-feed'), clock = panel.querySelector('.aios-clock b');
+      const chips = {};
+      panel.querySelectorAll('.aios-node').forEach(n => { chips[n.dataset.key] = n.firstElementChild; });
+      const EVENTS = [
+        ['9:14pm', 'text', 'Rental inquiry by text', 'Answered in 40 seconds.', 'Tour booked, Sat 11am'],
+        ['9:31pm', 'call', 'Missed call from a renter', 'Called back and qualified.', 'Added to your pipeline'],
+        ['11:02pm', 'web', 'Tenant asks about parking', 'Answered from your policies.', 'No staff needed'],
+        ['2:03am', 'maint', 'Leak reported, Unit 2B', 'Triaged as urgent.', 'Sent to on-call plumber'],
+        ['6:45am', 'email', 'Inquiry from a listing site', 'Replied and qualified.', 'Tour booked, Mon 5:30pm'],
+        ['7:00am', 'rent', 'Rent late on 14 properties', 'Reminders sent by text and email.', '6 paid by noon'],
+        ['7:40am', 'owner', 'Owner reports due', 'Built and sent.', '32 owners updated']
+      ];
+      const center = el => { const r = el.getBoundingClientRect(), o = orbit.getBoundingClientRect(); return [r.left + r.width / 2 - o.left, r.top + r.height / 2 - o.top]; };
+      let visible = false;
+      new IntersectionObserver(e => { visible = e[0].isIntersecting; }, { threshold: .25 }).observe(panel);
+      (async () => {
+        for (let i = 0; ; i = (i + 1) % EVENTS.length) {
+          while (!visible || document.hidden) await wait(400);
+          const [t, key, title, body, result] = EVENTS[i], chip = chips[key];
+          chip.classList.add('hot');
+          const [x0, y0] = center(chip), [x1, y1] = center(hub);
+          const beam = document.createElement('div'); beam.className = 'aios-beam'; orbit.appendChild(beam);
+          await beam.animate([{ transform: `translate(${x0}px, ${y0}px)`, opacity: 0 }, { opacity: 1, offset: .15 }, { transform: `translate(${x1}px, ${y1}px)`, opacity: 1 }],
+            { duration: 900, easing: 'cubic-bezier(.5,0,.2,1)' }).finished;
+          beam.remove(); chip.classList.remove('hot');
+          hub.classList.remove('glint'); void hub.offsetWidth; hub.classList.add('glint');
+          clock.textContent = t;
+          const li = document.createElement('li'); li.className = 'new';
+          li.innerHTML = `<time>${t}</time><div><b>${title}</b><span>${body} <em>${result}</em></span></div>`;
+          feed.prepend(li);
+          while (feed.children.length > 4) feed.lastElementChild.remove();
+          await wait(1900);
+        }
+      })();
+    })();
 
     // Example terminal: the command types itself, then each step reports in
     const term = document.querySelector('.term');
