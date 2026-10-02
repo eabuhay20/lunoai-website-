@@ -231,11 +231,10 @@
     /* ─── You ─── */
     .you { background: var(--s6); }
     .you .wrap { display: grid; grid-template-columns: 340px minmax(0, 1fr); gap: 80px; align-items: center; }
-    /* the photo stands apart from the section: bright rim, lifted glow, no tint */
-    .portrait { position: relative; isolation: isolate; width: 340px; aspect-ratio: 340 / 400; border-radius: 24px; background: var(--ink-glow); }
-    .portrait::before { content: ''; position: absolute; inset: -28px; border-radius: 50%; z-index: -1; background: radial-gradient(closest-side, rgba(174,146,251,.42), rgba(174,146,251,0)); }
-    .portrait img { position: relative; width: 100%; height: 100%; object-fit: cover; border-radius: 24px; filter: saturate(1.25) contrast(1.06) brightness(1.12);
-      box-shadow: 0 0 0 1px rgba(234,226,255,.55), 0 0 0 6px rgba(174,146,251,.12), 0 40px 70px -30px rgba(8,4,20,.95), 0 20px 50px -20px rgba(106,59,222,.55); }
+    .portrait { position: relative; width: 340px; aspect-ratio: 340 / 400; border-radius: 24px; overflow: hidden; background: var(--ink-glow); box-shadow: var(--shadow-float); }
+    .portrait img { width: 100%; height: 100%; object-fit: cover; }
+    .portrait::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,.45), rgba(0,0,0,0) 50%); }
+    .portrait .tint { position: absolute; inset: 0; background: #6A3BDE; mix-blend-mode: multiply; opacity: .18; z-index: 1; }
     .you-copy { display: flex; flex-direction: column; gap: var(--sp-3); max-width: 640px; }
     .you-copy p { font-size: 21px; line-height: 1.65; color: var(--muted); }
 
@@ -770,6 +769,7 @@
     <div class="portrait">
       <!-- Placeholder: LinkedIn profile photo (400px). Swap for a larger, portrait-format photo when ready. -->
       <img src="/brand_assets/banner/linkedin-profile-photo.png" alt="Eyu Abuhay, founder of Luno AI" width="340" height="400" style="object-position: 50% 30%">
+      <div class="tint"></div>
     </div>
     <div class="you-copy">
       <h2 class="h2" id="you-h">Built for you. Run for you.</h2>
