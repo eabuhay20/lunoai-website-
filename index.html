@@ -463,6 +463,11 @@
       .booking { min-height: 560px; border-radius: 18px; }
     }
     @media (max-width: 560px) {
+      /* Orbit: the hub logo carries the brand; the text label just collides with passing chips */
+      .aios-label { display: none; }
+      .aios-ring.r1, .aios-ring.r2, .r1 .aios-chip, .r2 .aios-chip { animation: none; }
+      .aios-ring.r2 { width: 82%; height: 82%; }
+      .aios-hub { width: 20%; }
       /* Stats read as aligned rows: number column, then label */
       .proof-line div, .nums > div { display: grid; grid-template-columns: 112px minmax(0, 1fr); align-items: baseline; gap: 12px; }
       .proof-line span:last-child, .nums div div:last-child { line-height: 1.4; }
@@ -899,7 +904,9 @@
 
   // AIOS orbit: spread each ring's jobs evenly around it
   document.querySelectorAll('.aios-ring').forEach((ring) => {
-    const nodes = [...ring.querySelectorAll('.aios-node')], off = ring.classList.contains('r1') ? -1.2 : .3;
+    // On small phones the rings hold still, so use offsets where no inner and outer chip can touch
+    const inner = ring.classList.contains('r1'), small = window.matchMedia('(max-width: 560px)').matches;
+    const nodes = [...ring.querySelectorAll('.aios-node')], off = small ? (inner ? -Math.PI / 2 : Math.PI / 4) : (inner ? -1.2 : .3);
     nodes.forEach((n, i) => {
       const a = (i / nodes.length) * Math.PI * 2 + off;
       n.style.setProperty('--x', (50 + Math.cos(a) * 50) + '%');
