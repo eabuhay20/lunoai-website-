@@ -111,23 +111,32 @@
     .hero h1 { font-size: clamp(44px, 5.4vw, 76px); line-height: 1.02; letter-spacing: -0.035em; }
     .hero .lede { font-size: 21px; line-height: 1.65; max-width: 560px; }
     .hero-actions { display: flex; align-items: center; gap: 28px; padding-top: var(--sp-1); flex-wrap: wrap; }
-    .hero-moon { width: 460px; height: 460px; }
-    .hero-moon { overflow: visible; }
-    .hm-sweep, .hm-orbit { transform-box: view-box; transform-origin: 260px 260px; }
-    /* light sweeps the orbit while the moon waxes, then settles faint */
-    .hm-sweep { animation: sweep 1.5s var(--ease-out) .1s both, sweep-fade 1.2s var(--ease-out) 1.6s forwards; }
+    .hero-moon { width: 460px; height: 478px; overflow: visible; }
+    .hm-sweep, .hm-orbit, .hm-halo { transform-box: view-box; transform-origin: 260px 236px; }
+    /* guides draw in first, then settle faint once the logo is built */
+    .hm-gh, .hm-gv { transform-box: fill-box; transform-origin: center; }
+    .hm-gh { animation: grow-x .9s var(--ease-out) .05s both; }
+    .hm-gv { animation: grow-y .9s var(--ease-out) .15s both; }
+    @keyframes grow-x { from { transform: scaleX(0); } }
+    @keyframes grow-y { from { transform: scaleY(0); } }
+    .hm-guides { animation: guides-settle 1.2s var(--ease-out) 2.1s forwards; }
+    @keyframes guides-settle { to { opacity: .28; } }
+    /* light sweeps the orbit while the moon waxes */
+    .hm-sweep { animation: sweep 1.6s var(--ease-out) .3s both, sweep-fade 1.2s var(--ease-out) 1.9s forwards; }
     @keyframes sweep { from { transform: rotate(-300deg); opacity: 0; } 20% { opacity: 1; } to { transform: rotate(-130deg); opacity: 1; } }
     @keyframes sweep-fade { to { opacity: .2; } }
-    .hm-orbit { animation: spin 38s linear infinite, fade-in 1s ease 1.4s both; }
-    .hm-dash { transform-box: view-box; transform-origin: 260px 260px; animation: spin 140s linear infinite reverse; }
+    .hm-orbit { animation: spin 38s linear infinite, fade-in 1s ease 1.9s both; }
     @keyframes spin { to { transform: rotate(360deg); } }
     @keyframes fade-in { from { opacity: 0; } }
     .hm-stars circle { opacity: .15; animation: twinkle 4.5s ease-in-out var(--d) infinite; }
     @keyframes twinkle { 50% { opacity: .85; } }
-    .hm-halo { transform-box: view-box; transform-origin: 260px 260px; opacity: 0; animation: bloom 1.2s var(--ease-out) 1.15s forwards, breathe 7s ease-in-out 2.4s infinite; }
+    .hm-halo { opacity: 0; animation: bloom 1.2s var(--ease-out) 1.5s forwards, breathe 7s ease-in-out 2.8s infinite; }
     @keyframes bloom { from { opacity: 0; transform: scale(.7); } to { opacity: 1; transform: scale(1); } }
     @keyframes breathe { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .75; transform: scale(1.05); } }
-    .hm-float { animation: float 8s ease-in-out 1.6s infinite; }
+    /* wordmark builds letter by letter under the finished crescent */
+    .hm-letter { transform-box: fill-box; transform-origin: center bottom; animation: letter-in .7s var(--spring) calc(1.9s + var(--i) * .08s) both; }
+    @keyframes letter-in { from { opacity: 0; transform: translateY(14px) scale(.9); } }
+    .hm-float { animation: float 8s ease-in-out 2.6s infinite; }
     @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
     .hm-par, .hm-stars { transition: transform 1.2s var(--ease-out); }
     .proof-line { position: absolute; left: var(--gutter); right: var(--gutter); bottom: 72px; padding-top: 28px; border-top: 1px solid var(--line); display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-5); }
@@ -317,41 +326,63 @@
     .aios-feed em { font-style: normal; color: #9FE3BD; }
     .aios-note { padding: 0 32px 24px; font-family: var(--sans); font-size: 12px; color: var(--faint); }
 
-    /* ─── Content system example (operations case) ─── */
-    .post-demo { position: relative; display: flex; flex-direction: column; gap: 14px; padding: 22px; border-radius: 22px; background: radial-gradient(300px 220px at 85% 0%, #2E2163 0%, rgba(46,33,99,0) 70%), #160F2D; border: 1px solid rgba(167,139,250,.2); box-shadow: var(--shadow-float); font-family: var(--sans); }
-    .pd-btn { align-self: flex-start; display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 999px; background: var(--violet); color: #fff; font-size: 14px; font-weight: 700; box-shadow: 0 10px 24px -12px rgba(106,59,222,.8); transition: transform .35s var(--spring); }
-    .pd-btn svg { width: 15px; height: 15px; max-width: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
-    .pd-card { border-radius: 16px; background: #F7F4FF; color: #1B1236; padding: 16px; display: flex; flex-direction: column; gap: 10px; transition: opacity .5s var(--ease-out), transform .6s var(--spring); }
-    .pd-head { display: flex; align-items: center; gap: 10px; }
-    .pd-avatar { width: 30px; height: 30px; border-radius: 50%; background: linear-gradient(135deg, #1F2A55, #3B4A8A); flex-shrink: 0; }
-    .pd-head b { display: block; font-size: 13px; }
-    .pd-head small { display: block; font-size: 11.5px; color: #6B5F92; }
-    .pd-title { font-weight: 700; font-size: 15px; line-height: 1.35; letter-spacing: -0.01em; }
-    .pd-lines { display: flex; flex-direction: column; gap: 6px; }
-    .pd-lines i { display: block; height: 7px; border-radius: 4px; background: #DDD5F5; transform-origin: left; transition: transform .6s var(--ease-out); }
-    .pd-lines i:nth-child(2) { width: 88%; }
-    .pd-lines i:nth-child(3) { width: 62%; }
-    .pd-img { height: 84px; border-radius: 10px; overflow: hidden; background: linear-gradient(135deg, #1F2A55 0%, #2D3B78 60%, #B8963E 140%); transition: opacity .6s var(--ease-out); }
+    /* ─── Content system example: a chat with his assistant (operations case) ─── */
+    .chat-demo { position: relative; display: flex; flex-direction: column; border-radius: 22px; overflow: hidden; background: #140E28; border: 1px solid rgba(167,139,250,.22); box-shadow: var(--shadow-float); font-family: var(--sans); }
+    .cd-head { display: flex; align-items: center; gap: 10px; padding: 14px 16px; background: #1A1233; border-bottom: 1px solid rgba(167,139,250,.14); }
+    .cd-av { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #3A2479, #6A3BDE); }
+    .cd-av svg { width: 16px; height: 16px; max-width: none; fill: #EAE2FF; }
+    .cd-head b { display: block; font-size: 14px; }
+    .cd-head small { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--faint); }
+    .cd-head small i { width: 6px; height: 6px; border-radius: 50%; background: #9FE3BD; }
+    .cd-body { position: relative; display: flex; flex-direction: column; gap: 10px; padding: 16px; }
+    .cd-msg { max-width: 86%; padding: 10px 14px; font-size: 13.5px; line-height: 1.45; }
+    .cd-msg.me { align-self: flex-end; background: #6A3BDE; color: #fff; border-radius: 16px 16px 5px 16px; transform-origin: bottom right; }
+    .cd-msg.ai { align-self: flex-start; background: #241A45; color: var(--text); border-radius: 16px 16px 16px 5px; transform-origin: bottom left; }
+    .cd-post { padding: 8px; width: 86%; }
+    .cd-sub { display: block; padding: 8px 6px 2px; font-size: 12.5px; color: var(--muted); }
+    .pd-card { border-radius: 12px; background: #F7F4FF; color: #1B1236; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+    .pd-head { display: flex; align-items: center; gap: 8px; }
+    .pd-avatar { width: 24px; height: 24px; border-radius: 50%; background: linear-gradient(135deg, #1F2A55, #3B4A8A); flex-shrink: 0; }
+    .pd-head b { display: block; font-size: 12px; }
+    .pd-head small { display: block; font-size: 11px; color: #6B5F92; }
+    .pd-title { font-weight: 700; font-size: 13.5px; line-height: 1.35; }
+    .pd-lines { display: flex; flex-direction: column; gap: 5px; }
+    .pd-lines i { display: block; height: 6px; border-radius: 3px; background: #DDD5F5; transform-origin: left; transition: transform .6s var(--ease-out); }
+    .pd-lines i:nth-child(2) { width: 88%; transition-delay: .15s; }
+    .pd-lines i:nth-child(3) { width: 62%; transition-delay: .3s; }
+    .pd-img { height: 64px; border-radius: 8px; overflow: hidden; background: linear-gradient(135deg, #1F2A55 0%, #2D3B78 60%, #B8963E 140%); transition: opacity .6s var(--ease-out) .45s; }
     .pd-img svg { width: 100%; height: 100%; max-width: none; fill: none; stroke: #E9D9A6; stroke-width: 2; vector-effect: non-scaling-stroke; }
-    .pd-plats { display: flex; flex-wrap: wrap; gap: 6px; }
-    .pd-plat { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 999px; background: rgba(241,237,255,.05); border: 1px solid rgba(167,139,250,.2); font-size: 12px; font-weight: 600; color: var(--muted); transition: color .3s, border-color .3s, background-color .3s; }
-    .pd-plat i { display: grid; place-items: center; width: 14px; height: 14px; border-radius: 50%; background: #9FE3BD; transition: transform .45s var(--spring); }
-    .pd-plat svg { width: 10px; height: 10px; max-width: none; fill: none; stroke: #120D22; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
-    .pd-plat.on, .post-demo:not(.armed) .pd-plat { color: var(--text); border-color: rgba(159,227,189,.5); background: rgba(159,227,189,.08); }
-    .pd-done { font-size: 14px; font-weight: 700; color: #9FE3BD; transition: opacity .5s var(--ease-out), transform .5s var(--spring); }
-    /* armed: starts empty, then plays (JS) */
-    .js .post-demo.armed .pd-btn.press { transform: scale(.94); }
-    .js .post-demo.armed:not(.s1) .pd-card { opacity: 0; transform: translateY(12px) scale(.97); }
-    .js .post-demo.armed:not(.s1) .pd-title { opacity: 0; }
-    .pd-title { transition: opacity .5s var(--ease-out) .25s; }
-    .js .post-demo.armed:not(.s2) .pd-lines i { transform: scaleX(0); }
-    .js .post-demo.armed.s2 .pd-lines i:nth-child(2) { transition-delay: .2s; }
-    .js .post-demo.armed.s2 .pd-lines i:nth-child(3) { transition-delay: .4s; }
-    .js .post-demo.armed:not(.s3) .pd-img { opacity: 0; }
-    .js .post-demo.armed .pd-plat:not(.on) i { transform: scale(0); }
-    .js .post-demo.armed:not(.s4) .pd-done { opacity: 0; transform: translateY(6px); }
+    .cd-pub { width: 86%; }
+    .cd-plats { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+    .cd-plat { display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px 5px 6px; border-radius: 999px; background: rgba(159,227,189,.08); border: 1px solid rgba(159,227,189,.45); font-size: 11.5px; font-weight: 600; color: var(--text); transition: border-color .3s, background-color .3s, color .3s; }
+    .cd-plat .st { position: relative; display: grid; place-items: center; width: 15px; height: 15px; border-radius: 50%; background: #9FE3BD; transition: background-color .3s; }
+    .cd-plat .st svg { width: 10px; height: 10px; max-width: none; fill: none; stroke: #120D22; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; transition: transform .4s var(--spring); }
+    .cd-live { align-self: center; display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 999px; background: rgba(159,227,189,.1); border: 1px solid rgba(159,227,189,.4); color: #9FE3BD; font-weight: 700; font-size: 13px; }
+    .cd-live i { position: relative; width: 7px; height: 7px; border-radius: 50%; background: #9FE3BD; }
+    .cd-live i::after { content: ''; position: absolute; inset: 0; border-radius: 50%; background: #9FE3BD; animation: live 1.8s ease-out infinite; }
+    .cd-input { display: flex; align-items: center; gap: 2px; margin: 0 12px 12px; padding: 0 6px 0 14px; height: 42px; border-radius: 999px; background: #1A1233; border: 1px solid rgba(167,139,250,.18); font-size: 13.5px; color: var(--text); }
+    .cd-typed { white-space: nowrap; overflow: hidden; }
+    .cd-caret { width: 1.5px; height: 16px; background: var(--moonlight); opacity: 0; }
+    .cd-send { margin-left: auto; display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: #3A2479; transition: transform .3s var(--spring), background-color .3s; }
+    .cd-send svg { width: 15px; height: 15px; max-width: none; fill: none; stroke: #fff; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+    .cd-typing { position: absolute; left: 16px; display: flex; gap: 4px; padding: 12px 14px; background: #241A45; border-radius: 16px 16px 16px 5px; opacity: 0; transform: scale(.9); transform-origin: bottom left; transition: opacity .25s, transform .35s var(--spring); }
+    .cd-typing.on { opacity: 1; transform: none; }
+    .cd-typing i { width: 6px; height: 6px; border-radius: 50%; background: var(--lavender); animation: dot 1s ease-in-out infinite; }
+    .cd-typing i:nth-child(2) { animation-delay: .15s; }
+    .cd-typing i:nth-child(3) { animation-delay: .3s; }
+    /* armed (JS + motion): everything starts hidden and plays in order */
+    .js .chat-demo.armed .cd-msg { opacity: 0; transform: translateY(8px) scale(.96); }
+    .js .chat-demo.armed .cd-msg.shown { opacity: 1; transform: none; transition: opacity .3s var(--ease-out), transform .45s var(--spring); }
+    .js .chat-demo.armed .cd-post:not(.shown) .pd-lines i { transform: scaleX(0); }
+    .js .chat-demo.armed .cd-post:not(.shown) .pd-img { opacity: 0; }
+    .js .chat-demo.armed .cd-plat:not(.done) { background: transparent; border-color: rgba(167,139,250,.22); color: var(--muted); }
+    .js .chat-demo.armed .cd-plat:not(.done) .st { background: transparent; border: 1.5px solid rgba(187,168,247,.35); border-top-color: var(--lavender); animation: spin .8s linear infinite; }
+    .js .chat-demo.armed .cd-plat:not(.done) .st svg { transform: scale(0); }
+    .js .chat-demo.armed .cd-caret.on { opacity: 1; animation: caret 1s steps(1) infinite; }
+    @keyframes caret { 50% { opacity: 0; } }
+    .cd-send.press { transform: scale(.88); background: #6A3BDE; }
 
-    /* ─── Premium details: eyebrows, accents, ornaments, watermarks ─── */
+    /* ─── Premium details    /* ─── Premium details: eyebrows, accents, ornaments, watermarks ─── */
     .eyebrow { margin: 0 0 18px; font-family: var(--sans); font-size: 12px; font-weight: 700; letter-spacing: .32em; text-transform: uppercase; color: var(--lavender); }
     .eyebrow .num { margin-right: 14px; color: var(--violet-mid); opacity: .6; letter-spacing: .12em; }
     .eyebrow .sep { margin: 0 .5em; opacity: .5; }
@@ -367,11 +398,11 @@
     .ornament svg { width: 18px; height: 18px; }
     .guarantee .g-label { margin: 0; font-size: 12px; }
     .watermark { position: absolute; pointer-events: none; color: var(--moonlight); z-index: 0; }
-    .wm-cta { width: 1100px; height: 1100px; right: -380px; top: -160px; opacity: .045; animation: spin 240s linear infinite; }
+    .wm-cta { width: 1100px; height: 1100px; right: -380px; top: -160px; opacity: .045; }
+    .wm-spin { transform-box: view-box; transform-origin: 50px 50px; animation: spin 240s linear infinite; }
     .wm-foot { width: 760px; height: 760px; left: 50%; bottom: -460px; margin-left: -380px; opacity: .06; }
     .cta .wrap, .footer .wrap { position: relative; z-index: 1; }
     .cta { overflow: hidden; }
-    .hm-textring { transform-box: view-box; transform-origin: 260px 260px; animation: spin 120s linear infinite; opacity: .35; }
     /* hero grid lines, fading out from the moon */
     .hero::before { content: ''; position: absolute; inset: 0; pointer-events: none;
       background-image: linear-gradient(rgba(167,139,250,.06) 1px, transparent 1px), linear-gradient(90deg, rgba(167,139,250,.06) 1px, transparent 1px); background-size: 80px 80px;
@@ -388,11 +419,8 @@
     .nav-links .nav-link { font-size: 12px; font-weight: 600; letter-spacing: .18em; text-transform: uppercase; }
     .hero .wrap { padding-top: 120px; }
 
-    /* founder seal + credentials */
+    /* founder credentials */
     .portrait-wrap { position: relative; width: 340px; }
-    .seal { position: absolute; z-index: 2; right: -34px; bottom: -30px; width: 108px; height: 108px; border-radius: 50%; padding: 8px; background: var(--s6); color: var(--lavender); box-shadow: 0 0 0 1px rgba(174,146,251,.35), 0 18px 40px -18px rgba(8,4,20,.9); }
-    .seal .seal-ring { width: 100%; height: 100%; animation: spin 60s linear infinite; }
-    .seal .seal-moon { position: absolute; left: 50%; top: 50%; width: 38%; height: 38%; transform: translate(-50%, -50%); }
     .creds { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
     .creds li { padding: 7px 14px; border-radius: 999px; border: 1px solid rgba(174,146,251,.28); font-family: var(--sans); font-size: 11px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--lavender); }
 
@@ -482,9 +510,7 @@
       .eyebrow { font-size: 11px; letter-spacing: .26em; }
       .eyebrow--line::before { width: 24px; }
       .eb-more { display: none; }
-      .hm-textring text { font-size: 13px; }
       .portrait-wrap { width: 100%; max-width: 340px; }
-      .seal { width: 84px; height: 84px; right: -8px; bottom: -22px; padding: 6px; }
       .footer-grid { grid-template-columns: 1fr 1fr; padding-top: 64px; gap: 40px 24px; }
       .footer-brand { grid-column: 1 / -1; }
       .wm-cta { width: 640px; height: 640px; right: -300px; top: -60px; }
@@ -548,15 +574,16 @@
       .report-card .t { font-size: 26px; }
       .report-grid b { font-size: 22px; }
       .report-grid span { display: block; margin-top: 4px; line-height: 1.35; }
-      .post-demo { padding: 16px; }
+      .cd-msg, .cd-post, .cd-pub { max-width: 94%; width: auto; }
       .guarantee { padding: 88px 0; }
     }
 
     @media (prefers-reduced-motion: reduce) {
       html { scroll-behavior: auto; }
-      .hero-moon *, .cta-mark svg, .cta-mark::before, .aios *, .aios *::before, .aios *::after, .watermark, .seal .seal-ring { animation: none !important; }
+      .hero-moon *, .cta-mark svg, .cta-mark::before, .aios *, .aios *::before, .aios *::after, .wm-spin { animation: none !important; }
       .hm-sweep { opacity: .2; transform: rotate(-130deg); }
       .hm-halo, .hm-orbit { opacity: 1; }
+      .hm-guides { opacity: .28; }
       .moon-ring, .step, .btn, .btn::after { transition: none; }
     }
   </style>
@@ -568,19 +595,13 @@
     <linearGradient id="wm-g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#EAE2FF"/><stop offset=".5" stop-color="#AE92FB"/><stop offset="1" stop-color="#6A3BDE"/></linearGradient>
     <path id="wm-ring" d="M 50 50 m -47 0 a 47 47 0 1 1 94 0 a 47 47 0 1 1 -94 0"/>
     <symbol id="mini-moon" viewBox="0 0 100 100"><path transform="translate(18.6 0) rotate(-18 44 50)" d="M67.97 17.98 A40 40 0 1 0 67.97 82.02 A33 33 0 1 1 67.97 17.98Z" fill="url(#wm-g)"/></symbol>
-    <path id="seal-ring" d="M 50 50 m -38 0 a 38 38 0 1 1 76 0 a 38 38 0 1 1 -76 0"/>
-    <symbol id="seal-mark" viewBox="0 0 100 100">
-      <circle cx="50" cy="50" r="47" fill="none" stroke="currentColor" stroke-opacity=".45" stroke-width=".6"/>
-      <circle cx="50" cy="50" r="29" fill="none" stroke="currentColor" stroke-opacity=".3" stroke-width=".5"/>
-      <text font-family="Manrope, sans-serif" font-size="8.6" font-weight="700" letter-spacing="2.6" fill="currentColor"><textPath href="#seal-ring" textLength="236" lengthAdjust="spacing">FOUNDER · LUNO AI · FOUNDER · LUNO AI ·</textPath></text>
-    </symbol>
-    <!-- watermark: the crescent inside a ring of tracked text, used behind the closing sections -->
-    <symbol id="wm-mark" viewBox="0 0 100 100">
+    <!-- watermark ring (turns) and crescent (stays upright, same tilt as the logo) -->
+    <symbol id="wm-ringmark" viewBox="0 0 100 100">
       <circle cx="50" cy="50" r="42.5" fill="none" stroke="currentColor" stroke-width=".25"/>
       <circle cx="50" cy="50" r="49.6" fill="none" stroke="currentColor" stroke-width=".18"/>
       <text font-family="Manrope, sans-serif" font-size="3.1" font-weight="700" letter-spacing="1.35" fill="currentColor"><textPath href="#wm-ring" textLength="292" lengthAdjust="spacing">LUNO AI · AI OPERATING SYSTEMS · LUNO AI · FROM BURIED TO BREATHING ROOM ·</textPath></text>
-      <g transform="translate(20 20) scale(.6)"><path transform="translate(18.6 0) rotate(-18 44 50)" d="M67.97 17.98 A40 40 0 1 0 67.97 82.02 A33 33 0 1 1 67.97 17.98Z" fill="currentColor"/></g>
     </symbol>
+    <symbol id="wm-moon" viewBox="0 0 100 100"><g transform="translate(20 20) scale(.6)"><path transform="translate(18.6 0) rotate(-18 44 50)" d="M67.97 17.98 A40 40 0 1 0 67.97 82.02 A33 33 0 1 1 67.97 17.98Z" fill="currentColor"/></g></symbol>
   </defs>
 </svg>
 
@@ -613,8 +634,8 @@
         <a class="link" href="#how">See how it works</a>
       </div>
     </div>
-    <!-- The moon waxes through the brand phases (brand_assets/moon-phases) and lands as the Luno crescent -->
-    <svg class="hero-moon" viewBox="0 0 520 520" aria-hidden="true">
+    <!-- Logo assembly: construction guides draw in, the moon waxes through the brand phases into the crescent, then the wordmark builds -->
+    <svg class="hero-moon" viewBox="0 0 520 540" aria-hidden="true">
       <defs>
         <linearGradient id="hm-luno" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#EAE2FF"/><stop offset=".5" stop-color="#AE92FB"/><stop offset="1" stop-color="#6A3BDE"/></linearGradient>
         <linearGradient id="hm-rim" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#EAE2FF"/><stop offset=".5" stop-color="#AE92FB"/><stop offset="1" stop-color="#6A3BDE" stop-opacity="0"/></linearGradient>
@@ -623,8 +644,8 @@
         <mask id="hm-mask" maskUnits="userSpaceOnUse" x="-60" y="-60" width="120" height="120">
           <rect x="-60" y="-60" width="120" height="120" fill="#fff"/>
           <circle cx="0" cy="0" r="41" fill="#000">
-            <animate attributeName="cx" values="0;4;9;13;16" dur="1.3s" begin="0.15s" fill="freeze" calcMode="spline" keyTimes="0;.25;.5;.75;1" keySplines=".45 0 .2 1;.45 0 .2 1;.45 0 .2 1;.45 0 .2 1"/>
-            <animate attributeName="r" values="41;39;37;35;33" dur="1.3s" begin="0.15s" fill="freeze" calcMode="spline" keyTimes="0;.25;.5;.75;1" keySplines=".45 0 .2 1;.45 0 .2 1;.45 0 .2 1;.45 0 .2 1"/>
+            <animate attributeName="cx" values="0;4;9;13;16" dur="1.3s" begin="0.55s" fill="freeze" calcMode="spline" keyTimes="0;.25;.5;.75;1" keySplines=".45 0 .2 1;.45 0 .2 1;.45 0 .2 1;.45 0 .2 1"/>
+            <animate attributeName="r" values="41;39;37;35;33" dur="1.3s" begin="0.55s" fill="freeze" calcMode="spline" keyTimes="0;.25;.5;.75;1" keySplines=".45 0 .2 1;.45 0 .2 1;.45 0 .2 1;.45 0 .2 1"/>
           </circle>
         </mask>
       </defs>
@@ -639,29 +660,41 @@
         <circle cx="150" cy="28" r="1.5" style="--d:1.4s"/>
         <circle cx="508" cy="338" r="1.2" style="--d:0.9s"/>
         <circle cx="12" cy="150" r="1.6" style="--d:2.0s"/>
-        <circle cx="380" cy="506" r="1.3" style="--d:1.2s"/>
-        <circle cx="196" cy="506" r="1.1" style="--d:2.5s"/>
+        <circle cx="420" cy="520" r="1.3" style="--d:1.2s"/>
+        <circle cx="110" cy="520" r="1.1" style="--d:2.5s"/>
       </g>
-      <circle cx="260" cy="260" r="236" fill="none" stroke="#A78BFA" stroke-opacity=".14"/>
-      <circle class="hm-dash" cx="260" cy="260" r="222" fill="none" stroke="#A78BFA" stroke-opacity=".16" stroke-dasharray="1.5 9"/>
-      <g class="hm-textring">
-        <path id="hm-ring" d="M 260 260 m -252 0 a 252 252 0 1 1 504 0 a 252 252 0 1 1 -504 0" fill="none"/>
-        <text font-family="Manrope, sans-serif" font-size="10.5" font-weight="700" letter-spacing="5" fill="#BBA8F7"><textPath href="#hm-ring" textLength="1570" lengthAdjust="spacing">LUNO AI · AI OPERATING SYSTEMS · FOR PROPERTY MANAGERS · LUNO AI · AI OPERATING SYSTEMS · FOR PROPERTY MANAGERS ·</textPath></text>
+      <!-- construction guides -->
+      <g class="hm-guides" stroke="#A78BFA" fill="none">
+        <line class="hm-gh" x1="20" y1="236" x2="500" y2="236" stroke-opacity=".35"/>
+        <line class="hm-gv" x1="260" y1="0" x2="260" y2="476" stroke-opacity=".35"/>
+        <circle cx="260" cy="236" r="168" stroke-opacity=".45" stroke-dasharray="1055.6" stroke-dashoffset="1055.6">
+          <animate attributeName="stroke-dashoffset" from="1055.6" to="0" dur="1s" begin="0.1s" fill="freeze" calcMode="spline" keyTimes="0;1" keySplines=".45 0 .2 1"/>
+        </circle>
+        <line x1="248" y1="476" x2="272" y2="476" stroke-opacity=".5"/>
       </g>
-      <g class="hm-sweep"><circle cx="260" cy="260" r="236" fill="none" stroke="url(#hm-rim)" stroke-width="2" stroke-linecap="round" stroke-dasharray="420 1100"/></g>
-      <g class="hm-orbit"><circle cx="260" cy="24" r="6" fill="#AE92FB" opacity=".35" filter="url(#hm-glow)"/><circle cx="260" cy="24" r="2.6" fill="#EAE2FF"/></g>
+      <circle cx="260" cy="236" r="204" fill="none" stroke="#A78BFA" stroke-opacity=".14"/>
+      <g class="hm-sweep"><circle cx="260" cy="236" r="204" fill="none" stroke="url(#hm-rim)" stroke-width="2" stroke-linecap="round" stroke-dasharray="360 1000"/></g>
+      <g class="hm-orbit"><circle cx="260" cy="32" r="6" fill="#AE92FB" opacity=".35" filter="url(#hm-glow)"/><circle cx="260" cy="32" r="2.6" fill="#EAE2FF"/></g>
       <g class="hm-float"><g class="hm-par">
-        <circle class="hm-halo" cx="260" cy="260" r="250" fill="url(#hm-halo)"/>
-        <g transform="translate(260 260) rotate(-18) scale(5.2)">
-          <circle r="40" fill="#1B1236" stroke="#A78BFA" stroke-opacity=".3" stroke-width=".25">
-            <animate attributeName="opacity" values="1;0" dur=".5s" begin="1.25s" fill="freeze"/>
+        <circle class="hm-halo" cx="260" cy="236" r="232" fill="url(#hm-halo)"/>
+        <g transform="translate(260 236) rotate(-18) scale(4.2)">
+          <circle r="40" fill="#1B1236" stroke="#A78BFA" stroke-opacity=".3" stroke-width=".3">
+            <animate attributeName="opacity" values="1;0" dur=".5s" begin="1.65s" fill="freeze"/>
           </circle>
           <circle r="40" fill="url(#hm-luno)" mask="url(#hm-mask)" opacity="0">
-            <animate attributeName="opacity" values="0;.4;.6;.82;1" dur="1.3s" begin="0.15s" fill="freeze" calcMode="spline" keyTimes="0;.25;.5;.75;1" keySplines=".45 0 .2 1;.45 0 .2 1;.45 0 .2 1;.45 0 .2 1"/>
+            <animate attributeName="opacity" values="0;.4;.6;.82;1" dur="1.3s" begin="0.55s" fill="freeze" calcMode="spline" keyTimes="0;.25;.5;.75;1" keySplines=".45 0 .2 1;.45 0 .2 1;.45 0 .2 1;.45 0 .2 1"/>
           </circle>
           <circle r="40" fill="#FFFFFF" mask="url(#hm-mask)" opacity="0">
-            <animate attributeName="opacity" values="0;.4;0" dur=".8s" begin="1.4s" fill="freeze"/>
+            <animate attributeName="opacity" values="0;.4;0" dur=".8s" begin="1.8s" fill="freeze"/>
           </circle>
+        </g>
+        <g class="hm-word" font-family="Manrope, sans-serif" font-size="28">
+        <text class="hm-letter" x="176.2" y="512" fill="#F1EDFF" font-weight="700" style="--i:0">L</text>
+        <text class="hm-letter" x="201.1" y="512" fill="#F1EDFF" font-weight="700" style="--i:1">U</text>
+        <text class="hm-letter" x="231.3" y="512" fill="#F1EDFF" font-weight="700" style="--i:2">N</text>
+        <text class="hm-letter" x="261.4" y="512" fill="#F1EDFF" font-weight="700" style="--i:3">O</text>
+        <text class="hm-letter" x="308.0" y="512" fill="#BBA8F7" font-weight="600" style="--i:4">A</text>
+        <text class="hm-letter" x="336.4" y="512" fill="#BBA8F7" font-weight="600" style="--i:5">I</text>
         </g>
       </g></g>
     </svg>
@@ -842,18 +875,32 @@
       </div>
       <!-- Illustrative example of his content system (real setup lives on his Mac). Swap for a real capture when available. -->
       <figure class="report post-fig">
-        <div class="post-demo" role="img" aria-label="Example: one tap writes today's post in his voice, makes the image and posts it to seven platforms">
-          <div class="pd-btn" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/></svg>Generate today's posts</div>
-          <div class="pd-card" aria-hidden="true">
-            <div class="pd-head"><span class="pd-avatar"></span><div><b>Today's post</b><small>Written in his voice</small></div></div>
-            <p class="pd-title">What T+1 settlement means for your trades</p>
-            <div class="pd-lines"><i></i><i></i><i></i></div>
-            <div class="pd-img"><svg viewBox="0 0 200 60" preserveAspectRatio="none"><path d="M0 48 L30 40 L55 44 L85 26 L110 32 L140 14 L170 20 L200 6"/></svg></div>
+        <div class="chat-demo" role="img" aria-label="Example: he asks his content assistant for today's posts, it writes them in his voice with an image, he approves, and it publishes to seven platforms">
+          <div class="cd-head" aria-hidden="true">
+            <span class="cd-av"><svg viewBox="0 0 24 24"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/></svg></span>
+            <div><b>Content assistant</b><small><i></i>Online</small></div>
           </div>
-          <div class="pd-plats" aria-hidden="true"><span class="pd-plat"><i aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg></i>LinkedIn page</span><span class="pd-plat"><i aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg></i>LinkedIn personal</span><span class="pd-plat"><i aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg></i>X</span><span class="pd-plat"><i aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg></i>Facebook</span><span class="pd-plat"><i aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg></i>Instagram</span><span class="pd-plat"><i aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg></i>TikTok</span><span class="pd-plat"><i aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg></i>YouTube</span></div>
-          <div class="pd-done" aria-hidden="true">8 posts live across 7 platforms</div>
+          <div class="cd-body" aria-hidden="true">
+            <div class="cd-msg me" data-say="Make today's posts on T+1 settlement">Make today's posts on T+1 settlement</div>
+            <div class="cd-msg ai">On it. Writing in your voice for all 7 platforms.</div>
+            <div class="cd-msg ai cd-post">
+              <div class="pd-card">
+                <div class="pd-head"><span class="pd-avatar"></span><div><b>Today's post</b><small>Written in his voice</small></div></div>
+                <p class="pd-title">What T+1 settlement means for your trades</p>
+                <div class="pd-lines"><i></i><i></i><i></i></div>
+                <div class="pd-img"><svg viewBox="0 0 200 60" preserveAspectRatio="none"><path d="M0 48 L30 40 L55 44 L85 26 L110 32 L140 14 L170 20 L200 6"/></svg></div>
+              </div>
+              <span class="cd-sub">Image made. 8 posts ready to go.</span>
+            </div>
+            <div class="cd-msg me" data-say="Looks great. Post it.">Looks great. Post it.</div>
+            <div class="cd-msg ai cd-pub">Publishing now
+              <div class="cd-plats"><span class="cd-plat"><i class="st" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg></i>LinkedIn page</span><span class="cd-plat"><i class="st" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg></i>LinkedIn personal</span><span class="cd-plat"><i class="st" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg></i>X</span><span class="cd-plat"><i class="st" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg></i>Facebook</span><span class="cd-plat"><i class="st" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg></i>Instagram</span><span class="cd-plat"><i class="st" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg></i>TikTok</span><span class="cd-plat"><i class="st" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg></i>YouTube</span></div>
+            </div>
+            <div class="cd-msg cd-live"><i></i>8 posts live across 7 platforms</div>
+          </div>
+          <div class="cd-input" aria-hidden="true"><span class="cd-typed"></span><span class="cd-caret"></span><span class="cd-send"><svg viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></svg></span></div>
         </div>
-        <figcaption>Example of his setup: one command writes, designs and posts his content everywhere.</figcaption>
+        <figcaption>Example of his setup: he asks, it writes in his voice, he approves, and it posts everywhere.</figcaption>
       </figure>
     </article>
 
@@ -871,7 +918,6 @@
 <section class="you" aria-labelledby="you-h">
   <div class="wrap">
     <div class="portrait-wrap">
-    <div class="seal" aria-hidden="true"><svg class="seal-ring" viewBox="0 0 100 100"><use href="#seal-mark"/></svg><svg class="seal-moon"><use href="#mini-moon"/></svg></div>
     <div class="portrait">
       <!-- Placeholder: LinkedIn profile photo (400px). Swap for a larger, portrait-format photo when ready. -->
       <img src="/brand_assets/banner/linkedin-profile-photo.png" alt="Eyu Abuhay, founder of Luno AI" width="340" height="400" style="object-position: 50% 30%">
@@ -899,7 +945,7 @@
 
 <!-- Final CTA: the full moon -->
 <section class="cta" id="book" aria-labelledby="cta-h">
-  <svg class="watermark wm-cta" viewBox="0 0 100 100" aria-hidden="true"><use href="#wm-mark"/></svg>
+  <svg class="watermark wm-cta" viewBox="0 0 100 100" aria-hidden="true"><g class="wm-spin"><use href="#wm-ringmark"/></g><use href="#wm-moon"/></svg>
   <div class="wrap">
     <div class="cta-mark">
         <svg class="phase-moon" data-moon="cta" viewBox="-50 -50 100 100" aria-hidden="true">
@@ -926,7 +972,7 @@
 </main>
 
 <footer class="footer">
-  <svg class="watermark wm-foot" viewBox="0 0 100 100" aria-hidden="true"><use href="#wm-mark"/></svg>
+  <svg class="watermark wm-foot" viewBox="0 0 100 100" aria-hidden="true"><use href="#wm-ringmark"/><use href="#wm-moon"/></svg>
   <div class="wrap footer-grid">
     <div class="footer-brand">
       <a class="brand" href="#top" aria-label="Luno AI home">
@@ -1161,26 +1207,37 @@
       })();
     })();
 
-    // Content system example: tap, the post writes itself, then it goes out everywhere
-    const demo = document.querySelector('.post-demo');
-    if (demo) {
-      const btn = demo.querySelector('.pd-btn'), plats = [...demo.querySelectorAll('.pd-plat')];
-      demo.classList.add('armed');
+    // Content system example: he asks, the assistant writes the post, he approves, it goes live everywhere
+    const chat = document.querySelector('.chat-demo');
+    if (chat) {
+      const body = chat.querySelector('.cd-body'), msgs = [...body.querySelectorAll('.cd-msg')];
+      const typed = chat.querySelector('.cd-typed'), caret = chat.querySelector('.cd-caret'), send = chat.querySelector('.cd-send');
+      const plats = [...chat.querySelectorAll('.cd-plat')];
+      const dots = document.createElement('div'); dots.className = 'cd-typing'; dots.innerHTML = '<i></i><i></i><i></i>'; body.appendChild(dots);
+      chat.classList.add('armed');
+      const say = async (text) => {
+        caret.classList.add('on');
+        for (const ch of text) { typed.textContent += ch; await wait(38); }
+        await wait(300); send.classList.add('press'); await wait(160); send.classList.remove('press');
+        typed.textContent = ''; caret.classList.remove('on');
+      };
+      const think = async (m, ms) => { dots.style.top = m.offsetTop + 'px'; dots.classList.add('on'); await wait(ms); dots.classList.remove('on'); await wait(120); };
       new IntersectionObserver(async (entries, o) => {
         if (!entries[0].isIntersecting) return;
         o.disconnect();
-        await wait(500);
-        btn.classList.add('press'); await wait(180); btn.classList.remove('press');
-        await wait(250); demo.classList.add('s1');
-        await wait(500); demo.classList.add('s2');
-        await wait(900); demo.classList.add('s3');
-        await wait(700);
-        for (const p of plats) { p.classList.add('on'); await wait(220); }
-        await wait(200); demo.classList.add('s4');
-      }, { threshold: .5 }).observe(demo);
+        await wait(400);
+        for (const m of msgs) {
+          if (m.dataset.say) { await say(m.dataset.say); m.classList.add('shown'); await wait(500); continue; }
+          if (m.classList.contains('ai')) await think(m, m.classList.contains('cd-post') ? 1300 : 800);
+          m.classList.add('shown');
+          if (m.classList.contains('cd-post')) await wait(1100);
+          if (m.classList.contains('cd-pub')) { await wait(500); for (const p of plats) { await wait(260); p.classList.add('done'); } }
+          await wait(500);
+        }
+      }, { threshold: .4 }).observe(chat);
     }
 
-    // Numbers count up the first time    // Numbers count up the first time they're seen
+    // Numbers count up the first time    // Numbers count up the first time    // Numbers count up the first time they're seen
     const countIO = new IntersectionObserver((entries) => {
       entries.forEach(({ isIntersecting, target: el }) => {
         if (!isIntersecting) return;
