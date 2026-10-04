@@ -13,7 +13,7 @@
   <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=2">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,300;1,9..144,400&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script>
     // Hide-then-animate styles apply only when JS runs and the visitor allows motion
     if (!matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('js');
@@ -267,7 +267,6 @@
 
     /* ─── Footer ─── */
     .footer { background: var(--s8); border-top: 1px solid rgba(234,226,255,.1); }
-    .footer .wrap { min-height: 200px; display: flex; align-items: center; justify-content: space-between; gap: var(--sp-4); flex-wrap: wrap; padding-top: var(--sp-5); padding-bottom: var(--sp-5); }
     .footer p { font-size: 15px; color: #BDB2DC; margin-top: 12px; }
     .footer-links { display: flex; gap: 4px var(--sp-4); align-items: center; font-family: var(--sans); font-size: 14px; color: #BDB2DC; flex-wrap: wrap; }
     .footer-links .nav-link { font-size: 14px; color: #BDB2DC; }
@@ -352,6 +351,67 @@
     .js .post-demo.armed .pd-plat:not(.on) i { transform: scale(0); }
     .js .post-demo.armed:not(.s4) .pd-done { opacity: 0; transform: translateY(6px); }
 
+    /* ─── Premium details: eyebrows, accents, ornaments, watermarks ─── */
+    .eyebrow { margin: 0 0 18px; font-family: var(--sans); font-size: 12px; font-weight: 700; letter-spacing: .32em; text-transform: uppercase; color: var(--lavender); }
+    .eyebrow .num { margin-right: 14px; color: var(--violet-mid); opacity: .6; letter-spacing: .12em; }
+    .eyebrow .sep { margin: 0 .5em; opacity: .5; }
+    .eyebrow--line { display: flex; align-items: center; gap: 16px; }
+    .eyebrow--line::before { content: ''; width: 40px; height: 1px; background: linear-gradient(90deg, rgba(174,146,251,.2), var(--violet-mid)); }
+    .eyebrow--center { text-align: center; }
+    .hero-copy .eyebrow { margin-bottom: -8px; }
+    .accent { font-family: var(--serif); font-style: italic; font-weight: 300; letter-spacing: -0.015em; padding-right: .06em;
+      background: linear-gradient(115deg, #F1EDFF 0%, #CDBBFF 45%, #A98BF7 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .ornament { display: flex; align-items: center; justify-content: center; gap: 14px; }
+    .ornament i { width: 56px; height: 1px; background: linear-gradient(90deg, rgba(174,146,251,0), rgba(174,146,251,.6)); }
+    .ornament i:last-child { transform: scaleX(-1); }
+    .ornament svg { width: 18px; height: 18px; }
+    .guarantee .g-label { margin: 0; font-size: 12px; }
+    .watermark { position: absolute; pointer-events: none; color: var(--moonlight); z-index: 0; }
+    .wm-cta { width: 1100px; height: 1100px; right: -380px; top: -160px; opacity: .045; animation: spin 240s linear infinite; }
+    .wm-foot { width: 760px; height: 760px; left: 50%; bottom: -460px; margin-left: -380px; opacity: .06; }
+    .cta .wrap, .footer .wrap { position: relative; z-index: 1; }
+    .cta { overflow: hidden; }
+    .hm-textring { transform-box: view-box; transform-origin: 260px 260px; animation: spin 120s linear infinite; opacity: .35; }
+    /* hero grid lines, fading out from the moon */
+    .hero::before { content: ''; position: absolute; inset: 0; pointer-events: none;
+      background-image: linear-gradient(rgba(167,139,250,.06) 1px, transparent 1px), linear-gradient(90deg, rgba(167,139,250,.06) 1px, transparent 1px); background-size: 80px 80px;
+      -webkit-mask-image: radial-gradient(ellipse 60% 70% at 72% 45%, #000 0%, transparent 75%); mask-image: radial-gradient(ellipse 60% 70% at 72% 45%, #000 0%, transparent 75%); }
+    .hero .wrap { z-index: 1; }
+
+    /* floating glass nav */
+    .nav { position: fixed; top: 14px; left: 0; right: 0; z-index: 50; }
+    .nav .wrap { height: auto; display: block; }
+    .nav-pill { height: 64px; display: flex; align-items: center; justify-content: space-between; padding: 0 10px 0 22px; border-radius: 999px;
+      background: rgba(18,13,34,.35); border: 1px solid rgba(167,139,250,.14); -webkit-backdrop-filter: blur(16px) saturate(140%); backdrop-filter: blur(16px) saturate(140%);
+      transition: background-color .4s, border-color .4s, box-shadow .4s; }
+    .nav.scrolled .nav-pill { background: rgba(18,13,34,.72); border-color: rgba(167,139,250,.22); box-shadow: 0 20px 40px -24px rgba(8,4,20,.9); }
+    .nav-links .nav-link { font-size: 12px; font-weight: 600; letter-spacing: .18em; text-transform: uppercase; }
+    .hero .wrap { padding-top: 120px; }
+
+    /* founder seal + credentials */
+    .portrait-wrap { position: relative; width: 340px; }
+    .seal { position: absolute; z-index: 2; right: -34px; bottom: -30px; width: 108px; height: 108px; border-radius: 50%; padding: 8px; background: var(--s6); color: var(--lavender); box-shadow: 0 0 0 1px rgba(174,146,251,.35), 0 18px 40px -18px rgba(8,4,20,.9); }
+    .seal .seal-ring { width: 100%; height: 100%; animation: spin 60s linear infinite; }
+    .seal .seal-moon { position: absolute; left: 50%; top: 50%; width: 38%; height: 38%; transform: translate(-50%, -50%); }
+    .creds { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+    .creds li { padding: 7px 14px; border-radius: 999px; border: 1px solid rgba(174,146,251,.28); font-family: var(--sans); font-size: 11px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--lavender); }
+
+    /* footer */
+    .footer { position: relative; overflow: hidden; }
+    .footer-grid { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: var(--sp-5); padding-top: 88px; padding-bottom: 64px; }
+    .footer-brand .wordmark { font-size: 15px; }
+    .footer-brand p { max-width: 30em; }
+    .footer .motto { margin-top: 22px; font-family: var(--sans); font-size: 11px; font-weight: 700; letter-spacing: .34em; text-transform: uppercase; color: rgba(187,168,247,.55); }
+    .footer-h { margin: 0 0 18px; font-family: var(--sans); font-size: 12px; font-weight: 700; letter-spacing: .3em; text-transform: uppercase; color: var(--lavender); }
+    .footer-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+    .footer-list a { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; font-family: var(--sans); font-size: 15px; color: #DCD3F5; transition: opacity .2s; }
+    .footer-list a:hover { opacity: .7; }
+    .footer-list a:active { opacity: .5; }
+    .footer-list .ext { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; opacity: .7; }
+    .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+    .footer-base { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; padding-top: 24px; padding-bottom: 32px; border-top: 1px solid rgba(234,226,255,.1); font-family: var(--sans); font-size: 13px; color: #A99DCB; }
+    .footer-base .tracked { font-size: 11px; font-weight: 700; letter-spacing: .3em; text-transform: uppercase; }
+
     /* ─── Motion (only when JS runs    /* ─── Motion (only when JS runs and motion is allowed; see the head script) ─── */
     .js .reveal { opacity: 0; transform: translateY(28px); transition: opacity .9s var(--ease-out) var(--d, 0s), transform .9s var(--ease-out) var(--d, 0s); }
     .js .reveal.in { opacity: 1; transform: none; }
@@ -416,7 +476,19 @@
       :root { --gutter: 20px; --section-y: 88px; }
       body { font-size: 17px; }
       .nav-links .nav-link { display: none; }
-      .nav .wrap { height: 72px; }
+      .nav { top: 10px; }
+      .nav-pill { height: 56px; padding: 0 8px 0 16px; }
+      .hero .wrap { padding-top: 96px; }
+      .eyebrow { font-size: 11px; letter-spacing: .26em; }
+      .eyebrow--line::before { width: 24px; }
+      .eb-more { display: none; }
+      .hm-textring text { font-size: 13px; }
+      .portrait-wrap { width: 100%; max-width: 340px; }
+      .seal { width: 84px; height: 84px; right: -8px; bottom: -22px; padding: 6px; }
+      .footer-grid { grid-template-columns: 1fr 1fr; padding-top: 64px; gap: 40px 24px; }
+      .footer-brand { grid-column: 1 / -1; }
+      .wm-cta { width: 640px; height: 640px; right: -300px; top: -60px; }
+      .wm-foot { width: 520px; height: 520px; margin-left: -260px; bottom: -320px; }
       .btn .long { display: none; }
       .btn .short { display: inline; }
       .hero-actions { gap: 4px 28px; }
@@ -482,7 +554,7 @@
 
     @media (prefers-reduced-motion: reduce) {
       html { scroll-behavior: auto; }
-      .hero-moon *, .cta-mark svg, .cta-mark::before, .aios *, .aios *::before, .aios *::after { animation: none !important; }
+      .hero-moon *, .cta-mark svg, .cta-mark::before, .aios *, .aios *::before, .aios *::after, .watermark, .seal .seal-ring { animation: none !important; }
       .hm-sweep { opacity: .2; transform: rotate(-130deg); }
       .hm-halo, .hm-orbit { opacity: 1; }
       .moon-ring, .step, .btn, .btn::after { transition: none; }
@@ -491,9 +563,29 @@
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="wm-g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#EAE2FF"/><stop offset=".5" stop-color="#AE92FB"/><stop offset="1" stop-color="#6A3BDE"/></linearGradient>
+    <path id="wm-ring" d="M 50 50 m -47 0 a 47 47 0 1 1 94 0 a 47 47 0 1 1 -94 0"/>
+    <symbol id="mini-moon" viewBox="0 0 100 100"><path transform="translate(18.6 0) rotate(-18 44 50)" d="M67.97 17.98 A40 40 0 1 0 67.97 82.02 A33 33 0 1 1 67.97 17.98Z" fill="url(#wm-g)"/></symbol>
+    <path id="seal-ring" d="M 50 50 m -38 0 a 38 38 0 1 1 76 0 a 38 38 0 1 1 -76 0"/>
+    <symbol id="seal-mark" viewBox="0 0 100 100">
+      <circle cx="50" cy="50" r="47" fill="none" stroke="currentColor" stroke-opacity=".45" stroke-width=".6"/>
+      <circle cx="50" cy="50" r="29" fill="none" stroke="currentColor" stroke-opacity=".3" stroke-width=".5"/>
+      <text font-family="Manrope, sans-serif" font-size="8.6" font-weight="700" letter-spacing="2.6" fill="currentColor"><textPath href="#seal-ring" textLength="236" lengthAdjust="spacing">FOUNDER · LUNO AI · FOUNDER · LUNO AI ·</textPath></text>
+    </symbol>
+    <!-- watermark: the crescent inside a ring of tracked text, used behind the closing sections -->
+    <symbol id="wm-mark" viewBox="0 0 100 100">
+      <circle cx="50" cy="50" r="42.5" fill="none" stroke="currentColor" stroke-width=".25"/>
+      <circle cx="50" cy="50" r="49.6" fill="none" stroke="currentColor" stroke-width=".18"/>
+      <text font-family="Manrope, sans-serif" font-size="3.1" font-weight="700" letter-spacing="1.35" fill="currentColor"><textPath href="#wm-ring" textLength="292" lengthAdjust="spacing">LUNO AI · AI OPERATING SYSTEMS · LUNO AI · FROM BURIED TO BREATHING ROOM ·</textPath></text>
+      <g transform="translate(20 20) scale(.6)"><path transform="translate(18.6 0) rotate(-18 44 50)" d="M67.97 17.98 A40 40 0 1 0 67.97 82.02 A33 33 0 1 1 67.97 17.98Z" fill="currentColor"/></g>
+    </symbol>
+  </defs>
+</svg>
 
 <header class="nav">
-  <div class="wrap">
+  <div class="wrap"><div class="nav-pill">
     <a class="brand" href="#top" aria-label="Luno AI home">
       <img src="/brand_assets/logo/luno-mark.svg" alt="">
       <span class="wordmark">LUNO <span>AI</span></span>
@@ -504,7 +596,7 @@
       <a class="nav-link" href="#guarantee">Guarantee</a>
       <a class="btn btn--sm" href="#book"><span class="long">Book a free audit</span><span class="short">Free audit</span></a>
     </nav>
-  </div>
+  </div></div>
 </header>
 
 <main id="main">
@@ -513,7 +605,8 @@
 <section class="hero" id="top">
   <div class="wrap">
     <div class="hero-copy">
-      <h1>Take on more properties without adding staff.</h1>
+      <p class="eyebrow eyebrow--line"><span>AI operating systems<span class="eb-more"><span class="sep">·</span>Property management</span></span></p>
+      <h1>Take on more properties <em class="accent">without adding staff.</em></h1>
       <p class="lede">We build an AI operating system that answers your leads, handles your tenants and runs your back office, so your team gets 20+ hours a week back.</p>
       <div class="hero-actions">
         <a class="btn" href="#book">Book a free audit</a>
@@ -551,6 +644,10 @@
       </g>
       <circle cx="260" cy="260" r="236" fill="none" stroke="#A78BFA" stroke-opacity=".14"/>
       <circle class="hm-dash" cx="260" cy="260" r="222" fill="none" stroke="#A78BFA" stroke-opacity=".16" stroke-dasharray="1.5 9"/>
+      <g class="hm-textring">
+        <path id="hm-ring" d="M 260 260 m -252 0 a 252 252 0 1 1 504 0 a 252 252 0 1 1 -504 0" fill="none"/>
+        <text font-family="Manrope, sans-serif" font-size="10.5" font-weight="700" letter-spacing="5" fill="#BBA8F7"><textPath href="#hm-ring" textLength="1570" lengthAdjust="spacing">LUNO AI · AI OPERATING SYSTEMS · FOR PROPERTY MANAGERS · LUNO AI · AI OPERATING SYSTEMS · FOR PROPERTY MANAGERS ·</textPath></text>
+      </g>
       <g class="hm-sweep"><circle cx="260" cy="260" r="236" fill="none" stroke="url(#hm-rim)" stroke-width="2" stroke-linecap="round" stroke-dasharray="420 1100"/></g>
       <g class="hm-orbit"><circle cx="260" cy="24" r="6" fill="#AE92FB" opacity=".35" filter="url(#hm-glow)"/><circle cx="260" cy="24" r="2.6" fill="#EAE2FF"/></g>
       <g class="hm-float"><g class="hm-par">
@@ -580,7 +677,8 @@
 <section class="problem" aria-labelledby="problem-h">
   <div class="wrap">
     <div class="problem-intro">
-      <h2 class="h2" id="problem-h">A normal week at your office.</h2>
+      <p class="eyebrow"><span class="num">/ 01</span>The problem</p>
+      <h2 class="h2" id="problem-h">A normal week <em class="accent">at your office.</em></h2>
       <p class="lede">None of it is hard. There's just always more of it than people to do it.</p>
     </div>
     <div>
@@ -596,10 +694,11 @@
 </section>
 
 <!-- What we build -->
-<section class="build" aria-labelledby="build-h">
+<section class="build" id="build" aria-labelledby="build-h">
   <div class="wrap">
     <div class="build-head">
-      <h2 class="h2" id="build-h">An AI operating system that does the work, not another tool to learn.</h2>
+      <div><p class="eyebrow"><span class="num">/ 02</span>What we build</p>
+      <h2 class="h2" id="build-h">An AI operating system that does the work, <em class="accent">not another tool to learn.</em></h2></div>
       <p>We build it, run it and maintain it. Two engines and one dashboard, live in about two weeks.</p>
     </div>
     <!-- The AIOS at work: jobs orbit the Luno moon and get pulled in and handled (example night) -->
@@ -682,7 +781,8 @@
         </svg>
       </div>
     </div>
-    <h2 class="h2 how-h" id="how-h">From buried to breathing room in 30 days.</h2>
+    <div class="how-h"><p class="eyebrow"><span class="num">/ 03</span>How it works</p>
+    <h2 class="h2" id="how-h">From buried to <em class="accent">breathing room</em> in 30 days.</h2></div>
     <div class="how-copy">
       <ol class="steps">
         <li class="step" data-phase="1"><b>Audit</b><p>We map where your team's hours go.</p></li>
@@ -698,7 +798,8 @@
 <!-- Proof -->
 <section class="proof" id="proof" aria-labelledby="proof-h">
   <div class="wrap">
-    <h2 class="h2" id="proof-h">Already live for businesses with your problem.</h2>
+    <p class="eyebrow"><span class="num">/ 04</span>Proof</p>
+    <h2 class="h2" id="proof-h">Already live for businesses <em class="accent">with your problem.</em></h2>
 
     <article class="case">
       <div class="case-body">
@@ -769,14 +870,19 @@
 <!-- You -->
 <section class="you" aria-labelledby="you-h">
   <div class="wrap">
+    <div class="portrait-wrap">
+    <div class="seal" aria-hidden="true"><svg class="seal-ring" viewBox="0 0 100 100"><use href="#seal-mark"/></svg><svg class="seal-moon"><use href="#mini-moon"/></svg></div>
     <div class="portrait">
       <!-- Placeholder: LinkedIn profile photo (400px). Swap for a larger, portrait-format photo when ready. -->
       <img src="/brand_assets/banner/linkedin-profile-photo.png" alt="Eyu Abuhay, founder of Luno AI" width="340" height="400" style="object-position: 50% 30%">
       <div class="tint"></div>
     </div>
+    </div>
     <div class="you-copy">
-      <h2 class="h2" id="you-h">Built for you. Run for you.</h2>
+      <p class="eyebrow"><span class="num">/ 05</span>Who builds it</p>
+      <h2 class="h2" id="you-h">Built for you. <em class="accent">Run for you.</em></h2>
       <p>Eyu Abuhay founded Luno AI and leads every build personally. You get a direct line from the first audit to launch day, and every week your system runs after that.</p>
+      <ul class="creds"><li>Founder, Luno AI</li><li>Delivery partner to KaptureX</li><li>Leads every build</li></ul>
     </div>
   </div>
 </section>
@@ -784,7 +890,8 @@
 <!-- Guarantee -->
 <section class="guarantee" id="guarantee" aria-labelledby="g-h">
   <div class="wrap">
-    <h2 class="g-label" id="g-h">The 20-Hour Guarantee</h2>
+    <div class="ornament" aria-hidden="true"><i></i><svg><use href="#mini-moon"/></svg><i></i></div>
+    <h2 class="g-label eyebrow" id="g-h"><span class="num">/ 06</span>The 20-Hour Guarantee</h2>
     <p class="g-promise">If we don't save your team at least 20 hours a week in the first 30 days, you don't pay until we do.</p>
     <p class="g-limit">We can promise this because taking work off your team's plate is the whole job. It's what we build, and it's what we're measured on.</p>
   </div>
@@ -792,6 +899,7 @@
 
 <!-- Final CTA: the full moon -->
 <section class="cta" id="book" aria-labelledby="cta-h">
+  <svg class="watermark wm-cta" viewBox="0 0 100 100" aria-hidden="true"><use href="#wm-mark"/></svg>
   <div class="wrap">
     <div class="cta-mark">
         <svg class="phase-moon" data-moon="cta" viewBox="-50 -50 100 100" aria-hidden="true">
@@ -807,7 +915,8 @@
           </g>
         </svg>
     </div>
-    <h2 id="cta-h">See how it would run for your firm.</h2>
+    <p class="eyebrow eyebrow--center">Free 30-minute audit</p>
+    <h2 id="cta-h">See how it would run <em class="accent">for your firm.</em></h2>
     <p>Start with a free 30-minute audit. You leave knowing where your team's hours go, whether you work with us or not.</p>
     <div class="booking" id="cal-audit"></div>
     <p class="booking-alt">Calendar not loading? <a href="https://cal.com/eyu-abuhay-ys8yw6/audit-call" target="_blank" rel="noopener">Book on Cal.com</a></p>
@@ -817,21 +926,37 @@
 </main>
 
 <footer class="footer">
-  <div class="wrap">
-    <div>
+  <svg class="watermark wm-foot" viewBox="0 0 100 100" aria-hidden="true"><use href="#wm-mark"/></svg>
+  <div class="wrap footer-grid">
+    <div class="footer-brand">
       <a class="brand" href="#top" aria-label="Luno AI home">
-        <img src="/brand_assets/logo/luno-mark.svg" alt="" style="width:28px;height:28px">
-        <span class="wordmark" style="font-size:14px">LUNO <span>AI</span></span>
+        <img src="/brand_assets/logo/luno-mark.svg" alt="" style="width:30px;height:30px">
+        <span class="wordmark">LUNO <span>AI</span></span>
       </a>
       <p>AI systems that help property managers grow without adding staff.</p>
+      <p class="motto">From buried to breathing room</p>
     </div>
-    <div class="footer-links">
-      <a class="nav-link" href="#how">How it works</a>
-      <a class="nav-link" href="#proof">Proof</a>
-      <a class="nav-link" href="#book">Book a free audit</a>
-      <a class="nav-link footer-li" href="https://www.linkedin.com/in/eyu-abuhay-3a161636b/" target="_blank" rel="noopener" aria-label="Eyu Abuhay on LinkedIn (opens in a new tab)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5zM3 9.75h4v11H3zM9.5 9.75h3.8v1.6h.06c.53-1 1.84-2.05 3.78-2.05 4.04 0 4.79 2.66 4.79 6.12v5.33h-4v-4.72c0-1.13-.02-2.58-1.57-2.58-1.57 0-1.81 1.23-1.81 2.5v4.8h-4z"/></svg>LinkedIn</a>
-      <span>© 2026 Luno AI</span>
+    <div>
+      <h3 class="footer-h">Explore</h3>
+      <ul class="footer-list">
+        <li><a href="#build">What we build</a></li>
+        <li><a href="#how">How it works</a></li>
+        <li><a href="#proof">Proof</a></li>
+        <li><a href="#guarantee">The 20-Hour Guarantee</a></li>
+      </ul>
     </div>
+    <div>
+      <h3 class="footer-h">Connect</h3>
+      <ul class="footer-list">
+        <li><a href="#book">Book a free audit</a></li>
+        <li><a href="https://www.linkedin.com/in/eyu-abuhay-3a161636b/" target="_blank" rel="noopener">LinkedIn<svg class="ext" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg><span class="sr">(opens in a new tab)</span></a></li>
+        <li><a href="https://cal.com/eyu-abuhay-ys8yw6/audit-call" target="_blank" rel="noopener">Booking page<svg class="ext" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg><span class="sr">(opens in a new tab)</span></a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-base">
+    <span>© 2026 Luno AI. All rights reserved.</span>
+    <span class="tracked">AI operating systems for property managers</span>
   </div>
 </footer>
 
@@ -843,6 +968,11 @@
   Cal.ns["audit-call"]("ui", { theme: "light", cssVarsPerTheme: { light: { "cal-brand": "#6A3BDE" } }, hideEventTypeDetails: false, layout: "month_view" });
 
   const motionOK = document.documentElement.classList.contains('js');
+
+  // Glass nav firms up once the page scrolls
+  const navEl = document.querySelector('.nav');
+  const onScroll = () => navEl.classList.toggle('scrolled', scrollY > 40);
+  addEventListener('scroll', onScroll, { passive: true }); onScroll();
 
   // ─── Moon phases (brand_assets/moon-phases): a dark disc masks the lit gradient,
   // sliding right and shrinking until only the Luno crescent is left ───
